@@ -16,7 +16,7 @@ mvn clean install
 Maven Usage
 -------------------
 Package URL for Java is currently pre-release software but snapshot builds can be used and 
-are available on the Maven Central Repository. These can be used without having too compile 
+are available on the Maven Central Repository. These can be used without having to compile 
 the project yourself.
 
 ```xml
