@@ -15,9 +15,9 @@ mvn clean install
 
 Maven Usage
 -------------------
-Alpine is currently pre-release software but snapshot builds can be used and 
-are available on the Maven Central Repository. These can be used without having
-to compile Alpine yourself.
+Package URL for Java is currently pre-release software but snapshot builds can be used and 
+are available on the Maven Central Repository. These can be used without having too compile 
+the project yourself.
 
 ```xml
 <dependencies>
