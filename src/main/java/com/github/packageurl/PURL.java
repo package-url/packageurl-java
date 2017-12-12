@@ -269,6 +269,10 @@ public final class PURL implements java.io.Serializable {
         //todo
     }
 
+    public String canonicalize() {
+        return null; //todo
+    }
+
     @Override
     public boolean equals(Object o) {
         return false; //todo
