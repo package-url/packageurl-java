@@ -24,28 +24,28 @@ package com.github.packageurl;
 import java.io.IOException;
 
 /**
- * Exception class intended to be used for PURL parsing exceptions.
+ * Exception class intended to be used for PackageURL parsing exceptions.
  *
  * @author Steve Springett
  * @since 1.0.0
  */
-public class MalformedPURLException extends IOException {
+public class MalformedPackageURLException extends IOException {
 
     private static final long serialVersionUID = 1095476478991047663L;
 
     /**
-     * Constructs a {@code MalformedPURLException} with no detail message.
+     * Constructs a {@code MalformedPackageURLException} with no detail message.
      */
-    public MalformedPURLException() {
+    public MalformedPackageURLException() {
     }
 
     /**
-     * Constructs a {@code MalformedPURLException} with the
+     * Constructs a {@code MalformedPackageURLException} with the
      * specified detail message.
      *
      * @param msg the detail message.
      */
-    public MalformedPURLException(String msg) {
+    public MalformedPackageURLException(String msg) {
         super(msg);
     }
 

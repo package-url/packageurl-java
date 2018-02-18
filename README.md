@@ -42,23 +42,6 @@ Creates a new PURL object from purl parameters:
 PURL purl = new PURL(type, namespace, name, version, qualifiers, subpath);
 ````
 
-Access Getters and Setters:
-```java
-purl.setNamespace(namespace);
-String subpath = purl.getSubpath();
-````
-
-Fluent interface: 
-```java
-purl
-  .type(type)
-  .namespace(namespace)
-  .name(name)
-  .version(version)
-  .qualifiers(qualifiers)
-  .subpath(subpath);
-````
-
 License
 -------------------
 
