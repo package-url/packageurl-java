@@ -21,15 +21,13 @@
  */
 package com.github.packageurl;
 
-import java.io.IOException;
-
 /**
  * Exception class intended to be used for PackageURL parsing exceptions.
  *
  * @author Steve Springett
  * @since 1.0.0
  */
-public class MalformedPackageURLException extends IOException {
+public class MalformedPackageURLException extends Exception {
 
     private static final long serialVersionUID = 1095476478991047663L;
 
