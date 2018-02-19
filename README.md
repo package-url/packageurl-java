@@ -34,19 +34,19 @@ Usage
 
 Creates a new PURL object from a string:
 ```java
-PURL purl = new PURL(purlString);
+PackageURL purl = new PackageURL(purlString);
 ````
 
 Creates a new PURL object from purl parameters:
 ```java
-PURL purl = new PURL(type, namespace, name, version, qualifiers, subpath);
+PackageURL purl = new PackageURL(type, namespace, name, version, qualifiers, subpath);
 ````
 
 License
 -------------------
 
 Permission to modify and redistribute is granted under the terms of the 
-[MIT License] [license-url]
+[MIT License]([license-url])
 
-  [license-image]: https://img.shields.io/badge/license-mit%20license-brightgreen.svg
-  [license-url]: https://github.com/package-url/packageurl-java/blob/master/LICENSE
+[license-image]: https://img.shields.io/badge/license-mit%20license-brightgreen.svg
+[license-url]: https://github.com/package-url/packageurl-java/blob/master/LICENSE
