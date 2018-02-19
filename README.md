@@ -46,7 +46,7 @@ License
 -------------------
 
 Permission to modify and redistribute is granted under the terms of the 
-[MIT License]([license-url])
+[MIT License](https://github.com/package-url/packageurl-java/blob/master/LICENSE)
 
 [license-image]: https://img.shields.io/badge/license-mit%20license-brightgreen.svg
 [license-url]: https://github.com/package-url/packageurl-java/blob/master/LICENSE
