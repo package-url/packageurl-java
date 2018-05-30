@@ -141,4 +141,21 @@ public class PackageURLTest {
         }
     }
 
+    @Test
+    public void testStandardTypes() {
+        Assert.assertEquals(PackageURL.StandardTypes.BITBUCKET, "bitbucket");
+        Assert.assertEquals(PackageURL.StandardTypes.COMPOSER, "composer");
+        Assert.assertEquals(PackageURL.StandardTypes.DEBIAN, "deb");
+        Assert.assertEquals(PackageURL.StandardTypes.DOCKER, "docker");
+        Assert.assertEquals(PackageURL.StandardTypes.GEM, "gem");
+        Assert.assertEquals(PackageURL.StandardTypes.GENERIC, "generic");
+        Assert.assertEquals(PackageURL.StandardTypes.GITHUB, "github");
+        Assert.assertEquals(PackageURL.StandardTypes.GOLANG, "golang");
+        Assert.assertEquals(PackageURL.StandardTypes.MAVEN, "maven");
+        Assert.assertEquals(PackageURL.StandardTypes.NPM, "npm");
+        Assert.assertEquals(PackageURL.StandardTypes.NUGET, "nuget");
+        Assert.assertEquals(PackageURL.StandardTypes.PYPI, "pypi");
+        Assert.assertEquals(PackageURL.StandardTypes.RPM, "rpm");
+    }
+
 }
