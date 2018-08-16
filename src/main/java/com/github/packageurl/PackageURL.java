@@ -348,6 +348,9 @@ public final class PackageURL implements Serializable {
     }
 
     private Map<String, String> validateQualifiers(Map<String, String> qualifiers) throws MalformedPackageURLException {
+        if (qualifiers == null) {
+            return null;
+        }
         for (String key: qualifiers.keySet()) {
             validateQualifierKey(key);
         }
