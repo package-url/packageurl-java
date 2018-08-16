@@ -27,6 +27,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.TreeMap;
@@ -53,6 +54,7 @@ public final class PackageURL implements Serializable {
 
     private static final long serialVersionUID = 3243226021636427586L;
     private static final Pattern TYPE_PATTERN = Pattern.compile("^[a-zA-Z][a-zA-Z0-9.+-]+$");
+    private static final Pattern KEY_PATTERN = Pattern.compile("^[a-zA-Z][a-zA-Z0-9.-_]+$");
 
     /**
      * Constructs a new PackageURL object by parsing the specified string.
@@ -95,8 +97,7 @@ public final class PackageURL implements Serializable {
         this.namespace = validateNamespace(namespace);
         this.name = validateName(name);
         this.version = validateVersion(version);
-        this.qualifiers = qualifiers;
-        //this.qualifiers = validateQualifiers(qualifiers);
+        this.qualifiers = validateQualifiers(qualifiers);
         this.subpath = validateSubpath(subpath);
     }
 
@@ -204,6 +205,13 @@ public final class PackageURL implements Serializable {
         return subpath;
     }
 
+    /**
+     * Given a specified PackageURL, this method will parse the purl and populate this classes
+     * instance fields so that the corresponding getters may be called to retrieve the individual
+     * pieces of the purl.
+     * @param purl the purl string to parse
+     * @throws MalformedPackageURLException if an exception occurs when parsing
+     */
     private void parse(String purl) throws MalformedPackageURLException {
         if (purl == null || "".equals(purl.trim())) {
             throw new MalformedPackageURLException("Invalid purl: Contains an empty or null value");
@@ -324,34 +332,49 @@ public final class PackageURL implements Serializable {
         if (version == null) {
             return null;
         }
-        return version;
+        return urldecode(version);
     }
 
-    private Map<String, String> validateQualifiers(String qualifiers) {
-        Map<String, String> map = new TreeMap<>();
-        String[] pairs = qualifiers.split("&");
+    private Map<String, String> validateQualifiers(String encodedString) throws MalformedPackageURLException {
+        final Map<String, String> map = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        final String[] pairs =  encodedString.split("&");
         for (String pair : pairs) {
             if (pair.contains("=")) {
-                String[] kvpair = pair.split("=");
-                map.put(kvpair[0], kvpair[1]);
+                final String[] kvpair = pair.split("=");
+                map.put(validateQualifierKey(kvpair[0]), urldecode(kvpair[1]));
             }
         }
         return map;
+    }
+
+    private Map<String, String> validateQualifiers(Map<String, String> qualifiers) throws MalformedPackageURLException {
+        for (String key: qualifiers.keySet()) {
+            validateQualifierKey(key);
+        }
+        return qualifiers;
+    }
+
+    private String validateQualifierKey(String key) throws MalformedPackageURLException {
+        if (key == null || !KEY_PATTERN.matcher(key).matches()) {
+            throw new MalformedPackageURLException("The PackageURL specified contains a key name which is invalid");
+        }
+        return key;
     }
 
     private String validateSubpath(String subpath) {
         if (subpath == null) {
             return null;
         }
-        return stripLeadingAndTrailingSlash(subpath); // leading and trailing slashes always need to be removed
+        return urldecode(stripLeadingAndTrailingSlash(subpath)); // leading and trailing slashes always need to be removed
     }
 
     /**
      * Returns a canonicalized representation of the purl.
      * @return a canonicalized representation of the purl
+     * @since 1.0.0
      */
     public String canonicalize() {
-        StringBuilder purl = new StringBuilder();
+        final StringBuilder purl = new StringBuilder();
         purl.append(scheme).append(":");
         if (type != null) {
             purl.append(type);
@@ -362,10 +385,10 @@ public final class PackageURL implements Serializable {
             purl.append("/");
         }
         if (name != null) {
-            purl.append(name);
+            purl.append(urlencode(name));
         }
         if (version != null) {
-            purl.append("@").append(version);
+            purl.append("@").append(urlencode(version));
         }
         if (qualifiers != null && qualifiers.size() > 0) {
             purl.append("?");
@@ -373,7 +396,7 @@ public final class PackageURL implements Serializable {
             for (Map.Entry<String, String> entry : qualifiers.entrySet()) {
                 temp.append(entry.getKey().toLowerCase());
                 temp.append("=");
-                temp.append(entry.getValue());
+                temp.append(urlencode(entry.getValue()));
                 temp.append("&");
             }
             purl.append(temp.toString().substring(0, temp.toString().length() - 1));
@@ -384,6 +407,11 @@ public final class PackageURL implements Serializable {
         return purl.toString();
     }
 
+    /**
+     * Removes leading and trailing '/' characters from the specified input.
+     * @param input the String to remove leading and trailing '/' from
+     * @return the processed String
+     */
     private String stripLeadingAndTrailingSlash(String input) {
         if (input == null) {
             return null;
@@ -397,24 +425,46 @@ public final class PackageURL implements Serializable {
         return input;
     }
 
+    /**
+     * Encodes the input in conformance with RFC-3986.
+     * @param input the String to encode
+     * @return an encoded String
+     */
     private String urlencode(String input) {
         try {
-            return URLEncoder.encode(input, "UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            return input; // this should never occur
-        }
-    }
-
-    private String urldecode(String input) {
-        try {
-            return URLDecoder.decode(input, "UTF-8");
+            // This SHOULD encoded according to RFC-3986 because URLEncoder alone does not.
+            return URLEncoder.encode(input, StandardCharsets.UTF_8.name())
+                    .replace("+", "%20")
+                    .replace("%7E", "~");
         } catch (UnsupportedEncodingException e) {
             return input; // this should never occur
         }
     }
 
     /**
-     * Convenience constants that define PackageURL 'type's.
+     * Optionally decodes a String, if it's encoded. If String is not encoded,
+     * method will return the original input value.
+     * @param input the value String to decode
+     * @return a decoded String
+     */
+    private String urldecode(String input) {
+        if (input == null) {
+            return null;
+        }
+        try {
+            final String decoded = URLDecoder.decode(input, StandardCharsets.UTF_8.name());
+            if (!decoded.equals(input)) {
+                return decoded;
+            }
+        } catch (UnsupportedEncodingException e) {
+            return input; // this should never occur
+        }
+        return input;
+    }
+
+    /**
+     * Convenience constants that defines common PackageURL 'type's.
+     * @since 1.0.0
      */
     public static class StandardTypes {
         public static final String BITBUCKET = "bitbucket";

@@ -50,12 +50,12 @@ public class PackageURLTest {
     }
 
     @Test
-    public void testConstructorParsing() throws MalformedPackageURLException {
+    public void testConstructorParsing() throws Exception {
         for (int i = 0; i < json.length(); i++) {
             JSONObject testDefinition = json.getJSONObject(i);
 
             final String purlString = testDefinition.getString("purl");
-            final String cpurlString = testDefinition.getString("canonical_purl");
+            final String cpurlString = testDefinition.optString("canonical_purl");
             final boolean invalid = testDefinition.getBoolean("is_invalid");
 
             System.out.println("Running test on: " + purlString);
@@ -88,6 +88,12 @@ public class PackageURLTest {
             Assert.assertEquals(subpath, purl.getSubpath());
             if (qualifiers != null) {
                 Assert.assertNotNull(purl.getQualifiers());
+                Assert.assertEquals(qualifiers.length(), purl.getQualifiers().size());
+                for (String key: qualifiers.keySet()) {
+                    String value = qualifiers.getString(key);
+                    Assert.assertTrue(purl.getQualifiers().containsKey(key));
+                    Assert.assertEquals(value, purl.getQualifiers().get(key));
+                }
             }
         }
     }
@@ -99,7 +105,7 @@ public class PackageURLTest {
             JSONObject testDefinition = json.getJSONObject(i);
 
             final String purlString = testDefinition.getString("purl");
-            final String cpurlString = testDefinition.getString("canonical_purl");
+            final String cpurlString = testDefinition.optString("canonical_purl");
             final boolean invalid = testDefinition.getBoolean("is_invalid");
 
             System.out.println("Running test on: " + purlString);
@@ -137,6 +143,12 @@ public class PackageURLTest {
             Assert.assertEquals(subpath, purl.getSubpath());
             if (qualifiers != null) {
                 Assert.assertNotNull(purl.getQualifiers());
+                Assert.assertEquals(qualifiers.length(), purl.getQualifiers().size());
+                for (String key: qualifiers.keySet()) {
+                    String value = qualifiers.getString(key);
+                    Assert.assertTrue(purl.getQualifiers().containsKey(key));
+                    Assert.assertEquals(value, purl.getQualifiers().get(key));
+                }
             }
         }
     }
