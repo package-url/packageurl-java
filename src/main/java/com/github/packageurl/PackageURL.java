@@ -341,7 +341,9 @@ public final class PackageURL implements Serializable {
         for (String pair : pairs) {
             if (pair.contains("=")) {
                 final String[] kvpair = pair.split("=");
-                map.put(validateQualifierKey(kvpair[0]), urldecode(kvpair[1]));
+                if (kvpair.length == 2) {
+                    map.put(validateQualifierKey(kvpair[0]), urldecode(kvpair[1]));
+                }
             }
         }
         return map;
