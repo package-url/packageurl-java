@@ -355,13 +355,16 @@ public final class PackageURL implements Serializable {
         }
         for (String key: qualifiers.keySet()) {
             validateQualifierKey(key);
+            if (qualifiers.get(key) == null) {
+                throw new MalformedPackageURLException("The PackageURL specified contains a qualifier key with a null value");
+            }
         }
         return qualifiers;
     }
 
     private String validateQualifierKey(String key) throws MalformedPackageURLException {
         if (key == null || !KEY_PATTERN.matcher(key).matches()) {
-            throw new MalformedPackageURLException("The PackageURL specified contains a key name which is invalid");
+            throw new MalformedPackageURLException("The PackageURL specified contains a qualifier key name which is invalid");
         }
         return key;
     }
