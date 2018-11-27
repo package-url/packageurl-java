@@ -8,7 +8,8 @@
     <packaging>jar</packaging>
 
     <name>Package URL</name>
-    <url>https://github.com/package-url/</url>
+    <description>The official Java implementation of the PackageURL specification. PackageURL (purl) is a minimal specification for describing a package via a "mostly universal" URL.</description>
+    <url>https://github.com/package-url/packageurl-java</url>
     <inceptionYear>2017</inceptionYear>
 
     <licenses>
@@ -18,6 +19,19 @@
             <distribution>repo</distribution>
         </license>
     </licenses>
+
+    <developers>
+        <developer>
+            <name>Steve Springett</name>
+            <email>Steve.Springett@owasp.org</email>
+            <organization>OWASP</organization>
+            <organizationUrl>http://www.owasp.org/</organizationUrl>
+            <roles>
+                <role>Architect</role>
+                <role>Developer</role>
+            </roles>
+        </developer>
+    </developers>
 
     <properties>
         <!-- Maven Build Properties -->
