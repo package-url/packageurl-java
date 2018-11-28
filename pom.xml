@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.github.package-url</groupId>
     <artifactId>packageurl-java</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>Package URL</name>
@@ -49,7 +49,7 @@
         <connection>scm:git:git@github.com:package-url/packageurl-java.git</connection>
         <url>https://github.com/package-url/packageurl-java.git</url>
         <developerConnection>scm:git:git@github.com:package-url/packageurl-java.git</developerConnection>
-      <tag>packageurl-java-1.0.0</tag>
+      <tag>HEAD</tag>
   </scm>
 
     <issueManagement>
