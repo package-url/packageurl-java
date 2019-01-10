@@ -192,7 +192,7 @@ public final class PackageURL implements Serializable {
      * @return qualifiers
      * @since 1.0.0
      */
-    public Map getQualifiers() {
+    public Map<String, String> getQualifiers() {
         return qualifiers;
     }
 
@@ -337,6 +337,7 @@ public final class PackageURL implements Serializable {
         return urldecode(version);
     }
 
+    @SuppressWarnings("StringSplitter")//reason: surprising behavior is okay in this case
     private Map<String, String> validateQualifiers(String encodedString) throws MalformedPackageURLException {
         final Map<String, String> map = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         final String[] pairs =  encodedString.split("&");
