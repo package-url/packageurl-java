@@ -34,18 +34,17 @@ import java.util.TreeMap;
 import java.util.regex.Pattern;
 
 /**
- * purl stands for package URL.
- *
- * A purl is a URL composed of seven components:
- *
+ * <p>Package-URL (aka purl) is a "mostly universal" URL to describe a package. A purl is a URL composed of seven components:</p>
+ * <pre>
  * scheme:type/namespace/name@version?qualifiers#subpath
- *
+ * </pre>
+ * <p>
  * Components are separated by a specific character for unambiguous parsing.
  * A purl must NOT contain a URL Authority i.e. there is no support for username,
  * password, host and port components. A namespace segment may sometimes look
  * like a host but its interpretation is specific to a type.
- *
- * SPEC: https://github.com/package-url/purl-spec
+ * </p>
+ * <p>SPEC: <a href="https://github.com/package-url/purl-spec">https://github.com/package-url/purl-spec</a></p>
  *
  * @author Steve Springett
  * @since 1.0.0
@@ -58,6 +57,7 @@ public final class PackageURL implements Serializable {
 
     /**
      * Constructs a new PackageURL object by parsing the specified string.
+     *
      * @param purl a valid package URL string to parse
      * @throws MalformedPackageURLException if parsing fails
      * @since 1.0.0
@@ -69,6 +69,7 @@ public final class PackageURL implements Serializable {
     /**
      * Constructs a new PackageURL object by specifying only the required
      * parameters necessary to create a valid PackageURL.
+     *
      * @param type the type of package (i.e. maven, npm, gem, etc)
      * @param name the name of the package
      * @throws MalformedPackageURLException if parsing fails
@@ -80,12 +81,13 @@ public final class PackageURL implements Serializable {
 
     /**
      * Constructs a new PackageURL object.
-     * @param type the type of package (i.e. maven, npm, gem, etc)
-     * @param namespace the name prefix (i.e. group, owner, organization)
-     * @param name the name of the package
-     * @param version the version of the package
+     *
+     * @param type       the type of package (i.e. maven, npm, gem, etc)
+     * @param namespace  the name prefix (i.e. group, owner, organization)
+     * @param name       the name of the package
+     * @param version    the version of the package
      * @param qualifiers an array of key/value pair qualifiers
-     * @param subpath the subpath string
+     * @param subpath    the subpath string
      * @throws MalformedPackageURLException if parsing fails
      * @since 1.0.0
      */
@@ -144,6 +146,7 @@ public final class PackageURL implements Serializable {
 
     /**
      * Returns the package url scheme.
+     *
      * @return the scheme
      * @since 1.0.0
      */
@@ -153,6 +156,7 @@ public final class PackageURL implements Serializable {
 
     /**
      * Returns the package "type" or package "protocol" such as maven, npm, nuget, gem, pypi, etc.
+     *
      * @return the type
      * @since 1.0.0
      */
@@ -162,6 +166,7 @@ public final class PackageURL implements Serializable {
 
     /**
      * Returns the name prefix such as a Maven groupid, a Docker image owner, a GitHub user or organization.
+     *
      * @return the namespace
      * @since 1.0.0
      */
@@ -171,6 +176,7 @@ public final class PackageURL implements Serializable {
 
     /**
      * Returns the name of the package.
+     *
      * @return the name of the package
      * @since 1.0.0
      */
@@ -180,6 +186,7 @@ public final class PackageURL implements Serializable {
 
     /**
      * Returns the version of the package.
+     *
      * @return the version of the package
      * @since 1.0.0
      */
@@ -189,6 +196,7 @@ public final class PackageURL implements Serializable {
 
     /**
      * Returns extra qualifying data for a package such as an OS, architecture, a distro, etc.
+     *
      * @return qualifiers
      * @since 1.0.0
      */
@@ -198,6 +206,7 @@ public final class PackageURL implements Serializable {
 
     /**
      * Returns extra subpath within a package, relative to the package root.
+     *
      * @return the subpath
      * @since 1.0.0
      */
@@ -209,6 +218,7 @@ public final class PackageURL implements Serializable {
      * Given a specified PackageURL, this method will parse the purl and populate this classes
      * instance fields so that the corresponding getters may be called to retrieve the individual
      * pieces of the purl.
+     *
      * @param purl the purl string to parse
      * @throws MalformedPackageURLException if an exception occurs when parsing
      */
@@ -220,7 +230,7 @@ public final class PackageURL implements Serializable {
         try {
             URI uri = new URI(purl);
             // Check to ensure that none of these parts are parsed. If so, it's an invalid purl.
-            if (uri.getUserInfo() != null || uri.getPort() != -1)  {
+            if (uri.getUserInfo() != null || uri.getPort() != -1) {
                 throw new MalformedPackageURLException("Invalid purl: Contains parts not supported by the purl spec");
             }
 
@@ -340,7 +350,7 @@ public final class PackageURL implements Serializable {
     @SuppressWarnings("StringSplitter")//reason: surprising behavior is okay in this case
     private Map<String, String> validateQualifiers(String encodedString) throws MalformedPackageURLException {
         final Map<String, String> map = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-        final String[] pairs =  encodedString.split("&");
+        final String[] pairs = encodedString.split("&");
         for (String pair : pairs) {
             if (pair.contains("=")) {
                 final String[] kvpair = pair.split("=");
@@ -356,7 +366,7 @@ public final class PackageURL implements Serializable {
         if (qualifiers == null) {
             return null;
         }
-        for (String key: qualifiers.keySet()) {
+        for (String key : qualifiers.keySet()) {
             validateQualifierKey(key);
             if (qualifiers.get(key) == null) {
                 throw new MalformedPackageURLException("The PackageURL specified contains a qualifier key with a null value");
@@ -381,6 +391,7 @@ public final class PackageURL implements Serializable {
 
     /**
      * Returns a canonicalized representation of the purl.
+     *
      * @return a canonicalized representation of the purl
      * @since 1.0.0
      */
@@ -419,6 +430,7 @@ public final class PackageURL implements Serializable {
 
     /**
      * Removes leading and trailing '/' characters from the specified input.
+     *
      * @param input the String to remove leading and trailing '/' from
      * @return the processed String
      */
@@ -430,13 +442,14 @@ public final class PackageURL implements Serializable {
             input = input.substring(1);
         }
         if (input.endsWith("/")) {
-            input = input.substring(0, input.length() -1);
+            input = input.substring(0, input.length() - 1);
         }
         return input;
     }
 
     /**
      * Encodes the input in conformance with RFC-3986.
+     *
      * @param input the String to encode
      * @return an encoded String
      */
@@ -454,6 +467,7 @@ public final class PackageURL implements Serializable {
     /**
      * Optionally decodes a String, if it's encoded. If String is not encoded,
      * method will return the original input value.
+     *
      * @param input the value String to decode
      * @return a decoded String
      */
@@ -473,7 +487,8 @@ public final class PackageURL implements Serializable {
     }
 
     /**
-     * Convenience constants that defines common PackageURL 'type's.
+     * Convenience constants that defines common Package-URL 'type's.
+     *
      * @since 1.0.0
      */
     public static class StandardTypes {
