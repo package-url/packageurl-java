@@ -29,7 +29,9 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Map;
 import java.util.TreeMap;
+import java.util.stream.Collectors;
 
 /**
  * Test cases for PackageURL parsing
@@ -117,9 +119,13 @@ public class PackageURLTest {
             final JSONObject qualifiers = testDefinition.optJSONObject("qualifiers");
             final String subpath = testDefinition.optString("subpath", null);
 
-            TreeMap map = new TreeMap();
+            TreeMap<String, String> map = null;
             if (qualifiers != null) {
-                map.putAll(qualifiers.toMap());
+                map = qualifiers.toMap().entrySet().stream().collect(
+                        TreeMap<String,String>::new,
+                        (qmap, entry) -> qmap.put(entry.getKey(), (String)entry.getValue()),
+                        TreeMap<String,String>::putAll
+                );
             }
 
             if (invalid) {
