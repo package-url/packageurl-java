@@ -227,23 +227,23 @@ public final class PackageURL implements Serializable {
             this.scheme = validateScheme(uri.getScheme());
 
             // This is the purl (minus the scheme) that needs parsed.
-            String remainder = purl.substring(4, purl.length());
+            String remainder = purl.substring(4);
 
             if (remainder.contains("#")) { // subpath is optional - check for existence
                 final int index = remainder.lastIndexOf("#");
-                this.subpath = validateSubpath(remainder.substring(index + 1, remainder.length()));
+                this.subpath = validateSubpath(remainder.substring(index + 1));
                 remainder = remainder.substring(0, index);
             }
 
             if (remainder.contains("?")) { // qualifiers are optional - check for existence
                 final int index = remainder.lastIndexOf("?");
-                this.qualifiers = validateQualifiers(remainder.substring(index + 1, remainder.length()));
+                this.qualifiers = validateQualifiers(remainder.substring(index + 1));
                 remainder = remainder.substring(0, index);
             }
 
             if (remainder.contains("@")) { // version is optional - check for existence
                 final int index = remainder.lastIndexOf("@");
-                this.version = validateVersion(remainder.substring(index + 1, remainder.length()));
+                this.version = validateVersion(remainder.substring(index + 1));
                 remainder = remainder.substring(0, index);
             }
 
@@ -425,7 +425,7 @@ public final class PackageURL implements Serializable {
             return null;
         }
         if (input.startsWith("/")) {
-            input = input.substring(1, input.length());
+            input = input.substring(1);
         }
         if (input.endsWith("/")) {
             input = input.substring(0, input.length() -1);
