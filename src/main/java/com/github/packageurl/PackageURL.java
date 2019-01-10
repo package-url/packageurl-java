@@ -400,14 +400,13 @@ public final class PackageURL implements Serializable {
         }
         if (qualifiers != null && qualifiers.size() > 0) {
             purl.append("?");
-            StringBuilder temp = new StringBuilder();
             for (Map.Entry<String, String> entry : qualifiers.entrySet()) {
-                temp.append(entry.getKey().toLowerCase());
-                temp.append("=");
-                temp.append(urlencode(entry.getValue()));
-                temp.append("&");
+                purl.append(entry.getKey().toLowerCase());
+                purl.append("=");
+                purl.append(urlencode(entry.getValue()));
+                purl.append("&");
             }
-            purl.append(temp.toString().substring(0, temp.toString().length() - 1));
+            purl.setLength(purl.length() - 1);
         }
         if (subpath != null) {
             purl.append("#").append(subpath);
