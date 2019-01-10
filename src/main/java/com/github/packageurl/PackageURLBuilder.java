@@ -24,7 +24,7 @@ package com.github.packageurl;
 import java.util.TreeMap;
 
 /**
- * A simple builder for PackageURL objects.
+ * A builder construct for Package-URL objects.
  */
 public final class PackageURLBuilder {
     private String type = null;
