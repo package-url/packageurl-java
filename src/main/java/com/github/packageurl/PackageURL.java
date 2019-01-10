@@ -286,46 +286,48 @@ public final class PackageURL implements Serializable {
         return type.toLowerCase();
     }
 
-    private String validateNamespace(String namespace) {
-        if (namespace == null) {
+    private String validateNamespace(String value) {
+        if (value == null) {
             return null;
         }
+        String temp;
         switch (type) {
-            case "bitbucket":
-                namespace = namespace.toLowerCase(); break;
-            case "debian":
-                namespace = namespace.toLowerCase(); break;
-            case "github":
-                namespace = namespace.toLowerCase(); break;
-            case "golang":
-                namespace = namespace.toLowerCase(); break;
-            case "npm":
-                namespace = namespace.toLowerCase(); break;
-            case "rpm":
-                namespace = namespace.toLowerCase(); break;
+            case StandardTypes.BITBUCKET:
+            case StandardTypes.DEBIAN:
+            case StandardTypes.GITHUB:
+            case StandardTypes.GOLANG:
+            case StandardTypes.NPM:
+            case StandardTypes.RPM:
+                temp = value.toLowerCase();
+                break;
+            default:
+                temp = value;
+                break;
         }
-        return urldecode(namespace);
+        return urldecode(temp);
     }
 
-    private String validateName(String name) throws MalformedPackageURLException {
-        if (name == null) {
+    private String validateName(String value) throws MalformedPackageURLException {
+        if (value == null) {
             throw new MalformedPackageURLException("The PackageURL name specified is invalid");
         }
+        String temp;
         switch (type) {
-            case "bitbucket":
-                name = name.toLowerCase(); break;
-            case "debian":
-                name = name.toLowerCase(); break;
-            case "github":
-                name = name.toLowerCase(); break;
-            case "golang":
-                name = name.toLowerCase(); break;
-            case "npm":
-                name = name.toLowerCase(); break;
-            case "pypi":
-                name = name.replaceAll("_", "-").toLowerCase(); break;
+            case StandardTypes.BITBUCKET:
+            case StandardTypes.DEBIAN:
+            case StandardTypes.GITHUB:
+            case StandardTypes.GOLANG:
+            case StandardTypes.NPM:
+                temp = value.toLowerCase();
+                break;
+            case StandardTypes.PYPI:
+                temp = value.replaceAll("_", "-").toLowerCase();
+                break;
+            default:
+                temp = value;
+                break;
         }
-        return urldecode(name);
+        return urldecode(temp);
     }
 
     private String validateVersion(String version) {
