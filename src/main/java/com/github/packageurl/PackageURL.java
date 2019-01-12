@@ -29,7 +29,6 @@ import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.regex.Pattern;
@@ -290,25 +289,25 @@ public final class PackageURL implements Serializable {
         return temp;
     }
 
-    private String validateVersion(String version) {
-        if (version == null) {
+    private String validateVersion(String value) {
+        if (value == null) {
             return null;
         }
-        return version;
+        return value;
     }
 
-    private Map<String, String> validateQualifiers(Map<String, String> qualifiers) throws MalformedPackageURLException {
-        if (qualifiers == null) {
+    private Map<String, String> validateQualifiers(Map<String, String> values) throws MalformedPackageURLException {
+        if (values == null) {
             return null;
         }
-        for (String key : qualifiers.keySet()) {
+        for (String key : values.keySet()) {
             validateKey(key);
-            String value = qualifiers.get(key);
+            String value = values.get(key);
             if (value == null || value.isEmpty()) {
                 throw new MalformedPackageURLException("The PackageURL specified contains a qualifier key with an empty or null value");
             }
         }
-        return qualifiers;
+        return values;
     }
 
     private String validateKey(String value) throws MalformedPackageURLException {

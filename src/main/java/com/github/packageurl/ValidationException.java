@@ -35,7 +35,7 @@ class ValidationException extends RuntimeException {
      * Constructs a {@code ValidationException}.
      * @param msg the error message
      */
-    public ValidationException(String msg) {
+    ValidationException(String msg) {
         super(msg);
     }
 }
