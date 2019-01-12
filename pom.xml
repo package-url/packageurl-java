@@ -51,6 +51,8 @@
         <plexus.compiler.javac.errorprone.version>2.8.5</plexus.compiler.javac.errorprone.version>
         <error.prone.core.version>2.3.2</error.prone.core.version>
         <jacoco.maven.plugin.version>0.8.2</jacoco.maven.plugin.version>
+        <spotbugs.maven.plugin.version>3.1.9</spotbugs.maven.plugin.version>
+        <com.github.spotbugs.version>3.1.10</com.github.spotbugs.version>
     </properties>
 
     <scm>
@@ -127,6 +129,27 @@
                         <groupId>com.google.errorprone</groupId>
                         <artifactId>error_prone_core</artifactId>
                         <version>${error.prone.core.version}</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
+            <plugin>
+                <groupId>com.github.spotbugs</groupId>
+                <artifactId>spotbugs-maven-plugin</artifactId>
+                <version>${spotbugs.maven.plugin.version}</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <dependencies>
+                    <!-- overwrite dependency on spotbugs if you want to specify the version of spotbugs -->
+                    <dependency>
+                        <groupId>com.github.spotbugs</groupId>
+                        <artifactId>spotbugs</artifactId>
+                        <version>${com.github.spotbugs.version}</version>
                     </dependency>
                 </dependencies>
             </plugin>

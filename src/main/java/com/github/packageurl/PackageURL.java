@@ -300,9 +300,9 @@ public final class PackageURL implements Serializable {
         if (values == null) {
             return null;
         }
-        for (String key : values.keySet()) {
-            validateKey(key);
-            String value = values.get(key);
+        for (Map.Entry<String, String> entry : values.entrySet()) {
+            validateKey(entry.getKey());
+            String value = entry.getValue();
             if (value == null || value.isEmpty()) {
                 throw new MalformedPackageURLException("The PackageURL specified contains a qualifier key with an empty or null value");
             }
