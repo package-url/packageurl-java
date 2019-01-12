@@ -61,19 +61,6 @@ public final class PackageURLBuilder {
     }
 
     /**
-     * Adds the package URL type.
-     *
-     * @param type the package type
-     * @return a reference to the builder
-     * @see PackageURL#getName()
-     * @see com.github.packageurl.PackageURL.StandardTypes
-     */
-    public PackageURLBuilder withType(PackageURL.StandardTypes type) {
-        this.type = type.toString();
-        return this;
-    }
-
-    /**
      * Adds the package namespace.
      *
      * @param namespace the package namespace

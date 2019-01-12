@@ -29,9 +29,11 @@ import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * <p>Package-URL (aka purl) is a "mostly universal" URL to describe a package. A purl is a URL composed of seven components:</p>
@@ -52,8 +54,8 @@ import java.util.regex.Pattern;
 public final class PackageURL implements Serializable {
 
     private static final long serialVersionUID = 3243226021636427586L;
-    private static final Pattern TYPE_PATTERN = Pattern.compile("^[a-zA-Z][a-zA-Z0-9.+-]+$");
-    private static final Pattern KEY_PATTERN = Pattern.compile("^[a-zA-Z][a-zA-Z0-9.-_]+$");
+    private static final String UTF8 = StandardCharsets.UTF_8.name();
+    private static final Pattern PATH_SPLITTER = Pattern.compile("/");
 
     /**
      * Constructs a new PackageURL object by parsing the specified string.
@@ -100,7 +102,7 @@ public final class PackageURL implements Serializable {
         this.name = validateName(name);
         this.version = validateVersion(version);
         this.qualifiers = validateQualifiers(qualifiers);
-        this.subpath = validateSubpath(subpath);
+        this.subpath = validatePath(subpath, true);
     }
 
     /**
@@ -214,93 +216,41 @@ public final class PackageURL implements Serializable {
         return subpath;
     }
 
-    /**
-     * Given a specified PackageURL, this method will parse the purl and populate this classes
-     * instance fields so that the corresponding getters may be called to retrieve the individual
-     * pieces of the purl.
-     *
-     * @param purl the purl string to parse
-     * @throws MalformedPackageURLException if an exception occurs when parsing
-     */
-    private void parse(String purl) throws MalformedPackageURLException {
-        if (purl == null || "".equals(purl.trim())) {
-            throw new MalformedPackageURLException("Invalid purl: Contains an empty or null value");
+    private String validateScheme(String value) throws MalformedPackageURLException {
+        if ("pkg".equals(value)) {
+            return "pkg";
         }
-
-        try {
-            URI uri = new URI(purl);
-            // Check to ensure that none of these parts are parsed. If so, it's an invalid purl.
-            if (uri.getUserInfo() != null || uri.getPort() != -1) {
-                throw new MalformedPackageURLException("Invalid purl: Contains parts not supported by the purl spec");
-            }
-
-            this.scheme = validateScheme(uri.getScheme());
-
-            // This is the purl (minus the scheme) that needs parsed.
-            String remainder = purl.substring(4);
-
-            if (remainder.contains("#")) { // subpath is optional - check for existence
-                final int index = remainder.lastIndexOf("#");
-                this.subpath = validateSubpath(remainder.substring(index + 1));
-                remainder = remainder.substring(0, index);
-            }
-
-            if (remainder.contains("?")) { // qualifiers are optional - check for existence
-                final int index = remainder.lastIndexOf("?");
-                this.qualifiers = validateQualifiers(remainder.substring(index + 1));
-                remainder = remainder.substring(0, index);
-            }
-
-            if (remainder.contains("@")) { // version is optional - check for existence
-                final int index = remainder.lastIndexOf("@");
-                this.version = validateVersion(remainder.substring(index + 1));
-                remainder = remainder.substring(0, index);
-            }
-
-            // The 'remainder' should now consist of the type, an optional namespace, and the name
-
-            // Strip zero or more leading '/' from the beginning ('type')
-            remainder = remainder.replaceAll("^[/]*", "");
-
-            String[] firstPartArray = remainder.split("/");
-            if (firstPartArray.length < 2) { // The array must contain a 'type' and a 'name' at minimum
-                throw new MalformedPackageURLException("Invalid purl: Does not contain a minimum of a 'type' and a 'name'");
-            }
-
-            this.type = validateType(firstPartArray[0]);
-            this.name = validateName(firstPartArray[firstPartArray.length - 1]);
-
-            // Test for namespaces
-            if (firstPartArray.length > 2) {
-                String[] namespaces = Arrays.copyOfRange(firstPartArray, 1, firstPartArray.length - 1);
-                String namespace = String.join(",", namespaces);
-                this.namespace = validateNamespace(namespace);
-            }
-
-        } catch (URISyntaxException e) {
-            throw new MalformedPackageURLException("Invalid purl: " + e.getMessage());
-        }
+        throw new MalformedPackageURLException("The PackageURL scheme is invalid");
     }
 
-    private String validateScheme(String scheme) throws MalformedPackageURLException {
-        if (scheme == null || !scheme.equals("pkg")) {
-            throw new MalformedPackageURLException("The PackageURL scheme is invalid");
+    private String validateType(String value) throws MalformedPackageURLException {
+        if (value == null || value.isEmpty()) {
+            throw new MalformedPackageURLException("The PackageURL type cannot be null or empty");
         }
-        return scheme;
+        String retVal = value.toLowerCase();
+        if (retVal.chars().anyMatch(c -> !(c == '.' || c == '+' || c == '-'
+                || (c >= 'a' && c <= 'z')
+                || (c >= '0' && c <= '9')))) {
+            throw new MalformedPackageURLException("The PackageURL type contains invalid characters");
+        }
+        return retVal;
     }
 
-    private String validateType(String type) throws MalformedPackageURLException {
-        if (type == null || !TYPE_PATTERN.matcher(type).matches()) {
-            throw new MalformedPackageURLException("The PackageURL type specified is invalid");
-        }
-        return type.toLowerCase();
-    }
-
-    private String validateNamespace(String value) {
-        if (value == null) {
+    private String validateNamespace(String value) throws MalformedPackageURLException {
+        if (value == null || value.isEmpty()) {
             return null;
         }
-        String temp;
+        return validateNamespace(value.split("/"));
+    }
+
+    private String validateNamespace(String[] values) throws MalformedPackageURLException {
+        if (values == null || values.length == 0) {
+            return null;
+        }
+        String tempNamespace = validatePath(values, false);
+
+
+        String retVal;
         switch (type) {
             case StandardTypes.BITBUCKET:
             case StandardTypes.DEBIAN:
@@ -308,17 +258,17 @@ public final class PackageURL implements Serializable {
             case StandardTypes.GOLANG:
             case StandardTypes.NPM:
             case StandardTypes.RPM:
-                temp = value.toLowerCase();
+                retVal = tempNamespace.toLowerCase();
                 break;
             default:
-                temp = value;
+                retVal = tempNamespace;
                 break;
         }
-        return urldecode(temp);
+        return retVal;
     }
 
     private String validateName(String value) throws MalformedPackageURLException {
-        if (value == null) {
+        if (value == null || value.isEmpty()) {
             throw new MalformedPackageURLException("The PackageURL name specified is invalid");
         }
         String temp;
@@ -337,29 +287,14 @@ public final class PackageURL implements Serializable {
                 temp = value;
                 break;
         }
-        return urldecode(temp);
+        return temp;
     }
 
     private String validateVersion(String version) {
         if (version == null) {
             return null;
         }
-        return urldecode(version);
-    }
-
-    @SuppressWarnings("StringSplitter")//reason: surprising behavior is okay in this case
-    private Map<String, String> validateQualifiers(String encodedString) throws MalformedPackageURLException {
-        final Map<String, String> map = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-        final String[] pairs = encodedString.split("&");
-        for (String pair : pairs) {
-            if (pair.contains("=")) {
-                final String[] kvpair = pair.split("=");
-                if (kvpair.length == 2) {
-                    map.put(validateQualifierKey(kvpair[0]), urldecode(kvpair[1]));
-                }
-            }
-        }
-        return map;
+        return version;
     }
 
     private Map<String, String> validateQualifiers(Map<String, String> qualifiers) throws MalformedPackageURLException {
@@ -367,26 +302,50 @@ public final class PackageURL implements Serializable {
             return null;
         }
         for (String key : qualifiers.keySet()) {
-            validateQualifierKey(key);
-            if (qualifiers.get(key) == null) {
-                throw new MalformedPackageURLException("The PackageURL specified contains a qualifier key with a null value");
+            validateKey(key);
+            String value = qualifiers.get(key);
+            if (value == null || value.isEmpty()) {
+                throw new MalformedPackageURLException("The PackageURL specified contains a qualifier key with an empty or null value");
             }
         }
         return qualifiers;
     }
 
-    private String validateQualifierKey(String key) throws MalformedPackageURLException {
-        if (key == null || !KEY_PATTERN.matcher(key).matches()) {
-            throw new MalformedPackageURLException("The PackageURL specified contains a qualifier key name which is invalid");
+    private String validateKey(String value) throws MalformedPackageURLException {
+        if (value == null || value.isEmpty()
+                || !(value.charAt(0) >= 'a' && value.charAt(0) <= 'z')
+                || !value.chars().allMatch(c -> (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || c == '.' || c == '-' || c == '_')) {
+            throw new MalformedPackageURLException("Qualifier key is invalid: " + value);
         }
-        return key;
+        return value;
     }
 
-    private String validateSubpath(String subpath) {
-        if (subpath == null) {
+    private String validatePath(String value, boolean isSubpath) throws MalformedPackageURLException {
+        if (value == null || value.isEmpty()) {
             return null;
         }
-        return urldecode(stripLeadingAndTrailingSlash(subpath)); // leading and trailing slashes always need to be removed
+        return validatePath(value.split("/"), isSubpath);
+    }
+
+    private String validatePath(String[] segments, boolean isSubpath) throws MalformedPackageURLException {
+        if (segments == null || segments.length == 0) {
+            return null;
+        }
+        try {
+            return Arrays.stream(segments)
+                    .map(segment -> {
+                        if (isSubpath && ("..".equals(segment) || ".".equals(segment))) {
+                            throw new ValidationException("Segments in the subpath may not be a period ('.') or repeated period ('..')");
+                        } else if (segment.contains("/")) {
+                            throw new ValidationException("Segments in the namespace and subpath may not contain a forward slash ('/')");
+                        } else if (segment.isEmpty()) {
+                            throw new ValidationException("Segments in the namespace and subpath may not be empty");
+                        }
+                        return segment;
+                    }).collect(Collectors.joining("/"));
+        } catch (ValidationException ex) {
+            throw new MalformedPackageURLException(ex.getMessage());
+        }
     }
 
     /**
@@ -403,7 +362,7 @@ public final class PackageURL implements Serializable {
         }
         purl.append("/");
         if (namespace != null) {
-            purl.append(urlencode(namespace));
+            purl.append(encodePath(namespace));
             purl.append("/");
         }
         if (name != null) {
@@ -423,28 +382,9 @@ public final class PackageURL implements Serializable {
             purl.setLength(purl.length() - 1);
         }
         if (subpath != null) {
-            purl.append("#").append(subpath);
+            purl.append("#").append(encodePath(subpath));
         }
         return purl.toString();
-    }
-
-    /**
-     * Removes leading and trailing '/' characters from the specified input.
-     *
-     * @param input the String to remove leading and trailing '/' from
-     * @return the processed String
-     */
-    private String stripLeadingAndTrailingSlash(String input) {
-        if (input == null) {
-            return null;
-        }
-        if (input.startsWith("/")) {
-            input = input.substring(1);
-        }
-        if (input.endsWith("/")) {
-            input = input.substring(0, input.length() - 1);
-        }
-        return input;
     }
 
     /**
@@ -456,7 +396,7 @@ public final class PackageURL implements Serializable {
     private String urlencode(String input) {
         try {
             // This SHOULD encoded according to RFC-3986 because URLEncoder alone does not.
-            return URLEncoder.encode(input, StandardCharsets.UTF_8.name())
+            return URLEncoder.encode(input, UTF8)
                     .replace("+", "%20")
                     .replace("%7E", "~");
         } catch (UnsupportedEncodingException e) {
@@ -476,7 +416,7 @@ public final class PackageURL implements Serializable {
             return null;
         }
         try {
-            final String decoded = URLDecoder.decode(input, StandardCharsets.UTF_8.name());
+            final String decoded = URLDecoder.decode(input, UTF8);
             if (!decoded.equals(input)) {
                 return decoded;
             }
@@ -484,6 +424,125 @@ public final class PackageURL implements Serializable {
             return input; // this should never occur
         }
         return input;
+    }
+
+
+    /**
+     * Given a specified PackageURL, this method will parse the purl and populate this classes
+     * instance fields so that the corresponding getters may be called to retrieve the individual
+     * pieces of the purl.
+     *
+     * @param purl the purl string to parse
+     * @throws MalformedPackageURLException if an exception occurs when parsing
+     */
+    private void parse(String purl) throws MalformedPackageURLException {
+        if (purl == null || purl.trim().isEmpty()) {
+            throw new MalformedPackageURLException("Invalid purl: Contains an empty or null value");
+        }
+
+        try {
+            URI uri = new URI(purl);
+            // Check to ensure that none of these parts are parsed. If so, it's an invalid purl.
+            if (uri.getUserInfo() != null || uri.getPort() != -1) {
+                throw new MalformedPackageURLException("Invalid purl: Contains parts not supported by the purl spec");
+            }
+
+            this.scheme = validateScheme(uri.getScheme());
+
+            // subpath is optional - check for existence
+            if (uri.getRawFragment() != null && !uri.getRawFragment().isEmpty()) {
+                this.subpath = validatePath(parsePath(uri.getRawFragment(), true), true);
+            }
+            // This is the purl (minus the scheme) that needs parsed.
+            StringBuilder remainder = new StringBuilder(uri.getRawSchemeSpecificPart());
+
+            // qualifiers are optional - check for existence
+            int index = remainder.lastIndexOf("?");
+            if (index >= 0) {
+                this.qualifiers = parseQualifiers(remainder.substring(index + 1));
+                remainder.setLength(index);
+            }
+
+            // trim leading and trailing '/'
+            int end = remainder.length() - 1;
+            while (end > 0 && '/' == remainder.charAt(end)) {
+                end--;
+            }
+            if (end < remainder.length() - 1) {
+                remainder.setLength(end + 1);
+            }
+            int start = 0;
+            while (start < remainder.length() && '/' == remainder.charAt(start)) {
+                start++;
+            }
+            if (start > 0) {
+                remainder.delete(0, start);
+            }
+
+            // type
+            index = remainder.indexOf("/");
+            if (index < 0) {
+                throw new MalformedPackageURLException("Invalid purl: does not contain both a type and name");
+            }
+            this.type = validateType(remainder.substring(0, index).toLowerCase());
+            remainder.delete(0, index + 1);
+
+            // version is optional - check for existence
+            index = remainder.lastIndexOf("@");
+            if (index >= 0) {
+                this.version = validateVersion(urldecode(remainder.substring(index + 1)));
+                remainder.setLength(index);
+            }
+
+            // The 'remainder' should now consist of the an optional namespace, and the name
+
+            index = remainder.lastIndexOf("/");
+            if (index < 0) {
+                this.name = validateName(urldecode(remainder.toString()));
+            } else {
+                this.name = validateName(urldecode(remainder.substring(index + 1)));
+                remainder.setLength(index);
+
+                this.namespace = validateNamespace(parsePath(remainder.toString(), false));
+            }
+        } catch (URISyntaxException e) {
+            throw new MalformedPackageURLException("Invalid purl: " + e.getMessage());
+        }
+    }
+
+    @SuppressWarnings("StringSplitter")//reason: surprising behavior is okay in this case
+    private Map<String, String> parseQualifiers(String encodedString) throws MalformedPackageURLException {
+        try {
+            TreeMap<String, String> results = Arrays.stream(encodedString.split("&"))
+                    .collect(TreeMap<String, String>::new,
+                            (map, value) -> {
+                                String[] entry = value.split("=", 2);
+                                if (entry.length == 2 && !entry[1].isEmpty()) {
+                                    if (map.put(entry[0].toLowerCase(), urldecode(entry[1])) != null) {
+                                        throw new ValidationException("Duplicate package qualifier encountere - more then one value was specified for " + entry[0].toLowerCase());
+                                    }
+                                }
+                            },
+                            TreeMap<String, String>::putAll);
+            return validateQualifiers(results);
+        } catch (ValidationException ex) {
+            throw new MalformedPackageURLException(ex.getMessage());
+        }
+    }
+
+    @SuppressWarnings("StringSplitter")//reason: surprising behavior is okay in this case
+    private String[] parsePath(String value, boolean isSubpath) throws MalformedPackageURLException {
+        if (value == null || value.isEmpty()) {
+            return null;
+        }
+        return PATH_SPLITTER.splitAsStream(value)
+                .filter(segment -> !segment.isEmpty() && !(isSubpath && (".".equals(segment) || "..".equals(segment))))
+                .map(segment -> urldecode(segment))
+                .toArray(String[]::new);
+    }
+
+    private String encodePath(String path) {
+        return Arrays.stream(path.split("/")).map(segment -> urlencode(segment)).collect(Collectors.joining("/"));
     }
 
     /**

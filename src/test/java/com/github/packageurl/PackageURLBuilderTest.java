@@ -21,14 +21,21 @@
  */
 package com.github.packageurl;
 
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 import static org.junit.Assert.*;
 
 public class PackageURLBuilderTest {
 
+    @Rule
+    public ExpectedException exception = ExpectedException.none();
+
     @Test
     public void testPackageURLBuilder() throws MalformedPackageURLException {
+        exception = ExpectedException.none();
+
         PackageURL purl = PackageURLBuilder.aPackageURL()
                 .withType("type")
                 .withName("name")
@@ -58,5 +65,58 @@ public class PackageURLBuilderTest {
 
         assertEquals("pkg:generic/namespace/name@version?key=value#subpath", purl.canonicalize());
 
+        purl = PackageURLBuilder.aPackageURL()
+                .withType(PackageURL.StandardTypes.GENERIC)
+                .withNamespace("/////")
+                .withName("name")
+                .withVersion("version")
+                .withQualifier("key","value")
+                .withSubpath("/////")
+                .build();
+
+        assertEquals("pkg:generic/name@version?key=value", purl.canonicalize());
+
+        purl = PackageURLBuilder.aPackageURL()
+                .withType(PackageURL.StandardTypes.GENERIC)
+                .withNamespace("")
+                .withName("name")
+                .withVersion("version")
+                .withQualifier("key","value")
+                .withQualifier("next","value")
+                .withSubpath("")
+                .build();
+
+        assertEquals("pkg:generic/name@version?key=value&next=value", purl.canonicalize());
     }
+
+    @Test
+    public void testPackageURLBuilderException1() throws MalformedPackageURLException {
+        exception.expect(MalformedPackageURLException.class);
+        PackageURL purl = PackageURLBuilder.aPackageURL()
+                .withType("type")
+                .withName("name")
+                .withQualifier("key","")
+                .build();
+    }
+
+    @Test
+    public void testPackageURLBuilderException2() throws MalformedPackageURLException {
+        exception.expect(MalformedPackageURLException.class);
+        PackageURL purl = PackageURLBuilder.aPackageURL()
+                .withType("type")
+                .withNamespace("invalid//namespace")
+                .withName("name")
+                .build();
+    }
+
+    @Test
+    public void testPackageURLBuilderException3() throws MalformedPackageURLException {
+        exception.expect(MalformedPackageURLException.class);
+        PackageURL purl = PackageURLBuilder.aPackageURL()
+                .withType("typ^e")
+                .withSubpath("invalid/name%2Fspace")
+                .withName("name")
+                .build();
+    }
+
 }
