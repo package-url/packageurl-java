@@ -52,7 +52,7 @@ public class PackageURLBuilderTest {
                 .withSubpath("subpath")
                 .build();
 
-        assertEquals("pkg:type/namespace/name@version?key=value#subpath", purl.canonicalize());
+        assertEquals("pkg:type/namespace/name@version?key=value#subpath", purl.toString());
 
         purl = PackageURLBuilder.aPackageURL()
                 .withType(PackageURL.StandardTypes.GENERIC)
@@ -63,7 +63,7 @@ public class PackageURLBuilderTest {
                 .withSubpath("subpath")
                 .build();
 
-        assertEquals("pkg:generic/namespace/name@version?key=value#subpath", purl.canonicalize());
+        assertEquals("pkg:generic/namespace/name@version?key=value#subpath", purl.toString());
 
         purl = PackageURLBuilder.aPackageURL()
                 .withType(PackageURL.StandardTypes.GENERIC)
@@ -74,7 +74,7 @@ public class PackageURLBuilderTest {
                 .withSubpath("/////")
                 .build();
 
-        assertEquals("pkg:generic/name@version?key=value", purl.canonicalize());
+        assertEquals("pkg:generic/name@version?key=value", purl.toString());
 
         purl = PackageURLBuilder.aPackageURL()
                 .withType(PackageURL.StandardTypes.GENERIC)
@@ -86,7 +86,7 @@ public class PackageURLBuilderTest {
                 .withSubpath("")
                 .build();
 
-        assertEquals("pkg:generic/name@version?key=value&next=value", purl.canonicalize());
+        assertEquals("pkg:generic/name@version?key=value&next=value", purl.toString());
     }
 
     @Test

@@ -146,6 +146,11 @@ public final class PackageURL implements Serializable {
     private String subpath;
 
     /**
+     * The cached version of the canonical form.
+     */
+    private String canonicalizedForm = null;
+
+    /**
      * Returns the package url scheme.
      *
      * @return the scheme
@@ -347,12 +352,26 @@ public final class PackageURL implements Serializable {
     }
 
     /**
-     * Returns a canonicalized representation of the purl.
+     * Returns the canonicalized representation of the purl.
      *
-     * @return a canonicalized representation of the purl
+     * @return the canonicalized representation of the purl
+     * @since 1.1.0
+     */
+    @Override
+    public String toString() {
+        return canonicalize();
+    }
+
+    /**
+     * Returns the canonicalized representation of the purl.
+     *
+     * @return the canonicalized representation of the purl
      * @since 1.0.0
      */
     public String canonicalize() {
+        if (canonicalizedForm != null) {
+            return canonicalizedForm;
+        }
         final StringBuilder purl = new StringBuilder();
         purl.append(scheme).append(":");
         if (type != null) {
