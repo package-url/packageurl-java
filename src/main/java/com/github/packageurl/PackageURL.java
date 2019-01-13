@@ -231,6 +231,9 @@ public final class PackageURL implements Serializable {
         if (value == null || value.isEmpty()) {
             throw new MalformedPackageURLException("The PackageURL type cannot be null or empty");
         }
+        if (value.indexOf(0)>='0' && value.indexOf(0)<='9') {
+            throw new MalformedPackageURLException("The PackageURL type contains start with a number");
+        }
         String retVal = value.toLowerCase();
         if (retVal.chars().anyMatch(c -> !(c == '.' || c == '+' || c == '-'
                 || (c >= 'a' && c <= 'z')
@@ -315,12 +318,15 @@ public final class PackageURL implements Serializable {
     }
 
     private String validateKey(String value) throws MalformedPackageURLException {
-        if (value == null || value.isEmpty()
-                || !(value.charAt(0) >= 'a' && value.charAt(0) <= 'z')
+        if (value == null || value.isEmpty()) {
+            throw new MalformedPackageURLException("Qualifier key is invalid: " + value);
+        }
+        String retValue = value.toLowerCase();
+        if ((value.charAt(0) >= '0' && value.charAt(0) <= '9')
                 || !value.chars().allMatch(c -> (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || c == '.' || c == '-' || c == '_')) {
             throw new MalformedPackageURLException("Qualifier key is invalid: " + value);
         }
-        return value;
+        return retValue;
     }
 
     private String validatePath(String value, boolean isSubpath) throws MalformedPackageURLException {

@@ -21,6 +21,7 @@
  */
 package com.github.packageurl;
 
+import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -98,6 +99,7 @@ public class PackageURLBuilderTest {
                 .withName("name")
                 .withQualifier("key","")
                 .build();
+        Assert.fail("Build should fail due to invalid qualifier (empty value)");
     }
 
     @Test
@@ -108,6 +110,7 @@ public class PackageURLBuilderTest {
                 .withNamespace("invalid//namespace")
                 .withName("name")
                 .build();
+        Assert.fail("Build should fail due to invalid namespace");
     }
 
     @Test
@@ -118,6 +121,39 @@ public class PackageURLBuilderTest {
                 .withSubpath("invalid/name%2Fspace")
                 .withName("name")
                 .build();
+        Assert.fail("Build should fail due to invalid subpath");
+    }
+
+    @Test
+    public void testPackageURLBuilderException4() throws MalformedPackageURLException {
+        exception.expect(MalformedPackageURLException.class);
+        PackageURL purl = PackageURLBuilder.aPackageURL()
+                .withType("0_type")
+                .withName("name")
+                .build();
+        Assert.fail("Build should fail due to invalid type");
+    }
+
+    @Test
+    public void testPackageURLBuilderException5() throws MalformedPackageURLException {
+        exception.expect(MalformedPackageURLException.class);
+        PackageURL purl = PackageURLBuilder.aPackageURL()
+                .withType("ype")
+                .withName("name")
+                .withQualifier("0_key","value")
+                .build();
+        Assert.fail("Build should fail due to invalid qualifier key");
+    }
+
+    @Test
+    public void testPackageURLBuilderException6() throws MalformedPackageURLException {
+        exception.expect(MalformedPackageURLException.class);
+        PackageURL purl = PackageURLBuilder.aPackageURL()
+                .withType("ype")
+                .withName("name")
+                .withQualifier("","value")
+                .build();
+        Assert.fail("Build should fail due to invalid qualifier key");
     }
 
 }
