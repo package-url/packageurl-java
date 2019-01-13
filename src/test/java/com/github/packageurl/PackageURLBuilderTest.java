@@ -37,11 +37,12 @@ public class PackageURLBuilderTest {
         exception = ExpectedException.none();
 
         PackageURL purl = PackageURLBuilder.aPackageURL()
-                .withType("type")
+                .withType("my.type-9+")
                 .withName("name")
                 .build();
 
-        assertEquals("pkg:type/name", purl.canonicalize());
+        assertEquals("pkg:my.type-9+/name", purl.toString());
+        assertEquals("pkg:my.type-9+/name", purl.canonicalize());
 
         purl = PackageURLBuilder.aPackageURL()
                 .withType("type")
@@ -59,11 +60,11 @@ public class PackageURLBuilderTest {
                 .withNamespace("namespace")
                 .withName("name")
                 .withVersion("version")
-                .withQualifier("key","value")
+                .withQualifier("key_1.1-","value")
                 .withSubpath("subpath")
                 .build();
 
-        assertEquals("pkg:generic/namespace/name@version?key=value#subpath", purl.toString());
+        assertEquals("pkg:generic/namespace/name@version?key_1.1-=value#subpath", purl.toString());
 
         purl = PackageURLBuilder.aPackageURL()
                 .withType(PackageURL.StandardTypes.GENERIC)
