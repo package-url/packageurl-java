@@ -401,7 +401,8 @@ public final class PackageURL implements Serializable {
         if (subpath != null) {
             purl.append("#").append(encodePath(subpath));
         }
-        return purl.toString();
+        canonicalizedForm = purl.toString();
+        return canonicalizedForm;
     }
 
     /**
