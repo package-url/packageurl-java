@@ -248,7 +248,6 @@ public final class PackageURL implements Serializable {
         }
         String tempNamespace = validatePath(values, false);
 
-
         String retVal;
         switch (type) {
             case StandardTypes.BITBUCKET:
@@ -425,7 +424,6 @@ public final class PackageURL implements Serializable {
         return input;
     }
 
-
     /**
      * Given a specified PackageURL, this method will parse the purl and populate this classes
      * instance fields so that the corresponding getters may be called to retrieve the individual
@@ -474,35 +472,36 @@ public final class PackageURL implements Serializable {
             while (start < remainder.length() && '/' == remainder.charAt(start)) {
                 start++;
             }
-            if (start > 0) {
-                remainder.delete(0, start);
-            }
+            //there is no need for the "expensive" delete operation if the start is tracked and used throughout the rest
+            // of the parsing.
+            //if (start > 0) {
+            //    remainder.delete(0, start);
+            //}
 
             // type
-            index = remainder.indexOf("/");
-            if (index < 0) {
+            index = remainder.indexOf("/", start);
+            if (index <= start) {
                 throw new MalformedPackageURLException("Invalid purl: does not contain both a type and name");
             }
-            this.type = validateType(remainder.substring(0, index).toLowerCase());
-            remainder.delete(0, index + 1);
+            this.type = validateType(remainder.substring(start, index).toLowerCase());
+            //remainder.delete(0, index + 1);
+            start = index + 1;
 
             // version is optional - check for existence
             index = remainder.lastIndexOf("@");
-            if (index >= 0) {
+            if (index >= start) {
                 this.version = validateVersion(urldecode(remainder.substring(index + 1)));
                 remainder.setLength(index);
             }
 
             // The 'remainder' should now consist of the an optional namespace, and the name
-
             index = remainder.lastIndexOf("/");
-            if (index < 0) {
-                this.name = validateName(urldecode(remainder.toString()));
+            if (index <= start) {
+                this.name = validateName(urldecode(remainder.substring(start).toString()));
             } else {
                 this.name = validateName(urldecode(remainder.substring(index + 1)));
                 remainder.setLength(index);
-
-                this.namespace = validateNamespace(parsePath(remainder.toString(), false));
+                this.namespace = validateNamespace(parsePath(remainder.substring(start).toString(), false));
             }
         } catch (URISyntaxException e) {
             throw new MalformedPackageURLException("Invalid purl: " + e.getMessage());
