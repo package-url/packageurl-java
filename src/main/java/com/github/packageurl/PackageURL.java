@@ -396,12 +396,12 @@ public final class PackageURL implements Serializable {
         }
         if (qualifiers != null && qualifiers.size() > 0) {
             purl.append("?");
-            for (Map.Entry<String, String> entry : qualifiers.entrySet()) {
+            qualifiers.entrySet().stream().forEachOrdered((entry) -> {
                 purl.append(entry.getKey().toLowerCase());
                 purl.append("=");
                 purl.append(urlencode(entry.getValue()));
-                purl.append("&");
-            }
+                purl.append("&");                
+            });
             purl.setLength(purl.length() - 1);
         }
         if (subpath != null) {
@@ -523,11 +523,11 @@ public final class PackageURL implements Serializable {
             // The 'remainder' should now consist of the an optional namespace, and the name
             index = remainder.lastIndexOf("/");
             if (index <= start) {
-                this.name = validateName(urldecode(remainder.substring(start).toString()));
+                this.name = validateName(urldecode(remainder.substring(start)));
             } else {
                 this.name = validateName(urldecode(remainder.substring(index + 1)));
                 remainder.setLength(index);
-                this.namespace = validateNamespace(parsePath(remainder.substring(start).toString(), false));
+                this.namespace = validateNamespace(parsePath(remainder.substring(start), false));
             }
         } catch (URISyntaxException e) {
             throw new MalformedPackageURLException("Invalid purl: " + e.getMessage());

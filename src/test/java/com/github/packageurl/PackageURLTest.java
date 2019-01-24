@@ -76,8 +76,8 @@ public class PackageURLTest {
 
             if (invalid) {
                 try {
-                    new PackageURL(purlString);
-                    Assert.fail();
+                    PackageURL purl = new PackageURL(purlString);
+                    Assert.fail("Inavlid purl should have caused an exception: " + purl.toString());
                 } catch (MalformedPackageURLException e) {
                     Assert.assertNotNull(e.getMessage());
                 }
@@ -95,11 +95,11 @@ public class PackageURLTest {
             if (qualifiers != null) {
                 Assert.assertNotNull(purl.getQualifiers());
                 Assert.assertEquals(qualifiers.length(), purl.getQualifiers().size());
-                for (String key : qualifiers.keySet()) {
+                qualifiers.keySet().forEach((key) -> {
                     String value = qualifiers.getString(key);
                     Assert.assertTrue(purl.getQualifiers().containsKey(key));
                     Assert.assertEquals(value, purl.getQualifiers().get(key));
-                }
+                });
             }
             Assert.assertEquals(cpurlString, purl.canonicalize());
         }
@@ -136,8 +136,8 @@ public class PackageURLTest {
 
             if (invalid) {
                 try {
-                    new PackageURL(type, namespace, name, version, map, subpath);
-                    Assert.fail();
+                    PackageURL purl = new PackageURL(type, namespace, name, version, map, subpath);
+                    Assert.fail("Invalid package url components should have caused an exception: " + purl.toString());
                 } catch (MalformedPackageURLException e) {
                     Assert.assertNotNull(e.getMessage());
                 }
@@ -156,11 +156,11 @@ public class PackageURLTest {
             if (qualifiers != null) {
                 Assert.assertNotNull(purl.getQualifiers());
                 Assert.assertEquals(qualifiers.length(), purl.getQualifiers().size());
-                for (String key : qualifiers.keySet()) {
+                qualifiers.keySet().forEach((key) -> {
                     String value = qualifiers.getString(key);
                     Assert.assertTrue(purl.getQualifiers().containsKey(key));
                     Assert.assertEquals(value, purl.getQualifiers().get(key));
-                }
+                });
             }
         }
     }
