@@ -22,29 +22,20 @@
 package com.github.packageurl;
 
 /**
- * Exception class intended to be used for PackageURL parsing exceptions.
+ * Internal exception class intended to be used within validation contained in lambda expressions.
  *
- * @author Steve Springett
- * @since 1.0.0
+ * @author Jeremy Long
+ * @since 1.1.0
  */
-public class MalformedPackageURLException extends Exception {
+class ValidationException extends RuntimeException {
 
-    private static final long serialVersionUID = 1095476478991047663L;
-
-    /**
-     * Constructs a {@code MalformedPackageURLException} with no detail message.
-     */
-    public MalformedPackageURLException() {
-    }
+    private static final long serialVersionUID = 2045474478691037663L;
 
     /**
-     * Constructs a {@code MalformedPackageURLException} with the
-     * specified detail message.
-     *
-     * @param msg the detail message.
+     * Constructs a {@code ValidationException}.
+     * @param msg the error message
      */
-    public MalformedPackageURLException(String msg) {
+    ValidationException(String msg) {
         super(msg);
     }
-
 }
