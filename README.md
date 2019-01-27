@@ -23,7 +23,7 @@ the project yourself.
     <dependency>
         <groupId>com.github.package-url</groupId>
         <artifactId>packageurl-java</artifactId>
-        <version>1.0.0</version>
+        <version>1.1.0</version>
     </dependency>
 </dependencies>
 ```
@@ -31,15 +31,27 @@ the project yourself.
 Usage
 -------------------
 
-Creates a new PURL object from a string:
+Creates a new PackageURL object from a purl string:
 ```java
 PackageURL purl = new PackageURL(purlString);
 ````
 
-Creates a new PURL object from purl parameters:
+Creates a new PackageURL object from parameters:
 ```java
 PackageURL purl = new PackageURL(type, namespace, name, version, qualifiers, subpath);
 ````
+
+Creates a new PackageURL object using the builder pattern:
+```java
+PackageURL purl = PackageURLBuilder.aPackageURL()
+    .withType("type")
+    .withNamespace("namespace")
+    .withName("name")
+    .withVersion("version")
+    .withQualifier("key","value")
+    .withSubpath("subpath")
+    .build();
+```
 
 License
 -------------------
