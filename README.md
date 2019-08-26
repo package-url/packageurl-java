@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.org/package-url/packageurl-java.svg?branch=master)](https://travis-ci.org/package-url/packageurl-java)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.github.package-url/packageurl-java/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.github.package-url/packageurl-java)
 [![License][license-image]][license-url]
 
 Package URL (purl) for Java
