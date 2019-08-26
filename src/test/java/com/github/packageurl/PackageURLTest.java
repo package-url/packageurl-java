@@ -192,11 +192,19 @@ public class PackageURLTest {
     }
 
     @Test
-    public void testConstructorWithInvalidType() throws MalformedPackageURLException {
+    public void testConstructorWithInvalidCharsType() throws MalformedPackageURLException {
         exception.expect(MalformedPackageURLException.class);
 
         PackageURL purl = new PackageURL("invalid^type", "name");
         Assert.fail("constructor with `invalid^type` should have thrown an error and this line should not be reached");
+    }
+
+    @Test
+    public void testConstructorWithInvalidNumberType() throws MalformedPackageURLException {
+        exception.expect(MalformedPackageURLException.class);
+
+        PackageURL purl = new PackageURL("0invalid", "name");
+        Assert.fail("constructor with `0invalid` should have thrown an error and this line should not be reached");
     }
 
     @Test
