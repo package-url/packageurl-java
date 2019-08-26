@@ -184,7 +184,7 @@ public class PackageURLTest {
     }
 
     @Test
-    public void testConstructorException1() throws MalformedPackageURLException {
+    public void testConstructorWithEmptyType() throws MalformedPackageURLException {
         exception.expect(MalformedPackageURLException.class);
 
         PackageURL purl = new PackageURL("", "name");
@@ -192,7 +192,7 @@ public class PackageURLTest {
     }
 
     @Test
-    public void testConstructorException2() throws MalformedPackageURLException {
+    public void testConstructorWithInvalidCharsType() throws MalformedPackageURLException {
         exception.expect(MalformedPackageURLException.class);
 
         PackageURL purl = new PackageURL("invalid^type", "name");
@@ -200,7 +200,15 @@ public class PackageURLTest {
     }
 
     @Test
-    public void testConstructorException3() throws MalformedPackageURLException {
+    public void testConstructorWithInvalidNumberType() throws MalformedPackageURLException {
+        exception.expect(MalformedPackageURLException.class);
+
+        PackageURL purl = new PackageURL("0invalid", "name");
+        Assert.fail("constructor with `0invalid` should have thrown an error and this line should not be reached");
+    }
+
+    @Test
+    public void testConstructorWithInvalidSubpath() throws MalformedPackageURLException {
         exception.expect(MalformedPackageURLException.class);
 
         PackageURL purl = new PackageURL("pkg:GOLANG/google.golang.org/genproto@abcdedf#invalid/%2F/subpath");
@@ -209,7 +217,7 @@ public class PackageURLTest {
 
 
     @Test
-    public void testConstructorException4() throws MalformedPackageURLException {
+    public void testConstructorWithNullPurl() throws MalformedPackageURLException {
         exception.expect(MalformedPackageURLException.class);
 
         PackageURL purl = new PackageURL(null);
@@ -217,7 +225,7 @@ public class PackageURLTest {
     }
 
     @Test
-    public void testConstructorException5() throws MalformedPackageURLException {
+    public void testConstructorWithEmptyPurl() throws MalformedPackageURLException {
         exception.expect(MalformedPackageURLException.class);
 
         PackageURL purl = new PackageURL("");
@@ -225,7 +233,7 @@ public class PackageURLTest {
     }
 
     @Test
-    public void testConstructorException6() throws MalformedPackageURLException {
+    public void testConstructorWithPortNumber() throws MalformedPackageURLException {
         exception.expect(MalformedPackageURLException.class);
 
         PackageURL purl = new PackageURL("pkg://generic:8080/name");
@@ -233,15 +241,15 @@ public class PackageURLTest {
     }
 
     @Test
-    public void testConstructorException7() throws MalformedPackageURLException {
+    public void testConstructorWithUsername() throws MalformedPackageURLException {
         exception.expect(MalformedPackageURLException.class);
 
         PackageURL purl = new PackageURL("pkg://user@generic/name");
-        Assert.fail("constructor with username number should have thrown an error and this line should not be reached");
+        Assert.fail("constructor with username should have thrown an error and this line should not be reached");
     }
 
     @Test
-    public void testConstructorException8() throws MalformedPackageURLException {
+    public void testConstructorWithInvalidUrl() throws MalformedPackageURLException {
         exception.expect(MalformedPackageURLException.class);
 
         PackageURL purl = new PackageURL("invalid url");
@@ -249,11 +257,11 @@ public class PackageURLTest {
     }
 
     @Test
-    public void testConstructorException9() throws MalformedPackageURLException {
+    public void testConstructorWithDuplicateQualifiers() throws MalformedPackageURLException {
         exception.expect(MalformedPackageURLException.class);
 
         PackageURL purl = new PackageURL("pkg://generic/name?key=one&key=two");
-        Assert.fail("constructor with username number should have thrown an error and this line should not be reached");
+        Assert.fail("constructor with url with duplicate qualifiers should have thrown an error and this line should not be reached");
     }
 
     @Test
