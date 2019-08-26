@@ -231,7 +231,7 @@ public final class PackageURL implements Serializable {
         if (value == null || value.isEmpty()) {
             throw new MalformedPackageURLException("The PackageURL type cannot be null or empty");
         }
-        if (value.indexOf(0)>='0' && value.indexOf(0)<='9') {
+        if (value.charAt(0) >= '0' && value.charAt(0) <= '9') {
             throw new MalformedPackageURLException("The PackageURL type contains start with a number");
         }
         String retVal = value.toLowerCase();
