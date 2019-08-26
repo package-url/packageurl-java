@@ -237,7 +237,7 @@ public class PackageURLTest {
         exception.expect(MalformedPackageURLException.class);
 
         PackageURL purl = new PackageURL("pkg://user@generic/name");
-        Assert.fail("constructor with username number should have thrown an error and this line should not be reached");
+        Assert.fail("constructor with username should have thrown an error and this line should not be reached");
     }
 
     @Test
@@ -253,7 +253,7 @@ public class PackageURLTest {
         exception.expect(MalformedPackageURLException.class);
 
         PackageURL purl = new PackageURL("pkg://generic/name?key=one&key=two");
-        Assert.fail("constructor with username number should have thrown an error and this line should not be reached");
+        Assert.fail("constructor with url with duplicate qualifiers should have thrown an error and this line should not be reached");
     }
 
     @Test
