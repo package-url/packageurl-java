@@ -389,17 +389,17 @@ public final class PackageURL implements Serializable {
             purl.append("/");
         }
         if (name != null) {
-            purl.append(urlencode(name));
+            purl.append(percentEncode(name));
         }
         if (version != null) {
-            purl.append("@").append(urlencode(version));
+            purl.append("@").append(percentEncode(version));
         }
         if (qualifiers != null && qualifiers.size() > 0) {
             purl.append("?");
             qualifiers.entrySet().stream().forEachOrdered((entry) -> {
                 purl.append(entry.getKey().toLowerCase());
                 purl.append("=");
-                purl.append(urlencode(entry.getValue()));
+                purl.append(percentEncode(entry.getValue()));
                 purl.append("&");                
             });
             purl.setLength(purl.length() - 1);
@@ -417,7 +417,7 @@ public final class PackageURL implements Serializable {
      * @param input the String to encode
      * @return an encoded String
      */
-    private String urlencode(String input) {
+    private String percentEncode(String input) {
         try {
             // This SHOULD encoded according to RFC-3986 because URLEncoder alone does not.
             return URLEncoder.encode(input, UTF8)
@@ -435,7 +435,7 @@ public final class PackageURL implements Serializable {
      * @param input the value String to decode
      * @return a decoded String
      */
-    private String urldecode(String input) {
+    private String percentDecode(String input) {
         if (input == null) {
             return null;
         }
@@ -516,16 +516,16 @@ public final class PackageURL implements Serializable {
             // version is optional - check for existence
             index = remainder.lastIndexOf("@");
             if (index >= start) {
-                this.version = validateVersion(urldecode(remainder.substring(index + 1)));
+                this.version = validateVersion(percentDecode(remainder.substring(index + 1)));
                 remainder.setLength(index);
             }
 
             // The 'remainder' should now consist of the an optional namespace, and the name
             index = remainder.lastIndexOf("/");
             if (index <= start) {
-                this.name = validateName(urldecode(remainder.substring(start)));
+                this.name = validateName(percentDecode(remainder.substring(start)));
             } else {
-                this.name = validateName(urldecode(remainder.substring(index + 1)));
+                this.name = validateName(percentDecode(remainder.substring(index + 1)));
                 remainder.setLength(index);
                 this.namespace = validateNamespace(parsePath(remainder.substring(start), false));
             }
@@ -542,7 +542,7 @@ public final class PackageURL implements Serializable {
                             (map, value) -> {
                                 String[] entry = value.split("=", 2);
                                 if (entry.length == 2 && !entry[1].isEmpty()) {
-                                    if (map.put(entry[0].toLowerCase(), urldecode(entry[1])) != null) {
+                                    if (map.put(entry[0].toLowerCase(), percentDecode(entry[1])) != null) {
                                         throw new ValidationException("Duplicate package qualifier encountere - more then one value was specified for " + entry[0].toLowerCase());
                                     }
                                 }
@@ -561,12 +561,12 @@ public final class PackageURL implements Serializable {
         }
         return PATH_SPLITTER.splitAsStream(value)
                 .filter(segment -> !segment.isEmpty() && !(isSubpath && (".".equals(segment) || "..".equals(segment))))
-                .map(segment -> urldecode(segment))
+                .map(segment -> percentDecode(segment))
                 .toArray(String[]::new);
     }
 
     private String encodePath(String path) {
-        return Arrays.stream(path.split("/")).map(segment -> urlencode(segment)).collect(Collectors.joining("/"));
+        return Arrays.stream(path.split("/")).map(segment -> percentEncode(segment)).collect(Collectors.joining("/"));
     }
 
     /**
