@@ -412,16 +412,18 @@ public final class PackageURL implements Serializable {
     }
 
     /**
-     * Encodes the input in conformance with RFC-3986.
+     * Encodes the input in conformance with RFC 3986.
      *
      * @param input the String to encode
      * @return an encoded String
      */
     private String percentEncode(String input) {
         try {
-            // This SHOULD encoded according to RFC-3986 because URLEncoder alone does not.
             return URLEncoder.encode(input, UTF8)
                     .replace("+", "%20")
+                    // "*" is a reserved character in RFC 3986.
+                    .replace("*", "%2A")
+                    // "~" is an unreserved character in RFC 3986.
                     .replace("%7E", "~");
         } catch (UnsupportedEncodingException e) {
             return input; // this should never occur
