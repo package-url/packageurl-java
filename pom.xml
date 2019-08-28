@@ -68,7 +68,7 @@
 
     <ciManagement>
         <system>travis-ci</system>
-        <url>https://travis-ci.org/package-url/packageurl-java</url>
+        <url>https://travis-ci.com/package-url/packageurl-java</url>
     </ciManagement>
 
     <distributionManagement>
