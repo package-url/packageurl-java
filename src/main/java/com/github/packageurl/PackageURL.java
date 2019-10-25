@@ -30,6 +30,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.Objects;
 import java.util.TreeMap;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -569,6 +570,25 @@ public final class PackageURL implements Serializable {
 
     private String encodePath(String path) {
         return Arrays.stream(path.split("/")).map(segment -> percentEncode(segment)).collect(Collectors.joining("/"));
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        PackageURL other = (PackageURL) o;
+        return Objects.equals(scheme, other.scheme) &&
+                Objects.equals(type, other.type) &&
+                Objects.equals(namespace, other.namespace) &&
+                Objects.equals(name, other.name) &&
+                Objects.equals(version, other.version) &&
+                Objects.equals(qualifiers, other.qualifiers) &&
+                Objects.equals(subpath, other.subpath);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(scheme, type, namespace, name, version, qualifiers, subpath);
     }
 
     /**
