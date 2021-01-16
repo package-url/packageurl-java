@@ -55,7 +55,7 @@ public final class PackageURLBuilder {
      * @see PackageURL#getName()
      * @see com.github.packageurl.PackageURL.StandardTypes
      */
-    public PackageURLBuilder withType(String type) {
+    public PackageURLBuilder withType(final String type) {
         this.type = type;
         return this;
     }
@@ -67,7 +67,7 @@ public final class PackageURLBuilder {
      * @return a reference to the builder
      * @see PackageURL#getNamespace()
      */
-    public PackageURLBuilder withNamespace(String namespace) {
+    public PackageURLBuilder withNamespace(final String namespace) {
         this.namespace = namespace;
         return this;
     }
@@ -79,7 +79,7 @@ public final class PackageURLBuilder {
      * @return a reference to the builder
      * @see PackageURL#getName()
      */
-    public PackageURLBuilder withName(String name) {
+    public PackageURLBuilder withName(final String name) {
         this.name = name;
         return this;
     }
@@ -91,7 +91,7 @@ public final class PackageURLBuilder {
      * @return a reference to the builder
      * @see PackageURL#getVersion()
      */
-    public PackageURLBuilder withVersion(String version) {
+    public PackageURLBuilder withVersion(final String version) {
         this.version = version;
         return this;
     }
@@ -103,7 +103,7 @@ public final class PackageURLBuilder {
      * @return a reference to the builder
      * @see PackageURL#getSubpath()
      */
-    public PackageURLBuilder withSubpath(String subpath) {
+    public PackageURLBuilder withSubpath(final String subpath) {
         this.subpath = subpath;
         return this;
     }
@@ -116,7 +116,7 @@ public final class PackageURLBuilder {
      * @return a reference to the builder
      * @see PackageURL#getQualifiers()
      */
-    public PackageURLBuilder withQualifier(String key, String value) {
+    public PackageURLBuilder withQualifier(final String key, final String value) {
         if (qualifiers == null) {
             qualifiers = new TreeMap<>();
         }

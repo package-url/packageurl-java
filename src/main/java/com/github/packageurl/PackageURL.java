@@ -64,7 +64,7 @@ public final class PackageURL implements Serializable {
      * @throws MalformedPackageURLException if parsing fails
      * @since 1.0.0
      */
-    public PackageURL(String purl) throws MalformedPackageURLException {
+    public PackageURL(final String purl) throws MalformedPackageURLException {
         parse(purl);
     }
 
@@ -77,7 +77,7 @@ public final class PackageURL implements Serializable {
      * @throws MalformedPackageURLException if parsing fails
      * @since 1.0.0
      */
-    public PackageURL(String type, String name) throws MalformedPackageURLException {
+    public PackageURL(final String type, final String name) throws MalformedPackageURLException {
         this(type, null, name, null, null, null);
     }
 
@@ -93,7 +93,8 @@ public final class PackageURL implements Serializable {
      * @throws MalformedPackageURLException if parsing fails
      * @since 1.0.0
      */
-    public PackageURL(String type, String namespace, String name, String version, TreeMap<String, String> qualifiers, String subpath)
+    public PackageURL(final String type, final String namespace, final String name, final String version,
+                      final TreeMap<String, String> qualifiers, final String subpath)
             throws MalformedPackageURLException {
 
         this.scheme = validateScheme("pkg");
@@ -221,21 +222,21 @@ public final class PackageURL implements Serializable {
         return subpath;
     }
 
-    private String validateScheme(String value) throws MalformedPackageURLException {
+    private String validateScheme(final String value) throws MalformedPackageURLException {
         if ("pkg".equals(value)) {
             return "pkg";
         }
         throw new MalformedPackageURLException("The PackageURL scheme is invalid");
     }
 
-    private String validateType(String value) throws MalformedPackageURLException {
+    private String validateType(final String value) throws MalformedPackageURLException {
         if (value == null || value.isEmpty()) {
             throw new MalformedPackageURLException("The PackageURL type cannot be null or empty");
         }
         if (value.charAt(0) >= '0' && value.charAt(0) <= '9') {
             throw new MalformedPackageURLException("The PackageURL type contains start with a number");
         }
-        String retVal = value.toLowerCase();
+        final String retVal = value.toLowerCase();
         if (retVal.chars().anyMatch(c -> !(c == '.' || c == '+' || c == '-'
                 || (c >= 'a' && c <= 'z')
                 || (c >= '0' && c <= '9')))) {
@@ -244,18 +245,18 @@ public final class PackageURL implements Serializable {
         return retVal;
     }
 
-    private String validateNamespace(String value) throws MalformedPackageURLException {
+    private String validateNamespace(final String value) throws MalformedPackageURLException {
         if (value == null || value.isEmpty()) {
             return null;
         }
         return validateNamespace(value.split("/"));
     }
 
-    private String validateNamespace(String[] values) throws MalformedPackageURLException {
+    private String validateNamespace(final String[] values) throws MalformedPackageURLException {
         if (values == null || values.length == 0) {
             return null;
         }
-        String tempNamespace = validatePath(values, false);
+        final String tempNamespace = validatePath(values, false);
 
         String retVal;
         switch (type) {
@@ -274,7 +275,7 @@ public final class PackageURL implements Serializable {
         return retVal;
     }
 
-    private String validateName(String value) throws MalformedPackageURLException {
+    private String validateName(final String value) throws MalformedPackageURLException {
         if (value == null || value.isEmpty()) {
             throw new MalformedPackageURLException("The PackageURL name specified is invalid");
         }
@@ -297,20 +298,20 @@ public final class PackageURL implements Serializable {
         return temp;
     }
 
-    private String validateVersion(String value) {
+    private String validateVersion(final String value) {
         if (value == null) {
             return null;
         }
         return value;
     }
 
-    private Map<String, String> validateQualifiers(Map<String, String> values) throws MalformedPackageURLException {
+    private Map<String, String> validateQualifiers(final Map<String, String> values) throws MalformedPackageURLException {
         if (values == null) {
             return null;
         }
         for (Map.Entry<String, String> entry : values.entrySet()) {
             validateKey(entry.getKey());
-            String value = entry.getValue();
+            final String value = entry.getValue();
             if (value == null || value.isEmpty()) {
                 throw new MalformedPackageURLException("The PackageURL specified contains a qualifier key with an empty or null value");
             }
@@ -318,11 +319,11 @@ public final class PackageURL implements Serializable {
         return values;
     }
 
-    private String validateKey(String value) throws MalformedPackageURLException {
+    private String validateKey(final String value) throws MalformedPackageURLException {
         if (value == null || value.isEmpty()) {
             throw new MalformedPackageURLException("Qualifier key is invalid: " + value);
         }
-        String retValue = value.toLowerCase();
+        final String retValue = value.toLowerCase();
         if ((value.charAt(0) >= '0' && value.charAt(0) <= '9')
                 || !value.chars().allMatch(c -> (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || c == '.' || c == '-' || c == '_')) {
             throw new MalformedPackageURLException("Qualifier key is invalid: " + value);
@@ -330,14 +331,14 @@ public final class PackageURL implements Serializable {
         return retValue;
     }
 
-    private String validatePath(String value, boolean isSubpath) throws MalformedPackageURLException {
+    private String validatePath(final String value, final boolean isSubpath) throws MalformedPackageURLException {
         if (value == null || value.isEmpty()) {
             return null;
         }
         return validatePath(value.split("/"), isSubpath);
     }
 
-    private String validatePath(String[] segments, boolean isSubpath) throws MalformedPackageURLException {
+    private String validatePath(final String[] segments, final boolean isSubpath) throws MalformedPackageURLException {
         if (segments == null || segments.length == 0) {
             return null;
         }
@@ -401,7 +402,7 @@ public final class PackageURL implements Serializable {
                 purl.append(entry.getKey().toLowerCase());
                 purl.append("=");
                 purl.append(percentEncode(entry.getValue()));
-                purl.append("&");                
+                purl.append("&");
             });
             purl.setLength(purl.length() - 1);
         }
@@ -418,7 +419,7 @@ public final class PackageURL implements Serializable {
      * @param input the String to encode
      * @return an encoded String
      */
-    private String percentEncode(String input) {
+    private String percentEncode(final String input) {
         try {
             return URLEncoder.encode(input, UTF8)
                     .replace("+", "%20")
@@ -438,7 +439,7 @@ public final class PackageURL implements Serializable {
      * @param input the value String to decode
      * @return a decoded String
      */
-    private String percentDecode(String input) {
+    private String percentDecode(final String input) {
         if (input == null) {
             return null;
         }
@@ -461,13 +462,13 @@ public final class PackageURL implements Serializable {
      * @param purl the purl string to parse
      * @throws MalformedPackageURLException if an exception occurs when parsing
      */
-    private void parse(String purl) throws MalformedPackageURLException {
+    private void parse(final String purl) throws MalformedPackageURLException {
         if (purl == null || purl.trim().isEmpty()) {
             throw new MalformedPackageURLException("Invalid purl: Contains an empty or null value");
         }
 
         try {
-            URI uri = new URI(purl);
+            final URI uri = new URI(purl);
             // Check to ensure that none of these parts are parsed. If so, it's an invalid purl.
             if (uri.getUserInfo() != null || uri.getPort() != -1) {
                 throw new MalformedPackageURLException("Invalid purl: Contains parts not supported by the purl spec");
@@ -480,7 +481,7 @@ public final class PackageURL implements Serializable {
                 this.subpath = validatePath(parsePath(uri.getRawFragment(), true), true);
             }
             // This is the purl (minus the scheme) that needs parsed.
-            StringBuilder remainder = new StringBuilder(uri.getRawSchemeSpecificPart());
+            final StringBuilder remainder = new StringBuilder(uri.getRawSchemeSpecificPart());
 
             // qualifiers are optional - check for existence
             int index = remainder.lastIndexOf("?");
@@ -538,12 +539,12 @@ public final class PackageURL implements Serializable {
     }
 
     @SuppressWarnings("StringSplitter")//reason: surprising behavior is okay in this case
-    private Map<String, String> parseQualifiers(String encodedString) throws MalformedPackageURLException {
+    private Map<String, String> parseQualifiers(final String encodedString) throws MalformedPackageURLException {
         try {
-            TreeMap<String, String> results = Arrays.stream(encodedString.split("&"))
+            final TreeMap<String, String> results = Arrays.stream(encodedString.split("&"))
                     .collect(TreeMap<String, String>::new,
                             (map, value) -> {
-                                String[] entry = value.split("=", 2);
+                                final String[] entry = value.split("=", 2);
                                 if (entry.length == 2 && !entry[1].isEmpty()) {
                                     if (map.put(entry[0].toLowerCase(), percentDecode(entry[1])) != null) {
                                         throw new ValidationException("Duplicate package qualifier encountere - more then one value was specified for " + entry[0].toLowerCase());
@@ -558,7 +559,7 @@ public final class PackageURL implements Serializable {
     }
 
     @SuppressWarnings("StringSplitter")//reason: surprising behavior is okay in this case
-    private String[] parsePath(String value, boolean isSubpath) throws MalformedPackageURLException {
+    private String[] parsePath(final String value, final boolean isSubpath) throws MalformedPackageURLException {
         if (value == null || value.isEmpty()) {
             return null;
         }
@@ -568,15 +569,46 @@ public final class PackageURL implements Serializable {
                 .toArray(String[]::new);
     }
 
-    private String encodePath(String path) {
+    private String encodePath(final String path) {
         return Arrays.stream(path.split("/")).map(segment -> percentEncode(segment)).collect(Collectors.joining("/"));
+    }
+
+    /**
+     * Evaluates if the specified Package URL has the same values up to, but excluding
+     * the qualifier (querystring). This includes equivalence of: scheme, type, namespace,
+     * name, and version, but excludes qualifier and subpath from evaluation.
+     *
+     * @param purl the Package URL to evaluate
+     * @return true if equivalence passes, false if not
+     * @since 1.2.0
+     */
+    public boolean isBaseEquals(final PackageURL purl) {
+        return Objects.equals(scheme, purl.scheme) &&
+                Objects.equals(type, purl.type) &&
+                Objects.equals(namespace, purl.namespace) &&
+                Objects.equals(name, purl.name) &&
+                Objects.equals(version, purl.version);
+    }
+
+    /**
+     * Evaluates if the specified Package URL has the same canonical value. This method
+     * canonicalizes the Package URLs being evaluated and performs an equivalence on the
+     * canonical values. Canonical equivalence is especially useful for qualifiers, which
+     * can be in any order, but have a predictable order in canonicalized form.
+     *
+     * @param purl the Package URL to evaluate
+     * @return true if equivalence passes, false if not
+     * @since 1.2.0
+     */
+    public boolean isCanonicalEquals(final PackageURL purl) {
+        return (this.canonicalize().equals(purl.canonicalize()));
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        PackageURL other = (PackageURL) o;
+        final PackageURL other = (PackageURL) o;
         return Objects.equals(scheme, other.scheme) &&
                 Objects.equals(type, other.type) &&
                 Objects.equals(namespace, other.namespace) &&
@@ -598,6 +630,7 @@ public final class PackageURL implements Serializable {
      */
     public static class StandardTypes {
         public static final String BITBUCKET = "bitbucket";
+        public static final String CARGO = "cargo";
         public static final String COMPOSER = "composer";
         public static final String DEBIAN = "deb";
         public static final String DOCKER = "docker";
@@ -605,6 +638,7 @@ public final class PackageURL implements Serializable {
         public static final String GENERIC = "generic";
         public static final String GITHUB = "github";
         public static final String GOLANG = "golang";
+        public static final String HEX = "hex";
         public static final String MAVEN = "maven";
         public static final String NPM = "npm";
         public static final String NUGET = "nuget";

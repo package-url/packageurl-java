@@ -268,6 +268,7 @@ public class PackageURLTest {
     public void testStandardTypes() {
         exception = ExpectedException.none();
         Assert.assertEquals(PackageURL.StandardTypes.BITBUCKET, "bitbucket");
+        Assert.assertEquals(PackageURL.StandardTypes.CARGO, "cargo");
         Assert.assertEquals(PackageURL.StandardTypes.COMPOSER, "composer");
         Assert.assertEquals(PackageURL.StandardTypes.DEBIAN, "deb");
         Assert.assertEquals(PackageURL.StandardTypes.DOCKER, "docker");
@@ -275,10 +276,25 @@ public class PackageURLTest {
         Assert.assertEquals(PackageURL.StandardTypes.GENERIC, "generic");
         Assert.assertEquals(PackageURL.StandardTypes.GITHUB, "github");
         Assert.assertEquals(PackageURL.StandardTypes.GOLANG, "golang");
+        Assert.assertEquals(PackageURL.StandardTypes.HEX, "hex");
         Assert.assertEquals(PackageURL.StandardTypes.MAVEN, "maven");
         Assert.assertEquals(PackageURL.StandardTypes.NPM, "npm");
         Assert.assertEquals(PackageURL.StandardTypes.NUGET, "nuget");
         Assert.assertEquals(PackageURL.StandardTypes.PYPI, "pypi");
         Assert.assertEquals(PackageURL.StandardTypes.RPM, "rpm");
+    }
+
+    @Test
+    public void testBaseEquals() throws Exception {
+        PackageURL p1 = new PackageURL("pkg:generic/acme/example-component@1.0.0?key1=value1&key2=value2");
+        PackageURL p2 = new PackageURL("pkg:generic/acme/example-component@1.0.0");
+        Assert.assertTrue(p1.isBaseEquals(p2));
+    }
+
+    @Test
+    public void testCanonicalEquals() throws Exception {
+        PackageURL p1 = new PackageURL("pkg:generic/acme/example-component@1.0.0?key1=value1&key2=value2");
+        PackageURL p2 = new PackageURL("pkg:generic/acme/example-component@1.0.0?key2=value2&key1=value1");
+        Assert.assertTrue(p1.isCanonicalEquals(p2));
     }
 }
