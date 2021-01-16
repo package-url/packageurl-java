@@ -24,7 +24,7 @@ the project yourself.
     <dependency>
         <groupId>com.github.package-url</groupId>
         <artifactId>packageurl-java</artifactId>
-        <version>1.1.1</version>
+        <version>1.2.0</version>
     </dependency>
 </dependencies>
 ```
