@@ -2,20 +2,16 @@
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.github.package-url/packageurl-java/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.github.package-url/packageurl-java)
 [![License][license-image]][license-url]
 
-Package URL (purl) for Java
-=========
+# Package URL (purl) for Java
 
 This project implements a purl parser and class for Java.
 
-Compiling
--------------------
-
+## Compiling
 ```bash
 mvn clean install
 ````
 
-Maven Usage
--------------------
+## Maven Usage
 Package URL is available on the Maven Central Repository. These can be used without having to compile 
 the project yourself.
 
@@ -24,14 +20,12 @@ the project yourself.
     <dependency>
         <groupId>com.github.package-url</groupId>
         <artifactId>packageurl-java</artifactId>
-        <version>1.2.0</version>
+        <version>1.3.0</version>
     </dependency>
 </dependencies>
 ```
 
-Usage
--------------------
-
+## Usage
 Creates a new PackageURL object from a purl string:
 ```java
 PackageURL purl = new PackageURL(purlString);
@@ -52,6 +46,12 @@ PackageURL purl = PackageURLBuilder.aPackageURL()
     .withQualifier("key","value")
     .withSubpath("subpath")
     .build();
+```
+
+Validates a String field in a POJO (Bean Validation):
+```java
+@PackageURL
+private String purl;
 ```
 
 License
