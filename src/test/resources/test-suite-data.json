@@ -228,6 +228,30 @@
     "is_invalid": true
   },
   {
+    "description": "a namespace is required",
+    "purl": "pkg:maven/io@1.3.4",
+    "canonical_purl": "pkg:maven/io@1.3.4",
+    "type": "maven",
+    "namespace": null,
+    "name": null,
+    "version": null,
+    "qualifiers": null,
+    "subpath": null,
+    "is_invalid": true
+  },
+  {
+    "description": "a namespace is required",
+    "purl": "pkg:maven//io@1.3.4",
+    "canonical_purl": "pkg:maven//io@1.3.4",
+    "type": "maven",
+    "namespace": null,
+    "name": null,
+    "version": null,
+    "qualifiers": null,
+    "subpath": null,
+    "is_invalid": true
+  },
+  {
     "description": "slash / after scheme is not significant",
     "purl": "pkg:/maven/org.apache.commons/io",
     "canonical_purl": "pkg:maven/org.apache.commons/io",

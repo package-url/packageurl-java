@@ -104,6 +104,7 @@ public final class PackageURL implements Serializable {
         this.version = validateVersion(version);
         this.qualifiers = validateQualifiers(qualifiers);
         this.subpath = validatePath(subpath, true);
+        verifyTypeConstraints(this.type, this.namespace, this.name);
     }
 
     /**
@@ -533,8 +534,24 @@ public final class PackageURL implements Serializable {
                 remainder.setLength(index);
                 this.namespace = validateNamespace(parsePath(remainder.substring(start), false));
             }
+            verifyTypeConstraints(this.type, this.namespace, this.name);
         } catch (URISyntaxException e) {
             throw new MalformedPackageURLException("Invalid purl: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Some purl types may have specific constraints. This method attempts to verify them.
+     * @param type the purl type
+     * @param namespace the purl namespace
+     * @param name the purl name
+     * @throws MalformedPackageURLException if constraints are not met
+     */
+    private void verifyTypeConstraints(String type, String namespace, String name) throws MalformedPackageURLException {
+        if (StandardTypes.MAVEN.equals(type)) {
+            if (namespace == null || namespace.isEmpty() || name == null || name.isEmpty()) {
+                throw new MalformedPackageURLException("The PackageURL specified is invalid. Maven requires both a namespace and name.");
+            }
         }
     }
 
