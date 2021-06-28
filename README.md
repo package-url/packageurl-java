@@ -20,7 +20,7 @@ the project yourself.
     <dependency>
         <groupId>com.github.package-url</groupId>
         <artifactId>packageurl-java</artifactId>
-        <version>1.3.0</version>
+        <version>1.3.2</version>
     </dependency>
 </dependencies>
 ```
