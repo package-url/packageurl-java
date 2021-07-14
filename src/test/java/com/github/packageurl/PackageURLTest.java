@@ -297,4 +297,10 @@ public class PackageURLTest {
         PackageURL p2 = new PackageURL("pkg:generic/acme/example-component@1.0.0?key2=value2&key1=value1");
         Assert.assertTrue(p1.isCanonicalEquals(p2));
     }
+
+    @Test
+    public void testGetCoordinates() throws Exception {
+        PackageURL purl = new PackageURL("pkg:generic/acme/example-component@1.0.0?key1=value1&key2=value2");
+        Assert.assertEquals("pkg:generic/acme/example-component@1.0.0", purl.getCoordinates());
+    }
 }

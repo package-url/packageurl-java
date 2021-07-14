@@ -378,6 +378,16 @@ public final class PackageURL implements Serializable {
      * @since 1.0.0
      */
     public String canonicalize() {
+        return canonicalize(false);
+    }
+
+    /**
+     * Returns the canonicalized representation of the purl.
+     *
+     * @return the canonicalized representation of the purl
+     * @since 1.3.2
+     */
+    private String canonicalize(boolean coordinatesOnly) {
         if (canonicalizedForm != null) {
             return canonicalizedForm;
         }
@@ -397,18 +407,20 @@ public final class PackageURL implements Serializable {
         if (version != null) {
             purl.append("@").append(percentEncode(version));
         }
-        if (qualifiers != null && qualifiers.size() > 0) {
-            purl.append("?");
-            qualifiers.entrySet().stream().forEachOrdered((entry) -> {
-                purl.append(entry.getKey().toLowerCase());
-                purl.append("=");
-                purl.append(percentEncode(entry.getValue()));
-                purl.append("&");
-            });
-            purl.setLength(purl.length() - 1);
-        }
-        if (subpath != null) {
-            purl.append("#").append(encodePath(subpath));
+        if (! coordinatesOnly) {
+            if (qualifiers != null && qualifiers.size() > 0) {
+                purl.append("?");
+                qualifiers.entrySet().stream().forEachOrdered((entry) -> {
+                    purl.append(entry.getKey().toLowerCase());
+                    purl.append("=");
+                    purl.append(percentEncode(entry.getValue()));
+                    purl.append("&");
+                });
+                purl.setLength(purl.length() - 1);
+            }
+            if (subpath != null) {
+                purl.append("#").append(encodePath(subpath));
+            }
         }
         canonicalizedForm = purl.toString();
         return canonicalizedForm;
@@ -594,17 +606,45 @@ public final class PackageURL implements Serializable {
      * Evaluates if the specified Package URL has the same values up to, but excluding
      * the qualifier (querystring). This includes equivalence of: scheme, type, namespace,
      * name, and version, but excludes qualifier and subpath from evaluation.
+     * @deprecated
+     * This method is no longer recommended and will be removed from a future release.
+     * <p> Use {@link PackageURL#isCoordinatesEquals} instead.</p>
      *
      * @param purl the Package URL to evaluate
      * @return true if equivalence passes, false if not
      * @since 1.2.0
      */
+    //@Deprecated(since = "1.4.0", forRemoval = true)
+    @Deprecated
     public boolean isBaseEquals(final PackageURL purl) {
+        return isCoordinatesEquals(purl);
+    }
+
+    /**
+     * Evaluates if the specified Package URL has the same values up to, but excluding
+     * the qualifier (querystring). This includes equivalence of: scheme, type, namespace,
+     * name, and version, but excludes qualifier and subpath from evaluation.
+     *
+     * @param purl the Package URL to evaluate
+     * @return true if equivalence passes, false if not
+     * @since 1.4.0
+     */
+    public boolean isCoordinatesEquals(final PackageURL purl) {
         return Objects.equals(scheme, purl.scheme) &&
                 Objects.equals(type, purl.type) &&
                 Objects.equals(namespace, purl.namespace) &&
                 Objects.equals(name, purl.name) &&
                 Objects.equals(version, purl.version);
+    }
+
+    /**
+     * Returns only the canonicalized coordinates of the Package URL which includes the type, namespace, name,
+     * and version, and which omits the qualifier and subpath.
+     * @return A canonicalized PackageURL String excluding the qualifier and subpath.
+     * @since 1.4.0
+     */
+    public String getCoordinates() {
+        return canonicalize(true);
     }
 
     /**
