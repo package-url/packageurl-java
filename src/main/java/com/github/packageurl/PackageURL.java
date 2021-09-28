@@ -265,7 +265,6 @@ public final class PackageURL implements Serializable {
             case StandardTypes.DEBIAN:
             case StandardTypes.GITHUB:
             case StandardTypes.GOLANG:
-            case StandardTypes.NPM:
             case StandardTypes.RPM:
                 retVal = tempNamespace.toLowerCase();
                 break;
@@ -286,7 +285,6 @@ public final class PackageURL implements Serializable {
             case StandardTypes.DEBIAN:
             case StandardTypes.GITHUB:
             case StandardTypes.GOLANG:
-            case StandardTypes.NPM:
                 temp = value.toLowerCase();
                 break;
             case StandardTypes.PYPI:
