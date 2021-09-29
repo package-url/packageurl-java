@@ -46,7 +46,7 @@
         <!-- Maven Plugin Versions -->
         <maven.compiler.plugin.version>3.8.0</maven.compiler.plugin.version>
         <maven.jar.plugin.version>3.2.0</maven.jar.plugin.version>
-        <maven.javadoc.plugin.version>2.10.4</maven.javadoc.plugin.version>
+        <maven.javadoc.plugin.version>3.3.1</maven.javadoc.plugin.version>
         <maven.release.plugin.version>3.0.0-M4</maven.release.plugin.version>
         <maven.source.plugin.version>3.2.1</maven.source.plugin.version>
         <!-- Maven build plugins for quality checks -->
@@ -54,7 +54,7 @@
         <error.prone.core.version>2.3.2</error.prone.core.version>
         <jacoco.maven.plugin.version>0.8.7</jacoco.maven.plugin.version>
         <spotbugs.maven.plugin.version>4.4.1</spotbugs.maven.plugin.version>
-        <com.github.spotbugs.version>3.1.10</com.github.spotbugs.version>
+        <com.github.spotbugs.version>4.4.1</com.github.spotbugs.version>
     </properties>
 
     <scm>
@@ -96,7 +96,7 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <version>4.13.1</version>
+            <version>4.13.2</version>
             <scope>test</scope>
         </dependency>
         <dependency>
