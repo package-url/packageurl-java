@@ -21,6 +21,10 @@
  */
 package com.github.packageurl;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.TreeMap;
+
 import org.apache.commons.io.IOUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -29,10 +33,6 @@ import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.TreeMap;
 
 /**
  * Test cases for PackageURL parsing
@@ -302,5 +302,20 @@ public class PackageURLTest {
     public void testGetCoordinates() throws Exception {
         PackageURL purl = new PackageURL("pkg:generic/acme/example-component@1.0.0?key1=value1&key2=value2");
         Assert.assertEquals("pkg:generic/acme/example-component@1.0.0", purl.getCoordinates());
+    }
+
+    @Test
+    public void testNpmCaseSensitive() throws Exception {
+        // e.g. https://www.npmjs.com/package/base64/v/1.0.0
+        PackageURL base64Lowercase = new PackageURL("pkg:npm/base64@1.0.0");
+        Assert.assertEquals(base64Lowercase.getType(), "npm");
+        Assert.assertEquals(base64Lowercase.getName(), "base64");
+        Assert.assertEquals(base64Lowercase.getVersion(), "1.0.0");
+
+        // e.g. https://www.npmjs.com/package/Base64/v/1.0.0
+        PackageURL base64Uppercase = new PackageURL("pkg:npm/Base64@1.0.0");
+        Assert.assertEquals(base64Uppercase.getType(), "npm");
+        Assert.assertEquals(base64Uppercase.getName(), "Base64");
+        Assert.assertEquals(base64Uppercase.getVersion(), "1.0.0");
     }
 }
