@@ -47,7 +47,7 @@
         <maven.compiler.plugin.version>3.9.0</maven.compiler.plugin.version>
         <maven.jar.plugin.version>3.2.0</maven.jar.plugin.version>
         <maven.javadoc.plugin.version>3.3.1</maven.javadoc.plugin.version>
-        <maven.release.plugin.version>3.0.0-M4</maven.release.plugin.version>
+        <maven.release.plugin.version>3.0.0-M5</maven.release.plugin.version>
         <maven.source.plugin.version>3.2.1</maven.source.plugin.version>
         <!-- Maven build plugins for quality checks -->
         <plexus.compiler.javac.errorprone.version>2.8.5</plexus.compiler.javac.errorprone.version>
