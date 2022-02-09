@@ -29,6 +29,7 @@ import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
 import java.util.TreeMap;
@@ -205,12 +206,12 @@ public final class PackageURL implements Serializable {
 
     /**
      * Returns extra qualifying data for a package such as an OS, architecture, a distro, etc.
-     *
+     * This method returns an UnmodifiableMap.
      * @return qualifiers
      * @since 1.0.0
      */
     public Map<String, String> getQualifiers() {
-        return qualifiers;
+        return Collections.unmodifiableMap(qualifiers);
     }
 
     /**
