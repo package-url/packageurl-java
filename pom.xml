@@ -44,7 +44,7 @@
         <maven.javadoc.failOnError>false</maven.javadoc.failOnError>
         <project.build.outputTimestamp>1</project.build.outputTimestamp>
         <!-- Maven Plugin Versions -->
-        <maven.compiler.plugin.version>3.10.0</maven.compiler.plugin.version>
+        <maven.compiler.plugin.version>3.10.1</maven.compiler.plugin.version>
         <maven.jar.plugin.version>3.2.2</maven.jar.plugin.version>
         <maven.javadoc.plugin.version>3.3.2</maven.javadoc.plugin.version>
         <maven.release.plugin.version>3.0.0-M5</maven.release.plugin.version>
