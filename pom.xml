@@ -54,7 +54,7 @@
         <error.prone.core.version>2.3.2</error.prone.core.version>
         <jacoco.maven.plugin.version>0.8.7</jacoco.maven.plugin.version>
         <spotbugs.maven.plugin.version>4.5.3.0</spotbugs.maven.plugin.version>
-        <com.github.spotbugs.version>4.5.3</com.github.spotbugs.version>
+        <com.github.spotbugs.version>4.7.2</com.github.spotbugs.version>
     </properties>
 
     <scm>
