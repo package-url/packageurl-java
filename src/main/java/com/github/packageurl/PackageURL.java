@@ -434,7 +434,7 @@ public final class PackageURL implements Serializable {
     private String percentEncode(final String input) {
         try {
             return URLEncoder.encode(input, UTF8)
-                    .replace("+", "%20")
+                    .replace("+", "%2B")
                     // "*" is a reserved character in RFC 3986.
                     .replace("*", "%2A")
                     // "~" is an unreserved character in RFC 3986.
