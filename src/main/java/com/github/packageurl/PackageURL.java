@@ -21,9 +21,7 @@
  */
 package com.github.packageurl;
 
-import java.io.ByteArrayOutputStream;
 import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
@@ -55,7 +53,6 @@ import java.util.stream.Collectors;
 public final class PackageURL implements Serializable {
 
     private static final long serialVersionUID = 3243226021636427586L;
-    private static final String UTF8 = StandardCharsets.UTF_8.name();
     private static final Pattern PATH_SPLITTER = Pattern.compile("/");
 
     /**
