@@ -307,6 +307,13 @@ public class PackageURLTest {
     }
 
     @Test
+    public void testGetCoordinatesNoCacheIssue89() throws Exception {
+        PackageURL purl = new PackageURL("pkg:generic/acme/example-component@1.0.0?key1=value1&key2=value2");
+        purl.canonicalize();
+        Assert.assertEquals("pkg:generic/acme/example-component@1.0.0", purl.getCoordinates());
+    }
+
+    @Test
     public void testNpmCaseSensitive() throws Exception {
         // e.g. https://www.npmjs.com/package/base64/v/1.0.0
         PackageURL base64Lowercase = new PackageURL("pkg:npm/base64@1.0.0");
