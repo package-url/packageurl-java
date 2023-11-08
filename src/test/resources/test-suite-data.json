@@ -312,6 +312,18 @@
     "is_invalid": false
   },
   {
+    "description": "valid debian purl containing a plus in the name and version",
+    "purl": "pkg:deb/debian/g++-10@10.2.1+6",
+    "canonical_purl": "pkg:deb/debian/g%2B%2B-10@10.2.1%2B6",
+    "type": "deb",
+    "namespace": "debian",
+    "name": "g++-10",
+    "version": "10.2.1+6",
+    "qualifiers": null,
+    "subpath": null,
+    "is_invalid": false
+  },
+  {
     "description": "checks for invalid qualifier keys",
     "purl": "pkg:npm/myartifact@1.0.0?in%20production=true",
     "canonical_purl": null,

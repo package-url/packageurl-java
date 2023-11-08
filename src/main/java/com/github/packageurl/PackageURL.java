@@ -22,11 +22,9 @@
 package com.github.packageurl;
 
 import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URLDecoder;
-import java.net.URLEncoder;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collections;
@@ -55,7 +53,6 @@ import java.util.stream.Collectors;
 public final class PackageURL implements Serializable {
 
     private static final long serialVersionUID = 3243226021636427586L;
-    private static final String UTF8 = StandardCharsets.UTF_8.name();
     private static final Pattern PATH_SPLITTER = Pattern.compile("/");
 
     /**
@@ -432,16 +429,38 @@ public final class PackageURL implements Serializable {
      * @return an encoded String
      */
     private String percentEncode(final String input) {
-        try {
-            return URLEncoder.encode(input, UTF8)
-                    .replace("+", "%20")
-                    // "*" is a reserved character in RFC 3986.
-                    .replace("*", "%2A")
-                    // "~" is an unreserved character in RFC 3986.
-                    .replace("%7E", "~");
-        } catch (UnsupportedEncodingException e) {
-            return input; // this should never occur
+        return uriEncode(input, StandardCharsets.UTF_8);
+    }
+
+    private static String uriEncode(String source, Charset charset) {
+        if (source == null || source.length() == 0) {
+            return source;
         }
+
+        StringBuilder builder = new StringBuilder();
+        for (byte b : source.getBytes(charset)) {
+            if (isUnreserved(b)) {
+                builder.append((char) b);
+            }
+            else {
+                // Substitution: A '%' followed by the hexadecimal representation of the ASCII value of the replaced character
+                builder.append('%');
+                builder.append(Integer.toHexString(b).toUpperCase());
+            }
+        }
+        return builder.toString();
+    }
+
+    private static boolean isUnreserved(int c) {
+        return (isAlpha(c) || isDigit(c) || '-' == c || '.' == c || '_' == c || '~' == c);
+    }
+
+    private static boolean isAlpha(int c) {
+        return ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z'));
+    }
+
+    private static boolean isDigit(int c) {
+        return (c >= '0' && c <= '9');
     }
 
     /**
@@ -455,15 +474,31 @@ public final class PackageURL implements Serializable {
         if (input == null) {
             return null;
         }
-        try {
-            final String decoded = URLDecoder.decode(input, UTF8);
-            if (!decoded.equals(input)) {
-                return decoded;
-            }
-        } catch (UnsupportedEncodingException e) {
-            return input; // this should never occur
+        final String decoded = uriDecode(input);
+        if (!decoded.equals(input)) {
+            return decoded;
         }
         return input;
+    }
+
+    public static String uriDecode(String source) {
+        if (source == null) {
+            return source;
+        }
+        int length = source.length();
+        StringBuilder builder = new StringBuilder();
+        for (int i = 0; i < length; i++) {
+            if (source.charAt(i) == '%') {
+                String str = source.substring(i + 1, i + 3);
+                char c = (char) Integer.parseInt(str, 16);
+                builder.append(c);
+                i += 2;
+            }
+            else {
+                builder.append(source.charAt(i));
+            }
+        }
+        return builder.toString();
     }
 
     /**
