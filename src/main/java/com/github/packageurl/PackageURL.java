@@ -211,7 +211,7 @@ public final class PackageURL implements Serializable {
      * @since 1.0.0
      */
     public Map<String, String> getQualifiers() {
-        return Collections.unmodifiableMap(qualifiers);
+        return (qualifiers != null)? Collections.unmodifiableMap(qualifiers) : null;
     }
 
     /**
