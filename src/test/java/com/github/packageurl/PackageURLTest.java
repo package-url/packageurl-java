@@ -92,7 +92,9 @@ public class PackageURLTest {
             Assert.assertEquals(name, purl.getName());
             Assert.assertEquals(version, purl.getVersion());
             Assert.assertEquals(subpath, purl.getSubpath());
-            if (qualifiers != null) {
+            if (qualifiers == null) {
+                Assert.assertNull(purl.getQualifiers());
+            } else {
                 Assert.assertNotNull(purl.getQualifiers());
                 Assert.assertEquals(qualifiers.length(), purl.getQualifiers().size());
                 qualifiers.keySet().forEach((key) -> {
