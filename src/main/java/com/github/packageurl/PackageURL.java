@@ -147,11 +147,6 @@ public final class PackageURL implements Serializable {
     private String subpath;
 
     /**
-     * The cached version of the canonical form.
-     */
-    private String canonicalizedForm = null;
-
-    /**
      * Returns the package url scheme.
      *
      * @return the scheme
@@ -384,9 +379,6 @@ public final class PackageURL implements Serializable {
      * @since 1.3.2
      */
     private String canonicalize(boolean coordinatesOnly) {
-        if (canonicalizedForm != null) {
-            return canonicalizedForm;
-        }
         final StringBuilder purl = new StringBuilder();
         purl.append(scheme).append(":");
         if (type != null) {
@@ -418,8 +410,7 @@ public final class PackageURL implements Serializable {
                 purl.append("#").append(encodePath(subpath));
             }
         }
-        canonicalizedForm = purl.toString();
-        return canonicalizedForm;
+        return purl.toString();
     }
 
     /**
