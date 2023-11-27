@@ -26,6 +26,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
+import java.util.Map;
+
 import static org.junit.Assert.*;
 
 public class PackageURLBuilderTest {
@@ -94,12 +96,25 @@ public class PackageURLBuilderTest {
     @Test
     public void testPackageURLBuilderException1() throws MalformedPackageURLException {
         exception.expect(MalformedPackageURLException.class);
+        exception.expectMessage("contains a qualifier key with an empty or null");
         PackageURL purl = PackageURLBuilder.aPackageURL()
                 .withType("type")
                 .withName("name")
                 .withQualifier("key","")
                 .build();
         Assert.fail("Build should fail due to invalid qualifier (empty value)");
+    }
+
+    @Test
+    public void testPackageURLBuilderException1Null() throws MalformedPackageURLException {
+        exception.expect(MalformedPackageURLException.class);
+        exception.expectMessage("contains a qualifier key with an empty or null");
+        PackageURLBuilder.aPackageURL()
+                .withType("type")
+                .withName("name")
+                .withQualifier("key",null)
+                .build();
+        Assert.fail("Build should fail due to invalid qualifier (null value)");
     }
 
     @Test
@@ -154,6 +169,51 @@ public class PackageURLBuilderTest {
                 .withQualifier("","value")
                 .build();
         Assert.fail("Build should fail due to invalid qualifier key");
+    }
+
+    @Test
+    public void testEditBuilder1() throws MalformedPackageURLException {
+
+        PackageURL p = new PackageURL("pkg:generic/namespace/name@1.0.0?k=v#s");
+        PackageURLBuilder b = p.toBuilder();
+        assertBuilderMatch(p, b);
+
+        assertBuilderMatch(new PackageURL("pkg:generic/namespace/name@1.0.0#s"), b.withNoQualifiers());
+        b.withType("maven")
+                .withNamespace("org.junit")
+                .withName("junit5")
+                .withVersion("3.1.2")
+                .withSubpath("sub")
+                .withQualifier("repo", "maven")
+                .withQualifier("dark", "matter")
+                .withQualifier("ping", "pong")
+                .withoutQualifier("dark");
+
+        assertBuilderMatch(new PackageURL("pkg:maven/org.junit/junit5@3.1.2?repo=maven&ping=pong#sub"), b);
+
+    }
+
+    private void assertBuilderMatch(PackageURL expected, PackageURLBuilder actual) throws MalformedPackageURLException {
+
+        Assert.assertEquals(expected.toString(), actual.build().toString());
+        Assert.assertEquals(expected.getType(), actual.getType());
+        Assert.assertEquals(expected.getNamespace(), actual.getNamespace());
+        Assert.assertEquals(expected.getName(), actual.getName());
+        Assert.assertEquals(expected.getVersion(), actual.getVersion());
+        Assert.assertEquals(expected.getSubpath(), actual.getSubpath());
+
+        Map<String, String> eQualifiers = expected.getQualifiers();
+        Map<String, String> aQualifiers = actual.getQualifiers();
+
+        if (eQualifiers != null) {
+            eQualifiers.forEach((k,v)-> {
+                Assert.assertEquals(v, aQualifiers.remove(k));
+                Assert.assertEquals(v, actual.getQualifier(k));
+            });
+        }
+
+        Assert.assertTrue(aQualifiers.isEmpty());
+
     }
 
 }
