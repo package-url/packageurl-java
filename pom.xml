@@ -42,7 +42,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <maven.javadoc.failOnError>false</maven.javadoc.failOnError>
-        <project.build.outputTimestamp>1702102185</project.build.outputTimestamp>
+
         <!-- Maven Plugin Versions -->
         <maven.compiler.plugin.version>3.11.0</maven.compiler.plugin.version>
         <maven.jar.plugin.version>3.2.2</maven.jar.plugin.version>
@@ -218,6 +218,22 @@
                         <id>attach-javadocs</id>
                         <goals>
                             <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.cyclonedx</groupId>
+                <artifactId>cyclonedx-maven-plugin</artifactId>
+                <version>2.7.10</version>
+                <configuration>
+                    <projectType>library</projectType>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>makeBom</goal>
                         </goals>
                     </execution>
                 </executions>
