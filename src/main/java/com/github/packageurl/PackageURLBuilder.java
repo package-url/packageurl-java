@@ -125,6 +125,88 @@ public final class PackageURLBuilder {
     }
 
     /**
+     * Removes a package qualifier. This is a no-op if the qualifier is not present.
+     * @param key the package qualifier key to remove
+     * @return a reference to the builder
+     */
+    public PackageURLBuilder withoutQualifier(final String key) {
+        if (qualifiers != null) {
+            qualifiers.remove(key);
+            if (qualifiers.isEmpty()) { qualifiers = null; }
+        }
+        return this;
+    }
+
+    /**
+     * Removes all qualifiers, if any.
+     * @return a reference to this builder.
+     */
+    public PackageURLBuilder withNoQualifiers() {
+        qualifiers = null;
+        return this;
+    }
+
+    /**
+     * Returns current type value set in the builder.
+     * @return type set in this builder
+     */
+    public String getType() {
+        return type;
+    }
+
+    /**
+     * Returns current namespace value set in the builder.
+     * @return namespace set in this builder
+     */
+    public String getNamespace() {
+        return namespace;
+    }
+
+    /**
+     * Returns current name value set in the builder.
+     * @return name set in this builder
+     */
+    public String getName() {
+        return name;
+    }
+
+    /**
+     * Returns current version value set in the builder.
+     * @return version set in this builder
+     */
+    public String getVersion() {
+        return version;
+    }
+
+    /**
+     * Returns current subpath value set in the builder.
+     * @return subpath set in this builder
+     */
+    public String getSubpath() {
+        return subpath;
+    }
+
+    /**
+     * Returns sorted map containing all qualifiers set in this builder.
+     * An empty map is returned if no qualifiers is set.
+     * @return all qualifiers set in this builder, or an empty map if none are set.
+     */
+    public TreeMap<String, String> getQualifiers() {
+        if (qualifiers == null) { return new TreeMap<>(); }
+        return new TreeMap<>(qualifiers);
+    }
+
+    /**
+     * Returns a currently set qualifier value set in the builder for the specified key.
+     * @param key qualifier key
+     * @return qualifier value or {@code null} if one is not set.
+     */
+    public String getQualifier(String key) {
+        if (qualifiers == null) { return null; }
+        return qualifiers.get(key);
+    }
+
+    /**
      * Builds the new PackageURL object.
      *
      * @return the new PackageURL object

@@ -146,6 +146,23 @@ public final class PackageURL implements Serializable {
      */
     private String subpath;
 
+    public PackageURLBuilder toBuilder() {
+
+        PackageURLBuilder builder = PackageURLBuilder.aPackageURL()
+                .withType(getType())
+                .withNamespace(getNamespace())
+                .withName(getName())
+                .withVersion(getVersion())
+                .withSubpath(getSubpath());
+
+        if (qualifiers != null) {
+            qualifiers.forEach(builder::withQualifier);
+        }
+
+        return builder;
+
+    }
+
     /**
      * Returns the package url scheme.
      *
