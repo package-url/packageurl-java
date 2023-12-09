@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.com/package-url/packageurl-java.svg?branch=master)](https://travis-ci.com/package-url/packageurl-java)
+[![Build Status](https://github.com/package-url/packageurl-java/workflows/Maven%20CI/badge.svg)](https://github.com/package-url/packageurl-java/actions?workflow=Maven+CI)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.github.package-url/packageurl-java/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.github.package-url/packageurl-java)
 [![License][license-image]][license-url]
 
