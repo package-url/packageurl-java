@@ -46,7 +46,7 @@
         <!-- Maven Plugin Versions -->
         <maven.compiler.plugin.version>3.11.0</maven.compiler.plugin.version>
         <maven.jar.plugin.version>3.2.2</maven.jar.plugin.version>
-        <maven.javadoc.plugin.version>3.3.2</maven.javadoc.plugin.version>
+        <maven.javadoc.plugin.version>3.6.3</maven.javadoc.plugin.version>
         <maven.release.plugin.version>3.0.0-M5</maven.release.plugin.version>
         <maven.source.plugin.version>3.3.0</maven.source.plugin.version>
         <!-- Maven build plugins for quality checks -->
