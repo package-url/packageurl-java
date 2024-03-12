@@ -284,6 +284,8 @@ public class PackageURLTest {
         Assert.assertEquals(PackageURL.StandardTypes.NUGET, "nuget");
         Assert.assertEquals(PackageURL.StandardTypes.PYPI, "pypi");
         Assert.assertEquals(PackageURL.StandardTypes.RPM, "rpm");
+        Assert.assertEquals(PackageURL.StandardTypes.NIXPKGS, "nixpkgs");
+        Assert.assertEquals(PackageURL.StandardTypes.HACKAGE, "hackage");
     }
 
     @Test
