@@ -743,6 +743,8 @@ public final class PackageURL implements Serializable {
         public static final String NUGET = "nuget";
         public static final String PYPI = "pypi";
         public static final String RPM = "rpm";
+        public static final String NIXPKGS = "nixpkgs";
+        public static final String HACKAGE = "hackage";
     }
 
 }
