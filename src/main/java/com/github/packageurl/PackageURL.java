@@ -24,7 +24,6 @@ package com.github.packageurl;
 import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collections;
@@ -437,16 +436,16 @@ public final class PackageURL implements Serializable {
      * @return an encoded String
      */
     private String percentEncode(final String input) {
-        return uriEncode(input, StandardCharsets.UTF_8);
+        return uriEncode(input);
     }
 
-    private static String uriEncode(String source, Charset charset) {
-        if (source == null || source.length() == 0) {
+    private static String uriEncode(String source) {
+        if (source == null || source.isEmpty()) {
             return source;
         }
 
         StringBuilder builder = new StringBuilder();
-        for (byte b : source.getBytes(charset)) {
+        for (byte b : source.getBytes(StandardCharsets.UTF_8)) {
             if (isUnreserved(b)) {
                 builder.append((char) b);
             }
