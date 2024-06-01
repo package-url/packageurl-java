@@ -23,6 +23,9 @@ package com.github.packageurl;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.TreeMap;
 
 import org.apache.commons.io.IOUtils;
@@ -328,5 +331,19 @@ public class PackageURLTest {
         Assert.assertEquals(base64Uppercase.getType(), "npm");
         Assert.assertEquals(base64Uppercase.getName(), "Base64");
         Assert.assertEquals(base64Uppercase.getVersion(), "1.0.0");
+    }
+
+    @Test
+    public void testGeneratesValidUrlWithNewLineInVersionNumber() throws MalformedPackageURLException, UnsupportedEncodingException {
+        // Given
+        PackageURL url = new PackageURL("maven", "com.google.summit", "summit-ast", "2.2.0\n", null, null);
+
+        // When
+        String output = url.canonicalize();
+
+        // Then
+        String decoded = URLDecoder.decode(output, StandardCharsets.UTF_8.name());
+        Assert.assertEquals("pkg:maven/com.google.summit/summit-ast@2.2.0%0A", output);
+        Assert.assertEquals("pkg:maven/com.google.summit/summit-ast@2.2.0\n", decoded);
     }
 }
