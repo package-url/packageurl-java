@@ -453,7 +453,7 @@ public final class PackageURL implements Serializable {
             else {
                 // Substitution: A '%' followed by the hexadecimal representation of the ASCII value of the replaced character
                 builder.append('%');
-                builder.append(Integer.toHexString(b).toUpperCase());
+                builder.append(Integer.toHexString(b & 0xff).toUpperCase());
             }
         }
         return builder.toString();
