@@ -28,6 +28,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Formatter;
 import java.util.Map;
 import java.util.Objects;
 import java.util.TreeMap;
@@ -446,14 +447,15 @@ public final class PackageURL implements Serializable {
         }
 
         StringBuilder builder = new StringBuilder();
+        Formatter formatter = new Formatter(builder);
         for (byte b : source.getBytes(charset)) {
             if (isUnreserved(b)) {
                 builder.append((char) b);
             }
             else {
-                // Substitution: A '%' followed by the hexadecimal representation of the ASCII value of the replaced character
-                builder.append('%');
-                builder.append(Integer.toHexString(b & 0xff).toUpperCase());
+                // Substitution: A '%' followed by the hexadecimal representation of the charset encoded byte value
+                formatter.format("%%%02X", b);
+                formatter.flush();
             }
         }
         return builder.toString();
