@@ -94,7 +94,6 @@ public final class PackageURL implements Serializable {
     public PackageURL(final String type, final String namespace, final String name, final String version,
                       final TreeMap<String, String> qualifiers, final String subpath)
             throws MalformedPackageURLException {
-
         this.scheme = validateScheme("pkg");
         this.type = validateType(type);
         this.namespace = validateNamespace(namespace);
@@ -103,6 +102,24 @@ public final class PackageURL implements Serializable {
         this.qualifiers = validateQualifiers(qualifiers);
         this.subpath = validatePath(subpath, true);
         verifyTypeConstraints(this.type, this.namespace, this.name);
+    }
+
+    /**
+     * Constructs a new PackageURL object.
+     *
+     * @param type       the type of package (i.e. maven, npm, gem, etc)
+     * @param namespace  the name prefix (i.e. group, owner, organization)
+     * @param name       the name of the package
+     * @param version    the version of the package
+     * @param qualifiers an array of key/value pair qualifiers
+     * @param subpath    the subpath string
+     * @throws MalformedPackageURLException if parsing fails
+     * @since 1.0.0
+     */
+    public PackageURL(final String type, final String namespace, final String name, final String version,
+                      final Map<String, String> qualifiers, final String subpath)
+            throws MalformedPackageURLException {
+        this(type, namespace, name, version, (qualifiers == null) ? null : ((qualifiers instanceof TreeMap) ? (TreeMap<String, String>) qualifiers : new TreeMap<>(qualifiers)), subpath);
     }
 
     /**
