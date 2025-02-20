@@ -21,6 +21,7 @@
  */
 package com.github.packageurl;
 
+import java.util.Map;
 import java.util.TreeMap;
 
 /**
@@ -121,6 +122,26 @@ public final class PackageURLBuilder {
             qualifiers = new TreeMap<>();
         }
         qualifiers.put(key, value);
+        return this;
+    }
+
+    /**
+     * Adds the package qualifiers .
+     *
+     * @param qualifiers the package qualifiers
+     * @return a reference to the builder
+     * @see PackageURL#getQualifiers()
+     */
+    public PackageURLBuilder withQualifiers(final Map<String, String> qualifiers) {
+        if (qualifiers == null) {
+            this.qualifiers = null;
+        } else {
+            if (this.qualifiers == null) {
+                this.qualifiers = new TreeMap<>(qualifiers);
+            } else {
+                this.qualifiers.putAll(qualifiers);
+            }
+        }
         return this;
     }
 
