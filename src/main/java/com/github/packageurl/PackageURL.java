@@ -460,7 +460,7 @@ public final class PackageURL implements Serializable {
     }
 
     private static boolean isUnreserved(int c) {
-        return (isAlpha(c) || isDigit(c) || '-' == c || '.' == c || '_' == c || '~' == c);
+        return (isAlpha(c) || isDigit(c) || '-' == c || '.' == c || '_' == c || '~' == c || ':' == c || '/' == c);
     }
 
     private static boolean isAlpha(int c) {
