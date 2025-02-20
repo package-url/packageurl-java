@@ -26,6 +26,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import static org.junit.Assert.*;
@@ -191,6 +192,28 @@ public class PackageURLBuilderTest {
 
         assertBuilderMatch(new PackageURL("pkg:maven/org.junit/junit5@3.1.2?repo=maven&ping=pong#sub"), b);
 
+    }
+
+    @Test
+    public void testQualifiers() throws MalformedPackageURLException {
+        Map<String, String> qualifiers = new HashMap<>();
+        qualifiers.put("key2", "value2");
+        Map<String, String> qualifiers2 = new HashMap<>();
+        qualifiers.put("key3", "value3");
+        PackageURL purl = PackageURLBuilder.aPackageURL()
+                .withType(PackageURL.StandardTypes.GENERIC)
+                .withNamespace("")
+                .withName("name")
+                .withVersion("version")
+                .withQualifier("key", "value")
+                .withQualifier("next", "value")
+                .withQualifiers(qualifiers)
+                .withQualifier("key4", "value4")
+                .withQualifiers(qualifiers2)
+                .withSubpath("")
+                .build();
+
+        assertEquals("pkg:generic/name@version?key=value&key2=value2&key3=value3&key4=value4&next=value", purl.toString());
     }
 
     private void assertBuilderMatch(PackageURL expected, PackageURLBuilder actual) throws MalformedPackageURLException {
