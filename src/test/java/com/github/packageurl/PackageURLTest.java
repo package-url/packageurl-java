@@ -56,6 +56,19 @@ public class PackageURLTest {
     }
 
     @Test
+    public void testEncoding1() throws MalformedPackageURLException {
+        PackageURL purl = new PackageURL("maven", "com.google.summit", "summit-ast", "2.2.0\n", null, null);
+        Assert.assertEquals("pkg:maven/com.google.summit/summit-ast@2.2.0%0A", purl.toString());
+    }
+
+    @Test
+    public void testEncoding2() throws MalformedPackageURLException {
+        PackageURL purl = new PackageURL("pkg:nuget/%D0%9Cicros%D0%BEft.%D0%95ntit%D1%83Fram%D0%B5work%D0%A1%D0%BEr%D0%B5");
+        Assert.assertEquals("Мicrosоft.ЕntitуFramеworkСоrе", purl.getName());
+        Assert.assertEquals("pkg:nuget/%D0%9Cicros%D0%BEft.%D0%95ntit%D1%83Fram%D0%B5work%D0%A1%D0%BEr%D0%B5", purl.toString());
+    }
+
+    @Test
     public void testConstructorParsing() throws Exception {
         exception = ExpectedException.none();
         for (int i = 0; i < json.length(); i++) {

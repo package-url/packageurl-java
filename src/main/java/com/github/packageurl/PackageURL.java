@@ -21,6 +21,7 @@
  */
 package com.github.packageurl;
 
+import java.io.ByteArrayOutputStream;
 import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -441,22 +442,25 @@ public final class PackageURL implements Serializable {
     }
 
     private static String uriEncode(String source, Charset charset) {
-        if (source == null || source.length() == 0) {
+        if (source == null || source.isEmpty()) {
             return source;
         }
 
-        StringBuilder builder = new StringBuilder();
-        for (byte b : source.getBytes(charset)) {
+        boolean changed = false;
+        StringBuilder builder = new StringBuilder(source.length());
+        byte[] bytes = source.getBytes(charset);
+
+        for (byte b : bytes) {
             if (isUnreserved(b)) {
                 builder.append((char) b);
-            }
-            else {
-                // Substitution: A '%' followed by the hexadecimal representation of the ASCII value of the replaced character
+            } else {
                 builder.append('%');
-                builder.append(Integer.toHexString(b).toUpperCase());
+                builder.append(Character.toUpperCase(Character.forDigit((b >> 4) & 0xF, 16)));
+                builder.append(Character.toUpperCase(Character.forDigit(b & 0xF, 16)));
+                changed = true;
             }
         }
-        return builder.toString();
+        return changed ? builder.toString() : source;
     }
 
     private static boolean isUnreserved(int c) {
@@ -479,34 +483,37 @@ public final class PackageURL implements Serializable {
      * @return a decoded String
      */
     private String percentDecode(final String input) {
-        if (input == null) {
-            return null;
-        }
-        final String decoded = uriDecode(input);
-        if (!decoded.equals(input)) {
-            return decoded;
-        }
-        return input;
+        return uriDecode(input);
     }
 
     public static String uriDecode(String source) {
-        if (source == null) {
+        if (source == null || source.isEmpty()) {
             return source;
         }
-        int length = source.length();
-        StringBuilder builder = new StringBuilder();
+
+        boolean changed = false;
+        byte[] bytes = source.getBytes(StandardCharsets.UTF_8);
+        int length = bytes.length;
+        ByteArrayOutputStream buffer = new ByteArrayOutputStream(length);
+
         for (int i = 0; i < length; i++) {
-            if (source.charAt(i) == '%') {
-                String str = source.substring(i + 1, i + 3);
-                char c = (char) Integer.parseInt(str, 16);
-                builder.append(c);
-                i += 2;
-            }
-            else {
-                builder.append(source.charAt(i));
+            int b = bytes[i];
+
+            if (b == '%') {
+                    if (i + 2 >= length) {
+                        return null;
+                    }
+
+                    int b1 = Character.digit(bytes[++i], 16);
+                    int b2 = Character.digit(bytes[++i], 16);
+                    buffer.write((char) ((b1 << 4) + b2));
+                    changed = true;
+            } else {
+                buffer.write(b);
             }
         }
-        return builder.toString();
+
+        return changed ? new String(buffer.toByteArray(), StandardCharsets.UTF_8) : source;
     }
 
     /**
