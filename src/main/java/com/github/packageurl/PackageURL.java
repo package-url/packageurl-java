@@ -34,6 +34,7 @@ import java.util.Objects;
 import java.util.TreeMap;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * <p>Package-URL (aka purl) is a "mostly universal" URL to describe a package. A purl is a URL composed of seven components:</p>
@@ -446,9 +447,13 @@ public final class PackageURL implements Serializable {
             return source;
         }
 
-        boolean changed = false;
-        StringBuilder builder = new StringBuilder(source.length());
         byte[] bytes = source.getBytes(charset);
+
+        if (IntStream.range(0, bytes.length).allMatch(i -> isUnreserved(bytes[i]))) {
+            return source;
+        }
+
+        StringBuilder builder = new StringBuilder(source.length());
 
         for (byte b : bytes) {
             if (isUnreserved(b)) {
@@ -457,10 +462,10 @@ public final class PackageURL implements Serializable {
                 builder.append('%');
                 builder.append(Character.toUpperCase(Character.forDigit((b >> 4) & 0xF, 16)));
                 builder.append(Character.toUpperCase(Character.forDigit(b & 0xF, 16)));
-                changed = true;
             }
         }
-        return changed ? builder.toString() : source;
+
+        return builder.toString();
     }
 
     private static boolean isUnreserved(int c) {
@@ -491,7 +496,10 @@ public final class PackageURL implements Serializable {
             return source;
         }
 
-        boolean changed = false;
+        if (source.indexOf('%') == -1) {
+            return source;
+        }
+
         byte[] bytes = source.getBytes(StandardCharsets.UTF_8);
         int length = bytes.length;
         ByteArrayOutputStream buffer = new ByteArrayOutputStream(length);
@@ -507,13 +515,12 @@ public final class PackageURL implements Serializable {
                     int b1 = Character.digit(bytes[++i], 16);
                     int b2 = Character.digit(bytes[++i], 16);
                     buffer.write((char) ((b1 << 4) + b2));
-                    changed = true;
             } else {
                 buffer.write(b);
             }
         }
 
-        return changed ? new String(buffer.toByteArray(), StandardCharsets.UTF_8) : source;
+        return new String(buffer.toByteArray(), StandardCharsets.UTF_8);
     }
 
     /**
