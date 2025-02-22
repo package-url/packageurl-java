@@ -139,8 +139,8 @@ public class PackageURLTest {
             if (invalid) {
                 try {
                     PackageURL purl = new PackageURL(type, namespace, name, version, map, subpath);
-                    Assert.fail("Invalid package url components should have caused an exception: " + purl.toString());
-                } catch (MalformedPackageURLException e) {
+                    Assert.fail("Invalid package url components should have caused an exception: " + purl);
+                } catch (NullPointerException | MalformedPackageURLException e) {
                     Assert.assertNotNull(e.getMessage());
                 }
                 continue;
@@ -220,7 +220,7 @@ public class PackageURLTest {
 
     @Test
     public void testConstructorWithNullPurl() throws MalformedPackageURLException {
-        exception.expect(MalformedPackageURLException.class);
+        exception.expect(NullPointerException.class);
 
         PackageURL purl = new PackageURL(null);
         Assert.fail("constructor with null purl should have thrown an error and this line should not be reached");
@@ -289,10 +289,10 @@ public class PackageURLTest {
     }
 
     @Test
-    public void testBaseEquals() throws Exception {
+    public void testCoordinatesEquals() throws Exception {
         PackageURL p1 = new PackageURL("pkg:generic/acme/example-component@1.0.0?key1=value1&key2=value2");
         PackageURL p2 = new PackageURL("pkg:generic/acme/example-component@1.0.0");
-        Assert.assertTrue(p1.isBaseEquals(p2));
+        Assert.assertTrue(p1.isCoordinatesEquals(p2));
     }
 
     @Test
