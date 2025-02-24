@@ -28,8 +28,11 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -100,7 +103,7 @@ public final class PackageURL implements Serializable {
         this.namespace = validateNamespace(namespace);
         this.name = validateName(name);
         this.version = validateVersion(version);
-        this.qualifiers = validateQualifiers(qualifiers);
+        this.qualifiers = parseQualifiers(qualifiers);
         this.subpath = validatePath(subpath, true);
         verifyTypeConstraints(this.type, this.namespace, this.name);
     }
@@ -334,7 +337,7 @@ public final class PackageURL implements Serializable {
         }
         final String retValue = value.toLowerCase();
         if ((value.charAt(0) >= '0' && value.charAt(0) <= '9')
-                || !value.chars().allMatch(c -> (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || c == '.' || c == '-' || c == '_')) {
+                || !value.chars().allMatch(c -> (c >= 'a' && c <= 'z')  || isDigit(c) || c == '.' || c == '-' || c == '_')) {
             throw new MalformedPackageURLException("Qualifier key is invalid: " + value);
         }
         return retValue;
@@ -608,6 +611,23 @@ public final class PackageURL implements Serializable {
             }
         }
     }
+
+    private Map<String, String> parseQualifiers(final Map<String, String> qualifiers) throws MalformedPackageURLException {
+        if (qualifiers == null) {
+            return null;
+        }
+
+        try {
+            final TreeMap<String, String> results = qualifiers.entrySet().stream()
+                    .collect(TreeMap::new,
+                            (map, value) -> map.put(value.getKey().toLowerCase(), value.getValue()),
+                            TreeMap::putAll);
+            return validateQualifiers(results);
+        } catch (ValidationException ex) {
+            throw new MalformedPackageURLException(ex.getMessage());
+        }
+    }
+
 
     @SuppressWarnings("StringSplitter")//reason: surprising behavior is okay in this case
     private Map<String, String> parseQualifiers(final String encodedString) throws MalformedPackageURLException {

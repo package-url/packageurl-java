@@ -267,6 +267,25 @@ public class PackageURLTest {
     }
 
     @Test
+    public void testConstructorDuplicateQualifiers2() throws MalformedPackageURLException {
+        exception.expect(MalformedPackageURLException.class);
+
+        PackageURL purl = new PackageURL("pkg://generic/name?key=one&KEY=two");
+        Assert.fail("constructor with url with duplicate qualifiers should have thrown an error and this line should not be reached");
+    }
+
+    @Test
+    public void testConstructorWithUppercaseKey() throws MalformedPackageURLException {
+        PackageURL purl = new PackageURL("pkg://generic/name?KEY=one");
+        Assert.assertNotNull(purl.getQualifiers());
+        Assert.assertEquals("one", purl.getQualifiers().get("key"));
+        PackageURL purl2 = new PackageURL("generic", null, "name", null, new TreeMap<String, String>() {{
+            put("KEY", "one");
+        }}, null);
+        Assert.assertEquals(purl, purl2);
+    }
+
+    @Test
     public void testStandardTypes() {
         exception = ExpectedException.none();
         Assert.assertEquals(PackageURL.StandardTypes.BITBUCKET, "bitbucket");
