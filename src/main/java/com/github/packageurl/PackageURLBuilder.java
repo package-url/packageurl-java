@@ -22,6 +22,7 @@
 package com.github.packageurl;
 
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 
 /**
@@ -36,7 +37,7 @@ public final class PackageURLBuilder {
     private TreeMap<String, String> qualifiers = null;
 
     private PackageURLBuilder() {
-        //empty constructor for utility class
+        // empty constructor for utility class
     }
 
     /**
@@ -126,7 +127,7 @@ public final class PackageURLBuilder {
     }
 
     /**
-     * Adds the package qualifiers .
+     * Adds the package qualifiers.
      *
      * @param qualifiers the package qualifiers
      * @return a reference to the builder
@@ -155,6 +156,29 @@ public final class PackageURLBuilder {
             qualifiers.remove(key);
             if (qualifiers.isEmpty()) { qualifiers = null; }
         }
+        return this;
+    }
+
+    /**
+     * Removes a package qualifier. This is a no-op if the qualifier is not present.
+     * @param keys the package qualifier keys to remove
+     * @return a reference to the builder
+     */
+    public PackageURLBuilder withoutQualifiers(final Set<String> keys) {
+        if (this.qualifiers != null) {
+            keys.forEach(k -> this.qualifiers.remove(k));
+            if (this.qualifiers.isEmpty()) { this.qualifiers = null; }
+        }
+        return this;
+    }
+
+
+    /**
+     * Removes all qualifiers, if any.
+     * @return a reference to this builder.
+     */
+    public PackageURLBuilder withoutQualifiers() {
+        qualifiers = null;
         return this;
     }
 
