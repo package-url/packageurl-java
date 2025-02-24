@@ -44,17 +44,25 @@
         <maven.javadoc.failOnError>false</maven.javadoc.failOnError>
 
         <!-- Maven Plugin Versions -->
-        <maven.compiler.plugin.version>3.11.0</maven.compiler.plugin.version>
-        <maven.jar.plugin.version>3.3.0</maven.jar.plugin.version>
-        <maven.javadoc.plugin.version>3.6.3</maven.javadoc.plugin.version>
-        <maven.release.plugin.version>3.0.1</maven.release.plugin.version>
-        <maven.source.plugin.version>3.3.0</maven.source.plugin.version>
+        <maven.compiler.plugin.version>3.14.0</maven.compiler.plugin.version>
+        <maven.jar.plugin.version>3.4.2</maven.jar.plugin.version>
+        <maven.javadoc.plugin.version>3.11.2</maven.javadoc.plugin.version>
+        <maven.release.plugin.version>3.1.1</maven.release.plugin.version>
+        <maven.source.plugin.version>3.3.1</maven.source.plugin.version>
         <!-- Maven build plugins for quality checks -->
-        <plexus.compiler.javac.errorprone.version>2.8.5</plexus.compiler.javac.errorprone.version>
-        <error.prone.core.version>2.3.2</error.prone.core.version>
-        <jacoco.maven.plugin.version>0.8.11</jacoco.maven.plugin.version>
-        <spotbugs.maven.plugin.version>4.8.3.1</spotbugs.maven.plugin.version>
-        <com.github.spotbugs.version>4.8.3</com.github.spotbugs.version>
+        <plexus.compiler.javac.errorprone.version>2.15.0</plexus.compiler.javac.errorprone.version>
+        <error.prone.core.version>2.36.0</error.prone.core.version>
+        <jacoco.maven.plugin.version>0.8.12</jacoco.maven.plugin.version>
+        <spotbugs.maven.plugin.version>4.9.1.0</spotbugs.maven.plugin.version>
+        <com.github.spotbugs.version>4.9.1</com.github.spotbugs.version>
+        <versions-maven-plugin.version>2.18.0</versions-maven-plugin.version>
+        <cyclonedx-maven-plugin.version>2.9.1</cyclonedx-maven-plugin.version>
+        <maven-enforcer-plugin.version>3.4.1</maven-enforcer-plugin.version>
+        <maven-gpg-plugin.version>3.1.0</maven-gpg-plugin.version>
+        <junit.version>4.13.2</junit.version>
+        <json.version>20250107</json.version>
+        <commons-io.version>2.18.0</commons-io.version>
+        <validation-api.version>2.0.1.Final</validation-api.version>
     </properties>
 
     <scm>
@@ -89,26 +97,26 @@
         <dependency>
             <groupId>javax.validation</groupId>
             <artifactId>validation-api</artifactId>
-            <version>2.0.1.Final</version>
+            <version>${validation-api.version}</version>
             <optional>true</optional>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <version>4.13.2</version>
+            <version>${junit.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.json</groupId>
             <artifactId>json</artifactId>
-            <version>20240303</version>
+            <version>${json.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
-            <version>2.15.1</version>
+            <version>${commons-io.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -177,6 +185,14 @@
                 </dependencies>
             </plugin>
             <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>versions-maven-plugin</artifactId>
+                <version>${versions-maven-plugin.version}</version>
+                <configuration>
+                    <ignoredVersions>(?i).+[-.](alpha|beta|cr|dev|m|rc)([-.]?\d+)?</ignoredVersions>
+                </configuration>
+            </plugin>
+            <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
                 <version>${jacoco.maven.plugin.version}</version>
@@ -225,7 +241,7 @@
             <plugin>
                 <groupId>org.cyclonedx</groupId>
                 <artifactId>cyclonedx-maven-plugin</artifactId>
-                <version>2.7.10</version>
+                <version>${cyclonedx-maven-plugin.version}</version>
                 <configuration>
                     <projectType>library</projectType>
                 </configuration>
@@ -260,7 +276,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-enforcer-plugin</artifactId>
-                        <version>3.4.1</version>
+                        <version>${maven-enforcer-plugin.version}</version>
                         <executions>
                             <execution>
                                 <id>enforce-java</id>
@@ -270,7 +286,7 @@
                                 <configuration>
                                     <rules>
                                         <requireJavaVersion>
-                                            <version>1.8.0</version>
+                                            <version>${maven.compiler.source}</version>
                                         </requireJavaVersion>
                                     </rules>
                                 </configuration>
@@ -280,7 +296,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-gpg-plugin</artifactId>
-                        <version>3.1.0</version>
+                        <version>${maven-gpg-plugin.version}</version>
                         <executions>
                             <execution>
                                 <id>sign-artifacts</id>
