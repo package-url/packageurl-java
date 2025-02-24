@@ -363,8 +363,8 @@ public final class PackageURL implements Serializable {
                         }
                         return segment;
                     }).collect(Collectors.joining("/"));
-        } catch (ValidationException ex) {
-            throw new MalformedPackageURLException(ex.getMessage());
+        } catch (ValidationException e) {
+            throw new MalformedPackageURLException(e);
         }
     }
 
@@ -590,7 +590,7 @@ public final class PackageURL implements Serializable {
             }
             verifyTypeConstraints(this.type, this.namespace, this.name);
         } catch (URISyntaxException e) {
-            throw new MalformedPackageURLException("Invalid purl: " + e.getMessage());
+            throw new MalformedPackageURLException("Invalid purl: " + e.getMessage(), e);
         }
     }
 
@@ -624,8 +624,8 @@ public final class PackageURL implements Serializable {
                             },
                             TreeMap<String, String>::putAll);
             return validateQualifiers(results);
-        } catch (ValidationException ex) {
-            throw new MalformedPackageURLException(ex.getMessage());
+        } catch (ValidationException e) {
+            throw new MalformedPackageURLException(e);
         }
     }
 
