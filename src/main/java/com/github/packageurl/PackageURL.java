@@ -147,7 +147,6 @@ public final class PackageURL implements Serializable {
     private String subpath;
 
     public PackageURLBuilder toBuilder() {
-
         PackageURLBuilder builder = PackageURLBuilder.aPackageURL()
                 .withType(getType())
                 .withNamespace(getNamespace())
@@ -160,7 +159,6 @@ public final class PackageURL implements Serializable {
         }
 
         return builder;
-
     }
 
     /**
