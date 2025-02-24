@@ -214,6 +214,16 @@ public class PackageURLBuilderTest {
         assertEquals("pkg:generic/name@version?key=value&key2=value2&key3=value3&next=value", purl.toString());
     }
 
+    @Test
+    public void testFromExistingPurl() throws MalformedPackageURLException {
+        String purl = "pkg:generic/namespace/name@1.0.0?k=v#s";
+        PackageURL p = new PackageURL(purl);
+        PackageURL purl2 = PackageURLBuilder.aPackageURL(p).build();
+        PackageURL purl3 = PackageURLBuilder.aPackageURL(purl).build();
+        assertEquals(p, purl2);
+        assertEquals(purl2, purl3);
+    }
+
     private void assertBuilderMatch(PackageURL expected, PackageURLBuilder actual) throws MalformedPackageURLException {
 
         Assert.assertEquals(expected.toString(), actual.build().toString());

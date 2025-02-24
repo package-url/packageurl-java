@@ -52,6 +52,26 @@ public final class PackageURLBuilder {
     }
 
     /**
+     * Obtain a reference to a new builder object initialized with the existing {@link PackageURL} object.
+     *
+     * @param packageURL the existing Package URL object
+     * @return a new builder object.
+     */
+    public static PackageURLBuilder aPackageURL(final PackageURL packageURL) {
+        return packageURL.toBuilder();
+    }
+
+    /**
+     * Obtain a reference to a new builder object initialized with the existing Package URL string.
+     *
+     * @param purl the existing Package URL string
+     * @return a new builder object.
+     */
+    public static PackageURLBuilder aPackageURL(final String purl) throws MalformedPackageURLException {
+        return new PackageURL(purl).toBuilder();
+    }
+
+    /**
      * Adds the package URL type.
      *
      * @param type the package type
