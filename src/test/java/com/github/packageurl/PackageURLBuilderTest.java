@@ -26,6 +26,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -211,9 +212,10 @@ public class PackageURLBuilderTest {
                 .withQualifier("key4", "value4")
                 .withQualifiers(qualifiers2)
                 .withSubpath("")
+                .withoutQualifiers(Collections.singleton("key4"))
                 .build();
 
-        assertEquals("pkg:generic/name@version?key=value&key2=value2&key3=value3&key4=value4&next=value", purl.toString());
+        assertEquals("pkg:generic/name@version?key=value&key2=value2&key3=value3&next=value", purl.toString());
     }
 
     private void assertBuilderMatch(PackageURL expected, PackageURLBuilder actual) throws MalformedPackageURLException {
