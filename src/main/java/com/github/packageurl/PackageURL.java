@@ -223,7 +223,7 @@ public final class PackageURL implements Serializable {
      * @since 1.0.0
      */
     public Map<String, String> getQualifiers() {
-        return (qualifiers != null)? Collections.unmodifiableMap(qualifiers) : null;
+        return (qualifiers != null) ? Collections.unmodifiableMap(qualifiers) : null;
     }
 
     /**
@@ -312,9 +312,6 @@ public final class PackageURL implements Serializable {
     }
 
     private String validateVersion(final String value) {
-        if (value == null) {
-            return null;
-        }
         return value;
     }
 
@@ -416,9 +413,9 @@ public final class PackageURL implements Serializable {
             purl.append("@").append(percentEncode(version));
         }
         if (! coordinatesOnly) {
-            if (qualifiers != null && qualifiers.size() > 0) {
+            if (qualifiers != null && !qualifiers.isEmpty()) {
                 purl.append("?");
-                qualifiers.entrySet().stream().forEachOrdered((entry) -> {
+                qualifiers.entrySet().stream().forEachOrdered(entry -> {
                     purl.append(toLowerCase(entry.getKey()));
                     purl.append("=");
                     purl.append(percentEncode(entry.getValue()));
@@ -444,7 +441,7 @@ public final class PackageURL implements Serializable {
     }
 
     private static String uriEncode(String source, Charset charset) {
-        if (source == null || source.length() == 0) {
+        if (source == null || source.isEmpty()) {
             return source;
         }
 
@@ -660,7 +657,7 @@ public final class PackageURL implements Serializable {
     private Map<String, String> parseQualifiers(final String encodedString) throws MalformedPackageURLException {
         try {
             final TreeMap<String, String> results = Arrays.stream(encodedString.split("&"))
-                    .collect(TreeMap<String, String>::new,
+                    .collect(TreeMap::new,
                             (map, value) -> {
                                 final String[] entry = value.split("=", 2);
                                 if (entry.length == 2 && !entry[1].isEmpty()) {
@@ -670,7 +667,7 @@ public final class PackageURL implements Serializable {
                                     }
                                 }
                             },
-                            TreeMap<String, String>::putAll);
+                            TreeMap::putAll);
             return validateQualifiers(results);
         } catch (ValidationException e) {
             throw new MalformedPackageURLException(e);
@@ -678,7 +675,7 @@ public final class PackageURL implements Serializable {
     }
 
     @SuppressWarnings("StringSplitter")//reason: surprising behavior is okay in this case
-    private String[] parsePath(final String value, final boolean isSubpath) throws MalformedPackageURLException {
+    private String[] parsePath(final String value, final boolean isSubpath) {
         if (value == null || value.isEmpty()) {
             return null;
         }
