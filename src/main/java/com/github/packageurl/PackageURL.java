@@ -530,7 +530,7 @@ public final class PackageURL implements Serializable {
             }
 
             final int length = purl.length();
-            int start = 4;
+            int start = SCHEME_PART.length();
 
             while (start < length && '/' == purl.charAt(start)) {
                 start++;
