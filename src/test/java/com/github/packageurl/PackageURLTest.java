@@ -267,7 +267,7 @@ public class PackageURLTest {
     }
 
     @Test
-    public void testConstructorDuplicateQualifiers2() throws MalformedPackageURLException {
+    public void testConstructorDuplicateQualifiersMixedCase() throws MalformedPackageURLException {
         exception.expect(MalformedPackageURLException.class);
 
         PackageURL purl = new PackageURL("pkg://generic/name?key=one&KEY=two");

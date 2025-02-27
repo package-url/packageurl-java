@@ -328,16 +328,14 @@ public final class PackageURL implements Serializable {
         return values;
     }
 
-    private String validateKey(final String value) throws MalformedPackageURLException {
+    private void validateKey(final String value) throws MalformedPackageURLException {
         if (value == null || value.isEmpty()) {
             throw new MalformedPackageURLException("Qualifier key is invalid: " + value);
         }
-        final String retValue = value.toLowerCase();
-        if ((value.charAt(0) >= '0' && value.charAt(0) <= '9')
+        if (isDigit(value.charAt(0))
                 || !value.chars().allMatch(c -> (c >= 'a' && c <= 'z')  || isDigit(c) || c == '.' || c == '-' || c == '_')) {
             throw new MalformedPackageURLException("Qualifier key is invalid: " + value);
         }
-        return retValue;
     }
 
     private String validatePath(final String value, final boolean isSubpath) throws MalformedPackageURLException {
