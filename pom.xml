@@ -189,6 +189,13 @@
                 <artifactId>versions-maven-plugin</artifactId>
                 <version>${versions-maven-plugin.version}</version>
                 <configuration>
+                    <excludes>
+                        <exclude>com.github.spotbugs:spotbugs</exclude>
+                        <exclude>com.github.spotbugs:spotbugs-maven-plugin</exclude>
+                        <exclude>com.google.errorprone:error_prone_core</exclude>
+                        <exclude>org.apache.maven:maven-compiler-plugin</exclude>
+                        <exclude>org.codehaus.plexus:plexus-compiler-javac-errorprone</exclude>
+                    </excludes>
                     <ignoredVersions>(?i).+[-.](alpha|beta|cr|dev|m|rc)([-.]?\d+)?</ignoredVersions>
                 </configuration>
             </plugin>
@@ -266,6 +273,19 @@
     </build>
 
     <profiles>
+        <profile>
+            <id>jdk18</id>
+            <activation>
+                <jdk>1.8</jdk>
+            </activation>
+            <properties>
+                <com.github.spotbugs.version>4.8.6</com.github.spotbugs.version>
+                <error.prone.core.version>2.3.4</error.prone.core.version>
+                <maven.compiler.plugin.version>3.12.0</maven.compiler.plugin.version>
+                <plexus.compiler.javac.errorprone.version>2.8.6</plexus.compiler.javac.errorprone.version>
+                <spotbugs.maven.plugin.version>4.8.6.6</spotbugs.maven.plugin.version>
+            </properties>
+        </profile>
         <profile>
             <id>release</id>
             <activation>
