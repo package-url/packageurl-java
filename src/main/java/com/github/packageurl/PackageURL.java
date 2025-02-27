@@ -107,14 +107,14 @@ public final class PackageURL implements Serializable {
     /**
      * Constructs a new PackageURL object.
      *
-     * @param type       the type of package (i.e. maven, npm, gem, etc)
-     * @param namespace  the name prefix (i.e. group, owner, organization)
-     * @param name       the name of the package
-     * @param version    the version of the package
+     * @param type the type of package (i.e. maven, npm, gem, etc)
+     * @param namespace the name prefix (i.e. group, owner, organization)
+     * @param name the name of the package
+     * @param version the version of the package
      * @param qualifiers an array of key/value pair qualifiers
-     * @param subpath    the subpath string
+     * @param subpath the subpath string
      * @throws MalformedPackageURLException if parsing fails
-     * @since 1.0.0
+     * @since 1.6.0
      */
     public PackageURL(final String type, final String namespace, final String name, final String version,
                       final Map<String, String> qualifiers, final String subpath)
