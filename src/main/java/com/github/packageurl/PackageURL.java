@@ -22,8 +22,10 @@
 package com.github.packageurl;
 
 import java.io.Serializable;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
@@ -99,7 +101,7 @@ public final class PackageURL implements Serializable {
         this.type = validateType(type);
         this.namespace = validateNamespace(namespace);
         this.name = validateName(name);
-        this.version = validateVersion(version);
+        this.version = validateVersion(type, version);
         this.qualifiers = validateQualifiers(qualifiers);
         this.subpath = validatePath(subpath, true);
         verifyTypeConstraints(this.type, this.namespace, this.name);
@@ -271,12 +273,24 @@ public final class PackageURL implements Serializable {
 
         String retVal;
         switch (type) {
+            case StandardTypes.APK:
             case StandardTypes.BITBUCKET:
-            case StandardTypes.DEBIAN:
+            case StandardTypes.COMPOSER:
+            case StandardTypes.DEB:
             case StandardTypes.GITHUB:
             case StandardTypes.GOLANG:
+            case StandardTypes.HEX:
+            case StandardTypes.LUAROCKS:
+            case StandardTypes.QPKG:
             case StandardTypes.RPM:
                 retVal = tempNamespace.toLowerCase();
+                break;
+            case StandardTypes.MLFLOW:
+            case StandardTypes.OCI:
+                if (tempNamespace != null) {
+                    throw new MalformedPackageURLException("The PackageURL specified contains a namespace which is not allowed for type: " + type);
+                }
+                retVal = null;
                 break;
             default:
                 retVal = tempNamespace;
@@ -291,14 +305,22 @@ public final class PackageURL implements Serializable {
         }
         String temp;
         switch (type) {
+            case StandardTypes.APK:
             case StandardTypes.BITBUCKET:
-            case StandardTypes.DEBIAN:
+            case StandardTypes.BITNAMI:
+            case StandardTypes.COMPOSER:
+            case StandardTypes.DEB:
             case StandardTypes.GITHUB:
-            case StandardTypes.GOLANG:
+            case StandardTypes.HEX:
+            case StandardTypes.LUAROCKS:
+            case StandardTypes.OCI:
                 temp = value.toLowerCase();
                 break;
+            case StandardTypes.PUB:
+                temp = value.toLowerCase().replaceAll("[^a-z0-9_]", "_");
+                break;
             case StandardTypes.PYPI:
-                temp = value.replaceAll("_", "-").toLowerCase();
+                temp = value.toLowerCase().replace('_', '-');
                 break;
             default:
                 temp = value;
@@ -307,17 +329,26 @@ public final class PackageURL implements Serializable {
         return temp;
     }
 
-    private String validateVersion(final String value) {
+    private String validateVersion(final String type, final String value) {
         if (value == null) {
             return null;
         }
-        return value;
+
+        switch (type) {
+            case StandardTypes.HUGGINGFACE:
+            case StandardTypes.LUAROCKS:
+            case StandardTypes.OCI:
+                return value.toLowerCase();
+            default:
+                return value;
+        }
     }
 
     private Map<String, String> validateQualifiers(final Map<String, String> values) throws MalformedPackageURLException {
         if (values == null) {
             return null;
         }
+
         for (Map.Entry<String, String> entry : values.entrySet()) {
             validateKey(entry.getKey());
             final String value = entry.getValue();
@@ -460,7 +491,7 @@ public final class PackageURL implements Serializable {
     }
 
     private static boolean isUnreserved(int c) {
-        return (isAlpha(c) || isDigit(c) || '-' == c || '.' == c || '_' == c || '~' == c);
+        return (isAlpha(c) || isDigit(c) || '-' == c || '.' == c || '_' == c || '~' == c || ':' == c || '/' == c);
     }
 
     private static boolean isAlpha(int c) {
@@ -575,7 +606,7 @@ public final class PackageURL implements Serializable {
             // version is optional - check for existence
             index = remainder.lastIndexOf("@");
             if (index >= start) {
-                this.version = validateVersion(percentDecode(remainder.substring(index + 1)));
+                this.version = validateVersion(type, percentDecode(remainder.substring(index + 1)));
                 remainder.setLength(index);
             }
 
@@ -602,10 +633,57 @@ public final class PackageURL implements Serializable {
      * @throws MalformedPackageURLException if constraints are not met
      */
     private void verifyTypeConstraints(String type, String namespace, String name) throws MalformedPackageURLException {
-        if (StandardTypes.MAVEN.equals(type)) {
-            if (namespace == null || namespace.isEmpty() || name == null || name.isEmpty()) {
-                throw new MalformedPackageURLException("The PackageURL specified is invalid. Maven requires both a namespace and name.");
-            }
+        switch (type) {
+            case StandardTypes.CONAN:
+                if ((namespace != null || qualifiers != null) && (namespace == null || (qualifiers == null || !qualifiers.containsKey("channel")))) {
+                    throw new MalformedPackageURLException("The PackageURL specified is invalid. Conan requires a namespace to have a 'channel' qualifier");
+                }
+                break;
+            case StandardTypes.CPAN:
+                if (name == null || name.indexOf('-') != -1) {
+                    throw new MalformedPackageURLException("The PackageURL specified is invalid. CPAN requires a name");
+                }
+                if (namespace != null && (name.contains("::") || name.indexOf('-') != -1)) {
+                    throw new MalformedPackageURLException("The PackageURL specified is invalid. CPAN name may not contain '::' or '-'");
+                }
+                break;
+            case StandardTypes.CRAN:
+                if (version == null) {
+                    throw new MalformedPackageURLException("The PackageURL specified is invalid. CRAN requires a version");
+                }
+                break;
+            case StandardTypes.HACKAGE:
+                if (name == null || version == null) {
+                    throw new MalformedPackageURLException("The PackageURL specified is invalid. Hackage requires a name and version");
+                }
+                break;
+            case StandardTypes.MAVEN:
+                if (namespace == null || name == null) {
+                    throw new MalformedPackageURLException("The PackageURL specified is invalid. Maven requires both a namespace and name");
+                }
+                break;
+            case StandardTypes.MLFLOW:
+                if (qualifiers != null) {
+                    String repositoryUrl = qualifiers.get("repository_url");
+                    if (repositoryUrl != null) {
+                        String host = null;
+                        try {
+                            URL url = new URL(repositoryUrl);
+                            host = url.getHost();
+                            if (host.matches(".*[.]?azuredatabricks.net$")) {
+                                this.name = name.toLowerCase();
+                            }
+                        } catch (MalformedURLException e) {
+                            throw new MalformedPackageURLException("The PackageURL specified is invalid. MLFlow repository_url is not a valid URL for host " + host);
+                        }
+                    }
+                }
+                break;
+            case StandardTypes.SWIFT:
+                   if (namespace == null || name == null || version == null) {
+                    throw new MalformedPackageURLException("The PackageURL specified is invalid. Swift requires a namespace, name, and version");
+                   }
+                   break;
         }
     }
 
@@ -727,24 +805,42 @@ public final class PackageURL implements Serializable {
      *
      * @since 1.0.0
      */
-    public static class StandardTypes {
+    public static final class StandardTypes {
+        public static final String ALPM = "alpm";
+        public static final String APK = "apk";
         public static final String BITBUCKET = "bitbucket";
+        public static final String BITNAMI = "bitnami";
+        public static final String COCOAPODS = "cocoapods";
         public static final String CARGO = "cargo";
         public static final String COMPOSER = "composer";
-        public static final String DEBIAN = "deb";
+        public static final String CONAN = "conan";
+        public static final String CONDA = "conda";
+        public static final String CPAN = "cpan";
+        public static final String CRAN = "cran";
+        public static final String DEB = "deb";
         public static final String DOCKER = "docker";
         public static final String GEM = "gem";
         public static final String GENERIC = "generic";
         public static final String GITHUB = "github";
         public static final String GOLANG = "golang";
+        public static final String HACKAGE = "hackage";
         public static final String HEX = "hex";
+        public static final String HUGGINGFACE = "huggingface";
+        public static final String LUAROCKS = "luarocks";
         public static final String MAVEN = "maven";
+        public static final String MLFLOW = "mlflow";
         public static final String NPM = "npm";
         public static final String NUGET = "nuget";
+        public static final String QPKG = "qpkg";
+        public static final String OCI = "oci";
+        public static final String PUB = "pub";
         public static final String PYPI = "pypi";
         public static final String RPM = "rpm";
-        public static final String NIXPKGS = "nixpkgs";
-        public static final String HACKAGE = "hackage";
+        public static final String SWID = "swid";
+        public static final String SWIFT = "swift";
+        // FIXME: Remove this since it should be named DEB
+        public static final String DEBIAN = "deb";
+        // FIXME: Remove this since it should be named NIX and it is not a standard type
+        public static final String NIXPKGS = "nix";
     }
-
 }
