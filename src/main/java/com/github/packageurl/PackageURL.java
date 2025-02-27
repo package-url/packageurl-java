@@ -619,6 +619,7 @@ public final class PackageURL implements Serializable {
 
         try {
             final TreeMap<String, String> results = qualifiers.entrySet().stream()
+                    .filter(entry -> entry.getValue() != null && !entry.getValue().isEmpty())
                     .collect(TreeMap::new,
                             (map, value) -> map.put(value.getKey().toLowerCase(), value.getValue()),
                             TreeMap::putAll);
