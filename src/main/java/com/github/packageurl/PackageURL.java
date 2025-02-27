@@ -100,7 +100,7 @@ public final class PackageURL implements Serializable {
         this.name = validateName(name);
         this.version = validateVersion(version);
         this.qualifiers = parseQualifiers(qualifiers);
-        this.subpath = validatePath(subpath, true);
+        this.subpath = validatePath(subpath);
         verifyTypeConstraints(this.type, this.namespace, this.name);
     }
 
@@ -369,11 +369,11 @@ public final class PackageURL implements Serializable {
         validateChars(value, PackageURL::isValidCharForKey, "qualifier key");
     }
 
-    private String validatePath(final String value, final boolean isSubpath) throws MalformedPackageURLException {
+    private String validatePath(final String value) throws MalformedPackageURLException {
         if (value == null || value.isEmpty()) {
             return null;
         }
-        return validatePath(value.split("/"), isSubpath);
+        return validatePath(value.split("/"), true);
     }
 
     private String validatePath(final String[] segments, final boolean isSubpath) throws MalformedPackageURLException {
