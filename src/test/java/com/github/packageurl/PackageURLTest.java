@@ -23,16 +23,15 @@ package com.github.packageurl;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Locale;
 import java.util.TreeMap;
 
-import org.apache.commons.io.IOUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.AfterClass;
+import org.json.JSONTokener;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Rule;
@@ -57,10 +56,11 @@ public class PackageURLTest {
 
     @BeforeClass
     public static void setup() throws IOException {
-        InputStream is = PackageURLTest.class.getResourceAsStream("/test-suite-data.json");
-        Assert.assertNotNull(is);
-        String jsonTxt = IOUtils.toString(is, StandardCharsets.UTF_8);
-        json = new JSONArray(jsonTxt);
+        try (InputStream is = PackageURLTest.class.getResourceAsStream("/test-suite-data.json")) {
+            Assert.assertNotNull(is);
+            json = new JSONArray(new JSONTokener(is));
+        }
+
         defaultLocale = Locale.getDefault();
         Locale.setDefault(new Locale("tr"));
     }
