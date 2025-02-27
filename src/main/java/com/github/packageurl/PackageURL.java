@@ -28,11 +28,8 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.TreeMap;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -223,7 +220,7 @@ public final class PackageURL implements Serializable {
      * @since 1.0.0
      */
     public Map<String, String> getQualifiers() {
-        return (qualifiers != null)? Collections.unmodifiableMap(qualifiers) : null;
+        return (qualifiers != null) ? Collections.unmodifiableMap(qualifiers) : null;
     }
 
     /**
@@ -318,7 +315,7 @@ public final class PackageURL implements Serializable {
     }
 
     private Map<String, String> validateQualifiers(final Map<String, String> values) throws MalformedPackageURLException {
-        if (values == null) {
+        if (values == null || values.isEmpty()) {
             return null;
         }
         for (Map.Entry<String, String> entry : values.entrySet()) {
@@ -613,7 +610,7 @@ public final class PackageURL implements Serializable {
     }
 
     private Map<String, String> parseQualifiers(final Map<String, String> qualifiers) throws MalformedPackageURLException {
-        if (qualifiers == null) {
+        if (qualifiers == null || qualifiers.isEmpty()) {
             return null;
         }
 

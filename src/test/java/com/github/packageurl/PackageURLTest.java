@@ -286,6 +286,19 @@ public class PackageURLTest {
     }
 
     @Test
+    public void testConstructorWithEmptyKey() throws MalformedPackageURLException {
+        PackageURL purl = new PackageURL("pkg://generic/name?KEY");
+        Assert.assertNull(purl.getQualifiers());
+        TreeMap<String, String> qualifiers = new TreeMap<>();
+        qualifiers.put("KEY", null);
+        PackageURL purl2 = new PackageURL("generic", null, "name", null, qualifiers, null);
+        Assert.assertEquals(purl, purl2);
+        qualifiers.put("KEY", "");
+        PackageURL purl3 = new PackageURL("generic", null, "name", null, qualifiers, null);
+        Assert.assertEquals(purl2, purl3);
+    }
+
+    @Test
     public void testStandardTypes() {
         exception = ExpectedException.none();
         Assert.assertEquals(PackageURL.StandardTypes.BITBUCKET, "bitbucket");
