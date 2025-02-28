@@ -403,11 +403,11 @@ public final class PackageURL implements Serializable {
         }
         purl.append("/");
         if (namespace != null) {
-            purl.append(encodePath(namespace));
+            purl.append(encodePath(namespace, ":"));
             purl.append("/");
         }
         if (name != null) {
-            purl.append(percentEncode(name));
+            purl.append(percentEncode(name, ":"));
         }
         if (version != null) {
             purl.append("@").append(percentEncode(version));
@@ -418,16 +418,24 @@ public final class PackageURL implements Serializable {
                 qualifiers.entrySet().stream().forEachOrdered((entry) -> {
                     purl.append(entry.getKey().toLowerCase());
                     purl.append("=");
-                    purl.append(percentEncode(entry.getValue()));
+                    purl.append(percentEncode(entry.getValue(), ":/"));
                     purl.append("&");
                 });
                 purl.setLength(purl.length() - 1);
             }
             if (subpath != null) {
-                purl.append("#").append(encodePath(subpath));
+                purl.append("#").append(encodePath(subpath, "?#+&="));
             }
         }
         return purl.toString();
+    }
+
+    private String percentEncode(String input, Charset charset, String charsToExclude) {
+        return uriEncode(input, charset, charsToExclude);
+    }
+
+    private String percentEncode(String input, String charsToExclude) {
+        return percentEncode(input, StandardCharsets.UTF_8, charsToExclude);
     }
 
     /**
@@ -437,17 +445,17 @@ public final class PackageURL implements Serializable {
      * @return an encoded String
      */
     private String percentEncode(final String input) {
-        return uriEncode(input, StandardCharsets.UTF_8);
+        return uriEncode(input, StandardCharsets.UTF_8, null);
     }
 
-    private static String uriEncode(String source, Charset charset) {
+    private static String uriEncode(String source, Charset charset, String chars) {
         if (source == null || source.length() == 0) {
             return source;
         }
 
         StringBuilder builder = new StringBuilder();
         for (byte b : source.getBytes(charset)) {
-            if (isUnreserved(b)) {
+            if (isUnreserved(b) || chars != null && chars.indexOf(b) != -1) {
                 builder.append((char) b);
             }
             else {
@@ -460,7 +468,7 @@ public final class PackageURL implements Serializable {
     }
 
     private static boolean isUnreserved(int c) {
-        return (isAlpha(c) || isDigit(c) || '-' == c || '.' == c || '_' == c || '~' == c || ':' == c || '/' == c);
+        return (isAlpha(c) || isDigit(c) || '-' == c || '.' == c || '_' == c || '~' == c);
     }
 
     private static boolean isAlpha(int c) {
@@ -640,8 +648,8 @@ public final class PackageURL implements Serializable {
                 .toArray(String[]::new);
     }
 
-    private String encodePath(final String path) {
-        return Arrays.stream(path.split("/")).map(segment -> percentEncode(segment)).collect(Collectors.joining("/"));
+    private String encodePath(final String path, String chars) {
+        return Arrays.stream(path.split("/")).map(segment -> percentEncode(segment, chars)).collect(Collectors.joining("/"));
     }
 
     /**
