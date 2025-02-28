@@ -248,7 +248,7 @@ public final class PackageURL implements Serializable {
         if (value.charAt(0) >= '0' && value.charAt(0) <= '9') {
             throw new MalformedPackageURLException("The PackageURL type cannot start with a number");
         }
-        final String retVal = value.toLowerCase(Locale.ROOT);
+        final String retVal = toLowerCase(value);
         final String invalidChars = retVal.chars().filter(c -> !(c == '.' || c == '+' || c == '-'
                 || (c >= 'a' && c <= 'z')
                 || isDigit(c))).mapToObj(c -> String.valueOf((char) c)).collect(Collectors.joining(", "));
@@ -278,7 +278,7 @@ public final class PackageURL implements Serializable {
             case StandardTypes.GITHUB:
             case StandardTypes.GOLANG:
             case StandardTypes.RPM:
-                retVal = tempNamespace.toLowerCase(Locale.ROOT);
+                retVal = toLowerCase(tempNamespace);
                 break;
             default:
                 retVal = tempNamespace;
@@ -297,10 +297,10 @@ public final class PackageURL implements Serializable {
             case StandardTypes.DEBIAN:
             case StandardTypes.GITHUB:
             case StandardTypes.GOLANG:
-                temp = value.toLowerCase(Locale.ROOT);
+                temp = toLowerCase(value);
                 break;
             case StandardTypes.PYPI:
-                temp = value.replaceAll("_", "-").toLowerCase(Locale.ROOT);
+                temp = toLowerCase(value.replace('_', '-'));
                 break;
             default:
                 temp = value;
@@ -416,7 +416,7 @@ public final class PackageURL implements Serializable {
             if (qualifiers != null && qualifiers.size() > 0) {
                 purl.append("?");
                 qualifiers.entrySet().stream().forEachOrdered((entry) -> {
-                    purl.append(entry.getKey().toLowerCase(Locale.ROOT));
+                    purl.append(toLowerCase(entry.getKey()));
                     purl.append("=");
                     purl.append(percentEncode(entry.getValue()));
                     purl.append("&");
@@ -469,6 +469,10 @@ public final class PackageURL implements Serializable {
 
     private static boolean isDigit(int c) {
         return (c >= '0' && c <= '9');
+    }
+
+    private static String toLowerCase(String s) {
+        return s.toLowerCase(Locale.ROOT);
     }
 
     /**
@@ -618,7 +622,7 @@ public final class PackageURL implements Serializable {
             final TreeMap<String, String> results = qualifiers.entrySet().stream()
                     .filter(entry -> entry.getValue() != null && !entry.getValue().isEmpty())
                     .collect(TreeMap::new,
-                            (map, value) -> map.put(value.getKey().toLowerCase(Locale.ROOT), value.getValue()),
+                            (map, value) -> map.put(toLowerCase(value.getKey()), value.getValue()),
                             TreeMap::putAll);
             return validateQualifiers(results);
         } catch (ValidationException ex) {
@@ -635,8 +639,9 @@ public final class PackageURL implements Serializable {
                             (map, value) -> {
                                 final String[] entry = value.split("=", 2);
                                 if (entry.length == 2 && !entry[1].isEmpty()) {
-                                    if (map.put(entry[0].toLowerCase(Locale.ROOT), percentDecode(entry[1])) != null) {
-                                        throw new ValidationException("Duplicate package qualifier encountere - more then one value was specified for " + entry[0].toLowerCase(Locale.ROOT));
+                                    String key = toLowerCase(entry[0]);
+                                    if (map.put(key, percentDecode(entry[1])) != null) {
+                                        throw new ValidationException("Duplicate package qualifier encountered - more then one value was specified for " + key);
                                     }
                                 }
                             },
