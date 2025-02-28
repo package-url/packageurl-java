@@ -19,11 +19,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-/**
- * <p>Java implementation of the Package-URL Specification.</p>
- * <p><a href="https://github.com/package-url/purl-spec">https://github.com/package-url/purl-spec</a></p>
- */
 @NullMarked
-package com.github.packageurl;
+package com.github.packageurl.validator;
 
 import org.jspecify.annotations.NullMarked;

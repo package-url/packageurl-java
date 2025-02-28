@@ -21,6 +21,8 @@
  */
 package com.github.packageurl;
 
+import org.jspecify.annotations.Nullable;
+
 /**
  * Exception class intended to be used for PackageURL parsing exceptions.
  *
@@ -43,7 +45,7 @@ public class MalformedPackageURLException extends Exception {
      *
      * @param msg the detail message.
      */
-    public MalformedPackageURLException(String msg) {
+    public MalformedPackageURLException(@Nullable String msg) {
         super(msg);
     }
 

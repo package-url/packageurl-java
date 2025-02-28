@@ -21,10 +21,11 @@
  */
 package com.github.packageurl;
 
+import static java.util.Objects.requireNonNull;
+
 import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collections;
@@ -33,6 +34,7 @@ import java.util.Objects;
 import java.util.TreeMap;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import org.jspecify.annotations.Nullable;
 
 /**
  * <p>Package-URL (aka purl) is a "mostly universal" URL to describe a package. A purl is a URL composed of seven components:</p>
@@ -54,16 +56,18 @@ public final class PackageURL implements Serializable {
 
     private static final long serialVersionUID = 3243226021636427586L;
     private static final Pattern PATH_SPLITTER = Pattern.compile("/");
+    private static final String SCHEME = "pkg";
 
     /**
      * Constructs a new PackageURL object by parsing the specified string.
      *
      * @param purl a valid package URL string to parse
      * @throws MalformedPackageURLException if parsing fails
+     * @throws NullPointerException if {@code purl} is {@code null}
      * @since 1.0.0
      */
     public PackageURL(final String purl) throws MalformedPackageURLException {
-        parse(purl);
+        parse(requireNonNull(purl, "purl"));
     }
 
     /**
@@ -82,33 +86,28 @@ public final class PackageURL implements Serializable {
     /**
      * Constructs a new PackageURL object.
      *
-     * @param type       the type of package (i.e. maven, npm, gem, etc)
+     * @param type       the type of package (i.e. maven, npm, gem, etc), not {@code null}
      * @param namespace  the name prefix (i.e. group, owner, organization)
-     * @param name       the name of the package
+     * @param name       the name of the package, not {@code null}
      * @param version    the version of the package
      * @param qualifiers an array of key/value pair qualifiers
      * @param subpath    the subpath string
      * @throws MalformedPackageURLException if parsing fails
+     * @throws NullPointerException if {@code type} or {@code name} are {@code null}
      * @since 1.0.0
      */
-    public PackageURL(final String type, final String namespace, final String name, final String version,
-                      final TreeMap<String, String> qualifiers, final String subpath)
+    public PackageURL(final String type, final @Nullable String namespace, final String name, final @Nullable String version,
+                      final @Nullable TreeMap<String, String> qualifiers, final @Nullable String subpath)
             throws MalformedPackageURLException {
 
-        this.scheme = validateScheme("pkg");
-        this.type = validateType(type);
+        this.type = validateType(requireNonNull(type, "type"));
         this.namespace = validateNamespace(namespace);
-        this.name = validateName(name);
+        this.name = validateName(requireNonNull(name, "name"));
         this.version = validateVersion(version);
         this.qualifiers = validateQualifiers(qualifiers);
-        this.subpath = validatePath(subpath, true);
-        verifyTypeConstraints(this.type, this.namespace, this.name);
+        this.subpath = validateSubPath(subpath);
+        verifyTypeConstraints(this.type, this.namespace);
     }
-
-    /**
-     * The PackageURL scheme constant
-     */
-    private String scheme;
 
     /**
      * The package "type" or package "protocol" such as maven, npm, nuget, gem, pypi, etc.
@@ -120,7 +119,7 @@ public final class PackageURL implements Serializable {
      * The name prefix such as a Maven groupid, a Docker image owner, a GitHub user or organization.
      * Optional and type-specific.
      */
-    private String namespace;
+    private @Nullable String namespace;
 
     /**
      * The name of the package.
@@ -132,19 +131,19 @@ public final class PackageURL implements Serializable {
      * The version of the package.
      * Optional.
      */
-    private String version;
+    private @Nullable String version;
 
     /**
      * Extra qualifying data for a package such as an OS, architecture, a distro, etc.
      * Optional and type-specific.
      */
-    private Map<String, String> qualifiers;
+    private @Nullable Map<String, String> qualifiers;
 
     /**
      * Extra subpath within a package, relative to the package root.
      * Optional.
      */
-    private String subpath;
+    private @Nullable String subpath;
 
     public PackageURLBuilder toBuilder() {
 
@@ -170,7 +169,7 @@ public final class PackageURL implements Serializable {
      * @since 1.0.0
      */
     public String getScheme() {
-        return scheme;
+        return SCHEME;
     }
 
     /**
@@ -189,7 +188,7 @@ public final class PackageURL implements Serializable {
      * @return the namespace
      * @since 1.0.0
      */
-    public String getNamespace() {
+    public @Nullable String getNamespace() {
         return namespace;
     }
 
@@ -209,7 +208,7 @@ public final class PackageURL implements Serializable {
      * @return the version of the package
      * @since 1.0.0
      */
-    public String getVersion() {
+    public @Nullable String getVersion() {
         return version;
     }
 
@@ -219,7 +218,7 @@ public final class PackageURL implements Serializable {
      * @return qualifiers
      * @since 1.0.0
      */
-    public Map<String, String> getQualifiers() {
+    public @Nullable Map<String, String> getQualifiers() {
         return (qualifiers != null)? Collections.unmodifiableMap(qualifiers) : null;
     }
 
@@ -229,20 +228,19 @@ public final class PackageURL implements Serializable {
      * @return the subpath
      * @since 1.0.0
      */
-    public String getSubpath() {
+    public @Nullable String getSubpath() {
         return subpath;
     }
 
-    private String validateScheme(final String value) throws MalformedPackageURLException {
-        if ("pkg".equals(value)) {
-            return "pkg";
+    private void validateScheme(final String value) throws MalformedPackageURLException {
+        if (!SCHEME.equals(value)) {
+            throw new MalformedPackageURLException("The PackageURL scheme is invalid");
         }
-        throw new MalformedPackageURLException("The PackageURL scheme is invalid");
     }
 
-    private String validateType(final String value) throws MalformedPackageURLException {
-        if (value == null || value.isEmpty()) {
-            throw new MalformedPackageURLException("The PackageURL type cannot be null or empty");
+    private static String validateType(final String value) throws MalformedPackageURLException {
+        if (value.isEmpty()) {
+            throw new MalformedPackageURLException("The PackageURL type cannot be empty");
         }
         if (value.charAt(0) >= '0' && value.charAt(0) <= '9') {
             throw new MalformedPackageURLException("The PackageURL type cannot start with a number");
@@ -256,27 +254,29 @@ public final class PackageURL implements Serializable {
         return retVal;
     }
 
-    private String validateNamespace(final String value) throws MalformedPackageURLException {
-        if (value == null || value.isEmpty()) {
+    private @Nullable String validateNamespace(final @Nullable String value) throws MalformedPackageURLException {
+        if (isEmpty(value)) {
             return null;
         }
         return validateNamespace(value.split("/"));
     }
 
-    private String validateNamespace(final String[] values) throws MalformedPackageURLException {
-        if (values == null || values.length == 0) {
+    private @Nullable String validateNamespace(final String[] values) throws MalformedPackageURLException {
+        if (values.length == 0) {
             return null;
         }
         final String tempNamespace = validatePath(values, false);
 
-        String retVal;
+        String retVal = null;
         switch (type) {
             case StandardTypes.BITBUCKET:
             case StandardTypes.DEBIAN:
             case StandardTypes.GITHUB:
             case StandardTypes.GOLANG:
             case StandardTypes.RPM:
-                retVal = tempNamespace.toLowerCase();
+                if (tempNamespace != null) {
+                    retVal = tempNamespace.toLowerCase();
+                }
                 break;
             default:
                 retVal = tempNamespace;
@@ -286,7 +286,7 @@ public final class PackageURL implements Serializable {
     }
 
     private String validateName(final String value) throws MalformedPackageURLException {
-        if (value == null || value.isEmpty()) {
+        if (value.isEmpty()) {
             throw new MalformedPackageURLException("The PackageURL name specified is invalid");
         }
         String temp;
@@ -307,61 +307,59 @@ public final class PackageURL implements Serializable {
         return temp;
     }
 
-    private String validateVersion(final String value) {
-        if (value == null) {
-            return null;
-        }
-        return value;
+    private @Nullable String validateVersion(final @Nullable String value) {
+        return isEmpty(value) ? null : value;
     }
 
-    private Map<String, String> validateQualifiers(final Map<String, String> values) throws MalformedPackageURLException {
-        if (values == null) {
+    private @Nullable Map<String, String> validateQualifiers(final @Nullable Map<String, String> values) throws MalformedPackageURLException {
+        if (values == null || values.isEmpty()) {
             return null;
         }
         for (Map.Entry<String, String> entry : values.entrySet()) {
-            validateKey(entry.getKey());
-            final String value = entry.getValue();
-            if (value == null || value.isEmpty()) {
-                throw new MalformedPackageURLException("The PackageURL specified contains a qualifier key with an empty or null value");
-            }
+            String key = entry.getKey();
+            validateKey(key);
+            validateValue(key, entry.getValue());
         }
         return values;
     }
 
-    private String validateKey(final String value) throws MalformedPackageURLException {
-        if (value == null || value.isEmpty()) {
-            throw new MalformedPackageURLException("Qualifier key is invalid: " + value);
+    private static void validateKey(final @Nullable String value) throws MalformedPackageURLException {
+        if (isEmpty(value)) {
+            throw new MalformedPackageURLException("The specified PackageURL contains an empty or null qualifier key");
         }
-        final String retValue = value.toLowerCase();
         if ((value.charAt(0) >= '0' && value.charAt(0) <= '9')
                 || !value.chars().allMatch(c -> (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || c == '.' || c == '-' || c == '_')) {
-            throw new MalformedPackageURLException("Qualifier key is invalid: " + value);
+            throw new MalformedPackageURLException("The specified PackageURL contains an invalid qualifier key: " + value);
         }
-        return retValue;
     }
 
-    private String validatePath(final String value, final boolean isSubpath) throws MalformedPackageURLException {
-        if (value == null || value.isEmpty()) {
+    private static void validateValue(final String key, final @Nullable String value) throws MalformedPackageURLException {
+        if (isEmpty(value)) {
+            throw new MalformedPackageURLException("The specified PackageURL contains an empty or null qualifier value for key " + key);
+        }
+    }
+
+    private @Nullable String validateSubPath(final @Nullable String value) throws MalformedPackageURLException {
+        if (isEmpty(value)) {
             return null;
         }
-        return validatePath(value.split("/"), isSubpath);
+        return validatePath(value.split("/"), true);
     }
 
-    private String validatePath(final String[] segments, final boolean isSubpath) throws MalformedPackageURLException {
-        if (segments == null || segments.length == 0) {
+    private static @Nullable String validatePath(final String[] segments, final boolean isSubPath) throws MalformedPackageURLException {
+        if (segments.length == 0) {
             return null;
         }
         try {
             return Arrays.stream(segments)
-                    .map(segment -> {
-                        if (isSubpath && ("..".equals(segment) || ".".equals(segment))) {
+                    .peek(segment -> {
+                        if (isSubPath && ("..".equals(segment) || ".".equals(segment))) {
                             throw new ValidationException("Segments in the subpath may not be a period ('.') or repeated period ('..')");
                         } else if (segment.contains("/")) {
                             throw new ValidationException("Segments in the namespace and subpath may not contain a forward slash ('/')");
                         } else if (segment.isEmpty()) {
                             throw new ValidationException("Segments in the namespace and subpath may not be empty");
                         }
-                        return segment;
                     }).collect(Collectors.joining("/"));
         } catch (ValidationException ex) {
             throw new MalformedPackageURLException(ex.getMessage());
@@ -397,28 +395,22 @@ public final class PackageURL implements Serializable {
      */
     private String canonicalize(boolean coordinatesOnly) {
         final StringBuilder purl = new StringBuilder();
-        purl.append(scheme).append(":");
-        if (type != null) {
-            purl.append(type);
-        }
-        purl.append("/");
+        purl.append(SCHEME).append(":").append(type).append("/");
         if (namespace != null) {
             purl.append(encodePath(namespace));
             purl.append("/");
         }
-        if (name != null) {
-            purl.append(percentEncode(name));
-        }
+        purl.append(percentEncode(name));
         if (version != null) {
             purl.append("@").append(percentEncode(version));
         }
         if (! coordinatesOnly) {
-            if (qualifiers != null && qualifiers.size() > 0) {
+            if (qualifiers != null) {
                 purl.append("?");
-                qualifiers.entrySet().stream().forEachOrdered((entry) -> {
-                    purl.append(entry.getKey().toLowerCase());
+                qualifiers.forEach((key, value) -> {
+                    purl.append(key.toLowerCase());
                     purl.append("=");
-                    purl.append(percentEncode(entry.getValue()));
+                    purl.append(percentEncode(value));
                     purl.append("&");
                 });
                 purl.setLength(purl.length() - 1);
@@ -437,16 +429,12 @@ public final class PackageURL implements Serializable {
      * @return an encoded String
      */
     private String percentEncode(final String input) {
-        return uriEncode(input, StandardCharsets.UTF_8);
-    }
-
-    private static String uriEncode(String source, Charset charset) {
-        if (source == null || source.length() == 0) {
-            return source;
+        if (input.isEmpty()) {
+            return input;
         }
 
         StringBuilder builder = new StringBuilder();
-        for (byte b : source.getBytes(charset)) {
+        for (byte b : input.getBytes(StandardCharsets.UTF_8)) {
             if (isUnreserved(b)) {
                 builder.append((char) b);
             }
@@ -479,9 +467,6 @@ public final class PackageURL implements Serializable {
      * @return a decoded String
      */
     private String percentDecode(final String input) {
-        if (input == null) {
-            return null;
-        }
         final String decoded = uriDecode(input);
         if (!decoded.equals(input)) {
             return decoded;
@@ -489,10 +474,14 @@ public final class PackageURL implements Serializable {
         return input;
     }
 
+    /**
+     * Decodes a percent-encoded string.
+     *
+     * @param source string to decode, not {@code null}
+     * @return A decoded string
+     * @throws NullPointerException if {@code source} is {@code null}
+     */
     public static String uriDecode(String source) {
-        if (source == null) {
-            return source;
-        }
         int length = source.length();
         StringBuilder builder = new StringBuilder();
         for (int i = 0; i < length; i++) {
@@ -518,7 +507,7 @@ public final class PackageURL implements Serializable {
      * @throws MalformedPackageURLException if an exception occurs when parsing
      */
     private void parse(final String purl) throws MalformedPackageURLException {
-        if (purl == null || purl.trim().isEmpty()) {
+        if (purl.isEmpty()) {
             throw new MalformedPackageURLException("Invalid purl: Contains an empty or null value");
         }
 
@@ -529,7 +518,7 @@ public final class PackageURL implements Serializable {
                 throw new MalformedPackageURLException("Invalid purl: Contains parts not supported by the purl spec");
             }
 
-            this.scheme = validateScheme(uri.getScheme());
+            validateScheme(uri.getScheme());
 
             // subpath is optional - check for existence
             if (uri.getRawFragment() != null && !uri.getRawFragment().isEmpty()) {
@@ -588,7 +577,7 @@ public final class PackageURL implements Serializable {
                 remainder.setLength(index);
                 this.namespace = validateNamespace(parsePath(remainder.substring(start), false));
             }
-            verifyTypeConstraints(this.type, this.namespace, this.name);
+            verifyTypeConstraints(this.type, this.namespace);
         } catch (URISyntaxException e) {
             throw new MalformedPackageURLException("Invalid purl: " + e.getMessage());
         }
@@ -598,22 +587,21 @@ public final class PackageURL implements Serializable {
      * Some purl types may have specific constraints. This method attempts to verify them.
      * @param type the purl type
      * @param namespace the purl namespace
-     * @param name the purl name
      * @throws MalformedPackageURLException if constraints are not met
      */
-    private void verifyTypeConstraints(String type, String namespace, String name) throws MalformedPackageURLException {
+    private void verifyTypeConstraints(String type, @Nullable String namespace) throws MalformedPackageURLException {
         if (StandardTypes.MAVEN.equals(type)) {
-            if (namespace == null || namespace.isEmpty() || name == null || name.isEmpty()) {
+            if (isEmpty(namespace)) {
                 throw new MalformedPackageURLException("The PackageURL specified is invalid. Maven requires both a namespace and name.");
             }
         }
     }
 
     @SuppressWarnings("StringSplitter")//reason: surprising behavior is okay in this case
-    private Map<String, String> parseQualifiers(final String encodedString) throws MalformedPackageURLException {
+    private @Nullable Map<String, String> parseQualifiers(final String encodedString) throws MalformedPackageURLException {
         try {
             final TreeMap<String, String> results = Arrays.stream(encodedString.split("&"))
-                    .collect(TreeMap<String, String>::new,
+                    .collect(TreeMap::new,
                             (map, value) -> {
                                 final String[] entry = value.split("=", 2);
                                 if (entry.length == 2 && !entry[1].isEmpty()) {
@@ -622,7 +610,7 @@ public final class PackageURL implements Serializable {
                                     }
                                 }
                             },
-                            TreeMap<String, String>::putAll);
+                            TreeMap::putAll);
             return validateQualifiers(results);
         } catch (ValidationException ex) {
             throw new MalformedPackageURLException(ex.getMessage());
@@ -630,18 +618,18 @@ public final class PackageURL implements Serializable {
     }
 
     @SuppressWarnings("StringSplitter")//reason: surprising behavior is okay in this case
-    private String[] parsePath(final String value, final boolean isSubpath) throws MalformedPackageURLException {
-        if (value == null || value.isEmpty()) {
-            return null;
+    private String[] parsePath(final @Nullable String value, final boolean isSubpath) {
+        if (isEmpty(value)) {
+            return new String[0];
         }
         return PATH_SPLITTER.splitAsStream(value)
                 .filter(segment -> !segment.isEmpty() && !(isSubpath && (".".equals(segment) || "..".equals(segment))))
-                .map(segment -> percentDecode(segment))
+                .map(this::percentDecode)
                 .toArray(String[]::new);
     }
 
     private String encodePath(final String path) {
-        return Arrays.stream(path.split("/")).map(segment -> percentEncode(segment)).collect(Collectors.joining("/"));
+        return Arrays.stream(path.split("/")).map(this::percentEncode).collect(Collectors.joining("/"));
     }
 
     /**
@@ -667,15 +655,14 @@ public final class PackageURL implements Serializable {
      * the qualifier (querystring). This includes equivalence of: scheme, type, namespace,
      * name, and version, but excludes qualifier and subpath from evaluation.
      *
-     * @param purl the Package URL to evaluate
+     * @param purl the Package URL to evaluate, not {@code null}
      * @return true if equivalence passes, false if not
      * @since 1.4.0
      */
     public boolean isCoordinatesEquals(final PackageURL purl) {
-        return Objects.equals(scheme, purl.scheme) &&
-                Objects.equals(type, purl.type) &&
+        return type.equals(purl.type) &&
                 Objects.equals(namespace, purl.namespace) &&
-                Objects.equals(name, purl.name) &&
+                name.equals(purl.name) &&
                 Objects.equals(version, purl.version);
     }
 
@@ -695,7 +682,7 @@ public final class PackageURL implements Serializable {
      * canonical values. Canonical equivalence is especially useful for qualifiers, which
      * can be in any order, but have a predictable order in canonicalized form.
      *
-     * @param purl the Package URL to evaluate
+     * @param purl the Package URL to evaluate, not {@code null}
      * @return true if equivalence passes, false if not
      * @since 1.2.0
      */
@@ -703,15 +690,18 @@ public final class PackageURL implements Serializable {
         return (this.canonicalize().equals(purl.canonicalize()));
     }
 
+    private static boolean isEmpty(@Nullable String value) {
+        return value == null || value.isEmpty();
+    }
+
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(@Nullable Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         final PackageURL other = (PackageURL) o;
-        return Objects.equals(scheme, other.scheme) &&
-                Objects.equals(type, other.type) &&
+        return type.equals(other.type) &&
                 Objects.equals(namespace, other.namespace) &&
-                Objects.equals(name, other.name) &&
+                name.equals(other.name) &&
                 Objects.equals(version, other.version) &&
                 Objects.equals(qualifiers, other.qualifiers) &&
                 Objects.equals(subpath, other.subpath);
@@ -719,7 +709,7 @@ public final class PackageURL implements Serializable {
 
     @Override
     public int hashCode() {
-        return Objects.hash(scheme, type, namespace, name, version, qualifiers, subpath);
+        return Objects.hash(type, namespace, name, version, qualifiers, subpath);
     }
 
     /**

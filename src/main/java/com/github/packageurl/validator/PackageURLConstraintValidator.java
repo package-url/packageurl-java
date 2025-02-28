@@ -24,6 +24,7 @@ package com.github.packageurl.validator;
 import com.github.packageurl.MalformedPackageURLException;
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
+import org.jspecify.annotations.Nullable;
 
 /**
  * A JSR-303 compliant validator that validates String fields conform to the Package URL specification.
@@ -32,7 +33,7 @@ import javax.validation.ConstraintValidatorContext;
 public class PackageURLConstraintValidator implements ConstraintValidator<PackageURL, String> {
 
     @Override
-    public boolean isValid(String value, ConstraintValidatorContext context) {
+    public boolean isValid(@Nullable String value, ConstraintValidatorContext context) {
         try {
             if (value != null) {
                 new com.github.packageurl.PackageURL(value);
