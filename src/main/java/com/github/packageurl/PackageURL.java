@@ -252,9 +252,9 @@ public final class PackageURL implements Serializable {
         final String retVal = value.toLowerCase(Locale.ROOT);
         final String invalidChars = retVal.chars().filter(c -> !(c == '.' || c == '+' || c == '-'
                 || (c >= 'a' && c <= 'z')
-                || (c >= '0' && c <= '9'))).mapToObj(c -> String.valueOf((char) c)).collect(Collectors.joining(", "));
+                || isDigit(c))).mapToObj(c -> String.valueOf((char) c)).collect(Collectors.joining(", "));
         if (!invalidChars.isEmpty()) {
-            throw new MalformedPackageURLException("The PackageURL type contains invalid characters: " + invalidChars);
+            throw new MalformedPackageURLException("The PackageURL type " + "'" + retVal + "' contains invalid characters: " + invalidChars);
         }
         return retVal;
     }
@@ -569,7 +569,7 @@ public final class PackageURL implements Serializable {
             if (index <= start) {
                 throw new MalformedPackageURLException("Invalid purl: does not contain both a type and name");
             }
-            this.type = validateType(remainder.substring(start, index).toLowerCase(Locale.ROOT));
+            this.type = validateType(remainder.substring(start, index));
             //remainder.delete(0, index + 1);
             start = index + 1;
 
