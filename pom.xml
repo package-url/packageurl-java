@@ -150,7 +150,7 @@
                     <version>${maven.compiler.plugin.version}</version>
                     <configuration>
                         <compilerId>javac-with-errorprone</compilerId>
-                        <forceJavacCompilerUse>true</forceJavacCompilerUse>
+                        <forceLegacyJavacApi>true</forceLegacyJavacApi>
                         <showDeprecation>true</showDeprecation>
                         <compilerArgs>
                             <arg>-Xlint</arg>
