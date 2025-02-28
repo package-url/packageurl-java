@@ -399,7 +399,7 @@ public final class PackageURL implements Serializable {
      */
     private String canonicalize(boolean coordinatesOnly) {
         final StringBuilder purl = new StringBuilder();
-        purl.append(SCHEME).append(":");
+        purl.append(SCHEME_PART);
         if (type != null) {
             purl.append(type);
         }
