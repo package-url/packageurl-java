@@ -111,7 +111,7 @@ public final class PackageURL implements Serializable {
     /**
      * The PackageURL scheme ({@code "pkg"}) constant followed by a colon ({@code ':'}).
      */
-    public static final String SCHEME_PART = SCHEME + ':';
+    private static final String SCHEME_PART = SCHEME + ':';
 
     /**
      * The package "type" or package "protocol" such as maven, npm, nuget, gem, pypi, etc.
