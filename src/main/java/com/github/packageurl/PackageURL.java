@@ -28,8 +28,10 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -247,11 +249,12 @@ public final class PackageURL implements Serializable {
         if (value.charAt(0) >= '0' && value.charAt(0) <= '9') {
             throw new MalformedPackageURLException("The PackageURL type cannot start with a number");
         }
-        final String retVal = value.toLowerCase();
-        if (retVal.chars().anyMatch(c -> !(c == '.' || c == '+' || c == '-'
+        final String retVal = value.toLowerCase(Locale.ROOT);
+        final String invalidChars = retVal.chars().filter(c -> !(c == '.' || c == '+' || c == '-'
                 || (c >= 'a' && c <= 'z')
-                || (c >= '0' && c <= '9')))) {
-            throw new MalformedPackageURLException("The PackageURL type contains invalid characters");
+                || (c >= '0' && c <= '9'))).mapToObj(c -> String.valueOf((char) c)).collect(Collectors.joining(", "));
+        if (!invalidChars.isEmpty()) {
+            throw new MalformedPackageURLException("The PackageURL type contains invalid characters: " + invalidChars);
         }
         return retVal;
     }
@@ -276,7 +279,7 @@ public final class PackageURL implements Serializable {
             case StandardTypes.GITHUB:
             case StandardTypes.GOLANG:
             case StandardTypes.RPM:
-                retVal = tempNamespace.toLowerCase();
+                retVal = tempNamespace.toLowerCase(Locale.ROOT);
                 break;
             default:
                 retVal = tempNamespace;
@@ -295,10 +298,10 @@ public final class PackageURL implements Serializable {
             case StandardTypes.DEBIAN:
             case StandardTypes.GITHUB:
             case StandardTypes.GOLANG:
-                temp = value.toLowerCase();
+                temp = value.toLowerCase(Locale.ROOT);
                 break;
             case StandardTypes.PYPI:
-                temp = value.replaceAll("_", "-").toLowerCase();
+                temp = value.replaceAll("_", "-").toLowerCase(Locale.ROOT);
                 break;
             default:
                 temp = value;
@@ -414,7 +417,7 @@ public final class PackageURL implements Serializable {
             if (qualifiers != null && qualifiers.size() > 0) {
                 purl.append("?");
                 qualifiers.entrySet().stream().forEachOrdered((entry) -> {
-                    purl.append(entry.getKey().toLowerCase());
+                    purl.append(entry.getKey().toLowerCase(Locale.ROOT));
                     purl.append("=");
                     purl.append(percentEncode(entry.getValue()));
                     purl.append("&");
@@ -566,7 +569,7 @@ public final class PackageURL implements Serializable {
             if (index <= start) {
                 throw new MalformedPackageURLException("Invalid purl: does not contain both a type and name");
             }
-            this.type = validateType(remainder.substring(start, index).toLowerCase());
+            this.type = validateType(remainder.substring(start, index).toLowerCase(Locale.ROOT));
             //remainder.delete(0, index + 1);
             start = index + 1;
 
@@ -616,7 +619,7 @@ public final class PackageURL implements Serializable {
             final TreeMap<String, String> results = qualifiers.entrySet().stream()
                     .filter(entry -> entry.getValue() != null && !entry.getValue().isEmpty())
                     .collect(TreeMap::new,
-                            (map, value) -> map.put(value.getKey().toLowerCase(), value.getValue()),
+                            (map, value) -> map.put(value.getKey().toLowerCase(Locale.ROOT), value.getValue()),
                             TreeMap::putAll);
             return validateQualifiers(results);
         } catch (ValidationException ex) {
@@ -633,8 +636,8 @@ public final class PackageURL implements Serializable {
                             (map, value) -> {
                                 final String[] entry = value.split("=", 2);
                                 if (entry.length == 2 && !entry[1].isEmpty()) {
-                                    if (map.put(entry[0].toLowerCase(), percentDecode(entry[1])) != null) {
-                                        throw new ValidationException("Duplicate package qualifier encountere - more then one value was specified for " + entry[0].toLowerCase());
+                                    if (map.put(entry[0].toLowerCase(Locale.ROOT), percentDecode(entry[1])) != null) {
+                                        throw new ValidationException("Duplicate package qualifier encountere - more then one value was specified for " + entry[0].toLowerCase(Locale.ROOT));
                                     }
                                 }
                             },
