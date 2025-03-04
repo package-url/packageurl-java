@@ -28,8 +28,7 @@ package com.github.packageurl;
  * @since 1.0.0
  */
 public class MalformedPackageURLException extends Exception {
-
-    private static final long serialVersionUID = 1095476478991047663L;
+    private static final long serialVersionUID = -3428748639194901696L;
 
     /**
      * Constructs a {@code MalformedPackageURLException} with no detail message.
@@ -47,4 +46,24 @@ public class MalformedPackageURLException extends Exception {
         super(msg);
     }
 
+    /**
+     * Constructs a new {@code MalformedPackageURLException} with the specified detail message and
+     * cause.
+     *
+     * @param message the detail message
+     * @param cause the cause
+     */
+    public MalformedPackageURLException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
+    /**
+     * Constructs a new {@code MalformedPackageURLException} with the specified cause and a detail
+     * message of {@code (cause==null ? null : cause.toString())}.
+     *
+     * @param cause the cause
+     */
+    public MalformedPackageURLException(Throwable cause) {
+        super(cause);
+    }
 }
