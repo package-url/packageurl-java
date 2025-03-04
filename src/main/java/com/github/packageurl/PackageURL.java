@@ -344,7 +344,7 @@ public final class PackageURL implements Serializable {
         return validatePath(value.split("/"), isSubpath);
     }
 
-    private static boolean isValidSegment(String segment, boolean isSubpath) {
+    private static boolean isValidSegment(String segment, final boolean isSubpath) {
         return (!isSubpath || (!segment.isEmpty() && !".".equals(segment) && !"..".equals(segment)));
     }
 
@@ -641,7 +641,7 @@ public final class PackageURL implements Serializable {
         }
 
         return Arrays.stream(percentDecode(value).split("/"))
-                .filter(segment ->isValidSegment(segment, isSubpath))
+                .filter(segment -> isValidSegment(segment, isSubpath))
                 .toArray(String[]::new);
     }
 
