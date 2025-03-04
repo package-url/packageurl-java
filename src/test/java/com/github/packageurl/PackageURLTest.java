@@ -232,11 +232,9 @@ public class PackageURLTest {
     }
 
     @Test
-    public void testConstructorWithInvalidSubpath() throws MalformedPackageURLException {
-        exception.expect(MalformedPackageURLException.class);
-
-        PackageURL purl = new PackageURL("pkg:GOLANG/google.golang.org/genproto@abcdedf#invalid/%2F/subpath");
-        Assert.fail("constructor with `invalid/%2F/subpath` should have thrown an error and this line should not be reached");
+    public void testConstructorWithValidSubpathContainingSlashIsDropped() throws MalformedPackageURLException {
+        PackageURL purl = new PackageURL("pkg:GOLANG/google.golang.org/genproto@abcdedf#valid/%2F/subpath");
+        Assert.assertEquals("valid/subpath", purl.getSubpath());
     }
 
 

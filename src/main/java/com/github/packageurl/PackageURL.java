@@ -51,7 +51,6 @@ import java.util.stream.Collectors;
  * @since 1.0.0
  */
 public final class PackageURL implements Serializable {
-
     private static final long serialVersionUID = 3243226021636427586L;
 
     /**
@@ -413,22 +412,31 @@ public final class PackageURL implements Serializable {
         return validatePath(value.split("/"), true);
     }
 
-    private String validatePath(final String[] segments, final boolean isSubpath) throws MalformedPackageURLException {
+    private static boolean shouldKeepSegment(String segment, boolean isSubpath) {
+        return (!isSubpath || (!segment.isEmpty() && !".".equals(segment) && !"..".equals(segment)));
+    }
+
+    private static String validatePath(final String[] segments, final boolean isSubpath) throws MalformedPackageURLException {
         if (segments == null || segments.length == 0) {
             return null;
         }
+
         try {
             return Arrays.stream(segments)
                     .map(segment -> {
-                        if (isSubpath && ("..".equals(segment) || ".".equals(segment))) {
-                            throw new ValidationException("Segments in the subpath may not be a period ('.') or repeated period ('..')");
-                        } else if (segment.contains("/")) {
-                            throw new ValidationException("Segments in the namespace and subpath may not contain a forward slash ('/')");
-                        } else if (segment.isEmpty()) {
-                            throw new ValidationException("Segments in the namespace and subpath may not be empty");
+                        if (!isSubpath) {
+                            if ("..".equals(segment) || ".".equals(segment)) {
+                                throw new ValidationException("Segments in the namespace may not be a period ('.') or repeated period ('..')");
+                            } else if (segment.contains("/")) {
+                                throw new ValidationException("Segments in the namespace and subpath may not contain a forward slash ('/')");
+                            } else if (segment.isEmpty()) {
+                                throw new ValidationException("Segments in the namespace and subpath may not be empty");
+                            }
                         }
                         return segment;
-                    }).collect(Collectors.joining("/"));
+                    })
+                    .filter(segment1 -> shouldKeepSegment(segment1, isSubpath))
+                    .collect(Collectors.joining("/"));
         } catch (ValidationException e) {
             throw new MalformedPackageURLException(e);
         }
@@ -591,7 +599,7 @@ public final class PackageURL implements Serializable {
      * @param input the value String to decode
      * @return a decoded String
      */
-    private String percentDecode(final String input) {
+    private static String percentDecode(final String input) {
         if (input == null) {
             return null;
         }
@@ -761,10 +769,13 @@ public final class PackageURL implements Serializable {
         }
     }
 
-    private String[] parsePath(final String path, final boolean isSubpath) {
-        return Arrays.stream(path.split("/"))
-                .filter(segment -> !segment.isEmpty() && !(isSubpath && (".".equals(segment) || "..".equals(segment))))
-                .map(this::percentDecode)
+    private static String[] parsePath(final String value, final boolean isSubpath) {
+        if (value == null || value.isEmpty()) {
+            return null;
+        }
+
+        return Arrays.stream(percentDecode(value).split("/"))
+                .filter(segment -> shouldKeepSegment(segment, isSubpath))
                 .toArray(String[]::new);
     }
 
