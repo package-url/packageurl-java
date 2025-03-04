@@ -268,24 +268,38 @@ public class PackageURLTest {
 
     @Test
     public void testStandardTypes() {
-        exception = ExpectedException.none();
-        Assert.assertEquals(PackageURL.StandardTypes.BITBUCKET, "bitbucket");
-        Assert.assertEquals(PackageURL.StandardTypes.CARGO, "cargo");
-        Assert.assertEquals(PackageURL.StandardTypes.COMPOSER, "composer");
-        Assert.assertEquals(PackageURL.StandardTypes.DEBIAN, "deb");
-        Assert.assertEquals(PackageURL.StandardTypes.DOCKER, "docker");
-        Assert.assertEquals(PackageURL.StandardTypes.GEM, "gem");
-        Assert.assertEquals(PackageURL.StandardTypes.GENERIC, "generic");
-        Assert.assertEquals(PackageURL.StandardTypes.GITHUB, "github");
-        Assert.assertEquals(PackageURL.StandardTypes.GOLANG, "golang");
-        Assert.assertEquals(PackageURL.StandardTypes.HEX, "hex");
-        Assert.assertEquals(PackageURL.StandardTypes.MAVEN, "maven");
-        Assert.assertEquals(PackageURL.StandardTypes.NPM, "npm");
-        Assert.assertEquals(PackageURL.StandardTypes.NUGET, "nuget");
-        Assert.assertEquals(PackageURL.StandardTypes.PYPI, "pypi");
-        Assert.assertEquals(PackageURL.StandardTypes.RPM, "rpm");
-        Assert.assertEquals(PackageURL.StandardTypes.NIXPKGS, "nixpkgs");
-        Assert.assertEquals(PackageURL.StandardTypes.HACKAGE, "hackage");
+        Assert.assertEquals("alpm", PackageURL.StandardTypes.ALPM);
+        Assert.assertEquals("apk", PackageURL.StandardTypes.APK);
+        Assert.assertEquals("bitbucket", PackageURL.StandardTypes.BITBUCKET);
+        Assert.assertEquals("bitnami", PackageURL.StandardTypes.BITNAMI);
+        Assert.assertEquals("cocoapods", PackageURL.StandardTypes.COCOAPODS);
+        Assert.assertEquals("cargo", PackageURL.StandardTypes.CARGO);
+        Assert.assertEquals("composer", PackageURL.StandardTypes.COMPOSER);
+        Assert.assertEquals("conan", PackageURL.StandardTypes.CONAN);
+        Assert.assertEquals("conda", PackageURL.StandardTypes.CONDA);
+        Assert.assertEquals("cpan", PackageURL.StandardTypes.CPAN);
+        Assert.assertEquals("cran", PackageURL.StandardTypes.CRAN);
+        Assert.assertEquals("deb", PackageURL.StandardTypes.DEB);
+        Assert.assertEquals("docker", PackageURL.StandardTypes.DOCKER);
+        Assert.assertEquals("gem", PackageURL.StandardTypes.GEM);
+        Assert.assertEquals("generic", PackageURL.StandardTypes.GENERIC);
+        Assert.assertEquals("github", PackageURL.StandardTypes.GITHUB);
+        Assert.assertEquals("golang", PackageURL.StandardTypes.GOLANG);
+        Assert.assertEquals("hackage", PackageURL.StandardTypes.HACKAGE);
+        Assert.assertEquals("hex", PackageURL.StandardTypes.HEX);
+        Assert.assertEquals("huggingface", PackageURL.StandardTypes.HUGGINGFACE);
+        Assert.assertEquals("luarocks", PackageURL.StandardTypes.LUAROCKS);
+        Assert.assertEquals("maven", PackageURL.StandardTypes.MAVEN);
+        Assert.assertEquals("mlflow", PackageURL.StandardTypes.MLFLOW);
+        Assert.assertEquals("npm", PackageURL.StandardTypes.NPM);
+        Assert.assertEquals("nuget", PackageURL.StandardTypes.NUGET);
+        Assert.assertEquals("qpkg", PackageURL.StandardTypes.QPKG);
+        Assert.assertEquals("oci", PackageURL.StandardTypes.OCI);
+        Assert.assertEquals("pub", PackageURL.StandardTypes.PUB);
+        Assert.assertEquals("pypi", PackageURL.StandardTypes.PYPI);
+        Assert.assertEquals("rpm", PackageURL.StandardTypes.RPM);
+        Assert.assertEquals("swid", PackageURL.StandardTypes.SWID);
+        Assert.assertEquals("swift", PackageURL.StandardTypes.SWIFT);
     }
 
     @Test
