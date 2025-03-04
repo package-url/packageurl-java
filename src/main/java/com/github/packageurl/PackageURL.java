@@ -55,6 +55,14 @@ public final class PackageURL implements Serializable {
     private static final long serialVersionUID = 3243226021636427586L;
     private static final Pattern PATH_SPLITTER = Pattern.compile("/");
 
+    private static final String COMMON_CHARS = "\"<>";
+
+    private static final String FRAGMENT_CHARS = COMMON_CHARS + "`";
+
+    private static final String QUERY_CHARS = COMMON_CHARS + "#";
+
+    private static final String PATH_CHARS = QUERY_CHARS + "?`{}:";
+
     /**
      * Constructs a new PackageURL object by parsing the specified string.
      *
@@ -403,14 +411,14 @@ public final class PackageURL implements Serializable {
         }
         purl.append("/");
         if (namespace != null) {
-            purl.append(encodePath(namespace));
+            purl.append(encodePath(namespace, PATH_CHARS));
             purl.append("/");
         }
         if (name != null) {
-            purl.append(percentEncode(name));
+            purl.append(percentEncode(name, PATH_CHARS));
         }
         if (version != null) {
-            purl.append("@").append(percentEncode(version));
+            purl.append("@").append(percentEncode(version, PATH_CHARS));
         }
         if (! coordinatesOnly) {
             if (qualifiers != null && qualifiers.size() > 0) {
@@ -418,49 +426,46 @@ public final class PackageURL implements Serializable {
                 qualifiers.entrySet().stream().forEachOrdered((entry) -> {
                     purl.append(entry.getKey().toLowerCase());
                     purl.append("=");
-                    purl.append(percentEncode(entry.getValue()));
+                    purl.append(percentEncode(entry.getValue(), QUERY_CHARS));
                     purl.append("&");
                 });
                 purl.setLength(purl.length() - 1);
             }
             if (subpath != null) {
-                purl.append("#").append(encodePath(subpath));
+                purl.append("#").append(encodePath(subpath, FRAGMENT_CHARS));
             }
         }
         return purl.toString();
     }
 
-    /**
-     * Encodes the input in conformance with RFC 3986.
-     *
-     * @param input the String to encode
-     * @return an encoded String
-     */
-    private String percentEncode(final String input) {
-        return uriEncode(input, StandardCharsets.UTF_8);
+    private String percentEncode(String input, Charset charset, String additionalChars) {
+        return uriEncode(input, charset, additionalChars);
     }
 
-    private static String uriEncode(String source, Charset charset) {
+    private String percentEncode(String input, String additionalChars) {
+        return percentEncode(input, StandardCharsets.UTF_8, additionalChars);
+    }
+
+    private static String uriEncode(String source, Charset charset, String additionalChars) {
         if (source == null || source.length() == 0) {
             return source;
         }
 
         StringBuilder builder = new StringBuilder();
         for (byte b : source.getBytes(charset)) {
-            if (isUnreserved(b)) {
-                builder.append((char) b);
-            }
-            else {
+            if (needsEncode(b) ||  (additionalChars != null && additionalChars.indexOf(b) != -1)) {
                 // Substitution: A '%' followed by the hexadecimal representation of the ASCII value of the replaced character
                 builder.append('%');
                 builder.append(Integer.toHexString(b).toUpperCase());
+            } else {
+                builder.append((char) b);
             }
         }
         return builder.toString();
     }
 
-    private static boolean isUnreserved(int c) {
-        return (isAlpha(c) || isDigit(c) || '-' == c || '.' == c || '_' == c || '~' == c);
+    private static boolean needsEncode(int c) {
+        return ((c >= 0x0000 && c <= 0x0020) || c >= 0x007F || c == '@' || c == '#' || c == '?' || c == '+' || c == '%');
     }
 
     private static boolean isAlpha(int c) {
@@ -640,8 +645,8 @@ public final class PackageURL implements Serializable {
                 .toArray(String[]::new);
     }
 
-    private String encodePath(final String path) {
-        return Arrays.stream(path.split("/")).map(segment -> percentEncode(segment)).collect(Collectors.joining("/"));
+    private String encodePath(final String path, String chars) {
+        return Arrays.stream(path.split("/")).map(segment -> percentEncode(segment, chars)).collect(Collectors.joining("/"));
     }
 
     /**
