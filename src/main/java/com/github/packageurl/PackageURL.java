@@ -412,7 +412,7 @@ public final class PackageURL implements Serializable {
         return validatePath(value.split("/"), true);
     }
 
-    private static boolean shouldKeepSegment(String segment, boolean isSubpath) {
+    private static boolean shouldKeepSegment(final String segment, final boolean isSubpath) {
         return (!isSubpath || (!segment.isEmpty() && !".".equals(segment) && !"..".equals(segment)));
     }
 
