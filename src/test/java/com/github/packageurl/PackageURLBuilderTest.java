@@ -95,26 +95,22 @@ public class PackageURLBuilderTest {
 
     @Test
     public void testPackageURLBuilderException1() throws MalformedPackageURLException {
-        exception.expect(MalformedPackageURLException.class);
-        exception.expectMessage("contains a qualifier key with an empty or null");
         PackageURL purl = PackageURLBuilder.aPackageURL()
                 .withType("type")
                 .withName("name")
                 .withQualifier("key","")
                 .build();
-        Assert.fail("Build should fail due to invalid qualifier (empty value)");
+        assertNull(purl.getQualifiers());
     }
 
     @Test
     public void testPackageURLBuilderException1Null() throws MalformedPackageURLException {
-        exception.expect(MalformedPackageURLException.class);
-        exception.expectMessage("contains a qualifier key with an empty or null");
-        PackageURLBuilder.aPackageURL()
+        PackageURL purl = PackageURLBuilder.aPackageURL()
                 .withType("type")
                 .withName("name")
                 .withQualifier("key",null)
                 .build();
-        Assert.fail("Build should fail due to invalid qualifier (null value)");
+        assertNull(purl.getQualifiers());
     }
 
     @Test
