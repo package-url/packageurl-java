@@ -37,24 +37,30 @@
 
     <properties>
         <!-- Maven Build Properties -->
-        <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <maven.javadoc.failOnError>false</maven.javadoc.failOnError>
 
         <!-- Maven Plugin Versions -->
-        <maven.compiler.plugin.version>3.11.0</maven.compiler.plugin.version>
-        <maven.jar.plugin.version>3.3.0</maven.jar.plugin.version>
-        <maven.javadoc.plugin.version>3.6.3</maven.javadoc.plugin.version>
-        <maven.release.plugin.version>3.0.1</maven.release.plugin.version>
-        <maven.source.plugin.version>3.3.0</maven.source.plugin.version>
+        <maven.compiler.plugin.version>3.14.0</maven.compiler.plugin.version>
+        <maven.jar.plugin.version>3.4.2</maven.jar.plugin.version>
+        <maven.javadoc.plugin.version>3.11.2</maven.javadoc.plugin.version>
+        <maven.release.plugin.version>3.1.1</maven.release.plugin.version>
+        <maven.source.plugin.version>3.3.1</maven.source.plugin.version>
         <!-- Maven build plugins for quality checks -->
-        <plexus.compiler.javac.errorprone.version>2.8.5</plexus.compiler.javac.errorprone.version>
-        <error.prone.core.version>2.3.2</error.prone.core.version>
-        <jacoco.maven.plugin.version>0.8.11</jacoco.maven.plugin.version>
-        <spotbugs.maven.plugin.version>4.8.3.1</spotbugs.maven.plugin.version>
-        <com.github.spotbugs.version>4.8.3</com.github.spotbugs.version>
+        <plexus.compiler.javac.errorprone.version>2.15.0</plexus.compiler.javac.errorprone.version>
+        <error.prone.core.version>2.36.0</error.prone.core.version>
+        <jacoco.maven.plugin.version>0.8.12</jacoco.maven.plugin.version>
+        <spotbugs.maven.plugin.version>4.9.2.0</spotbugs.maven.plugin.version>
+        <com.github.spotbugs.version>4.9.2</com.github.spotbugs.version>
+        <versions-maven-plugin.version>2.18.0</versions-maven-plugin.version>
+        <cyclonedx-maven-plugin.version>2.9.1</cyclonedx-maven-plugin.version>
+        <maven-enforcer-plugin.version>3.5.0</maven-enforcer-plugin.version>
+        <maven-gpg-plugin.version>3.2.7</maven-gpg-plugin.version>
+        <junit.version>4.13.2</junit.version>
+        <json.version>20250107</json.version>
+        <commons-io.version>2.18.0</commons-io.version>
+        <validation-api.version>2.0.1.Final</validation-api.version>
     </properties>
 
     <scm>
@@ -89,26 +95,26 @@
         <dependency>
             <groupId>javax.validation</groupId>
             <artifactId>validation-api</artifactId>
-            <version>2.0.1.Final</version>
+            <version>${validation-api.version}</version>
             <optional>true</optional>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <version>4.13.2</version>
+            <version>${junit.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.json</groupId>
             <artifactId>json</artifactId>
-            <version>20240303</version>
+            <version>${json.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
-            <version>2.15.1</version>
+            <version>${commons-io.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -116,6 +122,16 @@
     <build>
         <pluginManagement>
             <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-enforcer-plugin</artifactId>
+                    <version>${maven-enforcer-plugin.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-gpg-plugin</artifactId>
+                    <version>${maven-gpg-plugin.version}</version>
+                </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-jar-plugin</artifactId>
@@ -132,7 +148,7 @@
                     <version>${maven.compiler.plugin.version}</version>
                     <configuration>
                         <compilerId>javac-with-errorprone</compilerId>
-                        <forceJavacCompilerUse>true</forceJavacCompilerUse>
+                        <forceLegacyJavacApi>true</forceLegacyJavacApi>
                         <showDeprecation>true</showDeprecation>
                         <compilerArgs>
                             <arg>-Xlint</arg>
@@ -152,29 +168,37 @@
                         </dependency>
                     </dependencies>
                 </plugin>
+                <plugin>
+                    <groupId>com.github.spotbugs</groupId>
+                    <artifactId>spotbugs-maven-plugin</artifactId>
+                    <version>${spotbugs.maven.plugin.version}</version>
+                    <executions>
+                        <execution>
+                            <phase>package</phase>
+                            <goals>
+                                <goal>check</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                    <dependencies>
+                        <!-- overwrite dependency on spotbugs if you want to specify the version of spotbugs -->
+                        <dependency>
+                            <groupId>com.github.spotbugs</groupId>
+                            <artifactId>spotbugs</artifactId>
+                            <version>${com.github.spotbugs.version}</version>
+                        </dependency>
+                    </dependencies>
+                </plugin>
             </plugins>
         </pluginManagement>
         <plugins>
             <plugin>
-                <groupId>com.github.spotbugs</groupId>
-                <artifactId>spotbugs-maven-plugin</artifactId>
-                <version>${spotbugs.maven.plugin.version}</version>
-                <executions>
-                    <execution>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>check</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <dependencies>
-                    <!-- overwrite dependency on spotbugs if you want to specify the version of spotbugs -->
-                    <dependency>
-                        <groupId>com.github.spotbugs</groupId>
-                        <artifactId>spotbugs</artifactId>
-                        <version>${com.github.spotbugs.version}</version>
-                    </dependency>
-                </dependencies>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>versions-maven-plugin</artifactId>
+                <version>${versions-maven-plugin.version}</version>
+                <configuration>
+                    <ignoredVersions>(?i).+[-.](alpha|beta|cr|dev|m|rc)([-.]?\d+)?</ignoredVersions>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.jacoco</groupId>
@@ -225,7 +249,7 @@
             <plugin>
                 <groupId>org.cyclonedx</groupId>
                 <artifactId>cyclonedx-maven-plugin</artifactId>
-                <version>2.7.10</version>
+                <version>${cyclonedx-maven-plugin.version}</version>
                 <configuration>
                     <projectType>library</projectType>
                 </configuration>
@@ -251,6 +275,78 @@
 
     <profiles>
         <profile>
+            <id>jdk9+</id>
+            <activation>
+                <jdk>[9, )</jdk>
+            </activation>
+            <properties>
+                <maven.compiler.release>8</maven.compiler.release>
+            </properties>
+        </profile>
+        <profile>
+            <id>jdk18</id>
+            <activation>
+                <jdk>1.8</jdk>
+            </activation>
+            <properties>
+                <maven.compiler.source>1.8</maven.compiler.source>
+                <maven.compiler.target>1.8</maven.compiler.target>
+            </properties>
+            <build>
+                <pluginManagement>
+                    <plugins>
+                        <plugin>
+                            <groupId>org.apache.maven.plugins</groupId>
+                            <artifactId>maven-compiler-plugin</artifactId>
+                            <version>3.12.0</version>
+                            <configuration>
+                                <compilerId>javac-with-errorprone</compilerId>
+                                <forceJavacCompilerUse>true</forceJavacCompilerUse>
+                                <showDeprecation>true</showDeprecation>
+                                <compilerArgs>
+                                    <arg>-Xlint</arg>
+                                </compilerArgs>
+                            </configuration>
+                            <dependencies>
+                                <dependency>
+                                    <groupId>org.codehaus.plexus</groupId>
+                                    <artifactId>plexus-compiler-javac-errorprone</artifactId>
+                                    <version>2.8.6</version>
+                                </dependency>
+                                <!-- override plexus-compiler-javac-errorprone's dependency on Error Prone with the latest version -->
+                                <dependency>
+                                    <groupId>com.google.errorprone</groupId>
+                                    <artifactId>error_prone_core</artifactId>
+                                    <version>2.3.4</version>
+                                </dependency>
+                            </dependencies>
+                        </plugin>
+                        <plugin>
+                            <groupId>com.github.spotbugs</groupId>
+                            <artifactId>spotbugs-maven-plugin</artifactId>
+                            <version>4.8.6.6</version>
+                            <executions>
+                                <execution>
+                                    <phase>package</phase>
+                                    <goals>
+                                        <goal>check</goal>
+                                    </goals>
+                                </execution>
+                            </executions>
+                            <dependencies>
+                                <!-- overwrite dependency on spotbugs if you want to specify the version of spotbugs -->
+                                <dependency>
+                                    <groupId>com.github.spotbugs</groupId>
+                                    <artifactId>spotbugs</artifactId>
+                                    <version>4.8.6</version>
+                                </dependency>
+                            </dependencies>
+                        </plugin>
+                    </plugins>
+                </pluginManagement>
+            </build>
+        </profile>
+        <profile>
             <id>release</id>
             <activation>
                 <activeByDefault>false</activeByDefault>
@@ -260,7 +356,6 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-enforcer-plugin</artifactId>
-                        <version>3.4.1</version>
                         <executions>
                             <execution>
                                 <id>enforce-java</id>
@@ -270,7 +365,7 @@
                                 <configuration>
                                     <rules>
                                         <requireJavaVersion>
-                                            <version>1.8.0</version>
+                                            <version>${maven.compiler.source}</version>
                                         </requireJavaVersion>
                                     </rules>
                                 </configuration>
@@ -280,7 +375,6 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-gpg-plugin</artifactId>
-                        <version>3.1.0</version>
                         <executions>
                             <execution>
                                 <id>sign-artifacts</id>
