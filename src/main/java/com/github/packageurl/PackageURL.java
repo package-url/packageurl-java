@@ -94,7 +94,6 @@ public final class PackageURL implements Serializable {
     public PackageURL(final String type, final String namespace, final String name, final String version,
                       final TreeMap<String, String> qualifiers, final String subpath)
             throws MalformedPackageURLException {
-        this.scheme = validateScheme("pkg");
         this.type = toLowerCase(validateType(type));
         this.namespace = validateNamespace(namespace);
         this.name = validateName(name);
