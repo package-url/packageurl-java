@@ -94,7 +94,6 @@ public final class PackageURL implements Serializable {
     public PackageURL(final String type, final String namespace, final String name, final String version,
                       final TreeMap<String, String> qualifiers, final String subpath)
             throws MalformedPackageURLException {
-
         this.scheme = validateScheme("pkg");
         this.type = toLowerCase(validateType(type));
         this.namespace = validateNamespace(namespace);
@@ -106,9 +105,14 @@ public final class PackageURL implements Serializable {
     }
 
     /**
-     * The PackageURL scheme constant
+     * The PackageURL scheme constant.
      */
-    private String scheme;
+    public static final String SCHEME = "pkg";
+
+    /**
+     * The PackageURL scheme ({@code "pkg"}) constant followed by a colon ({@code ':'}).
+     */
+    private static final String SCHEME_PART = SCHEME + ':';
 
     /**
      * The package "type" or package "protocol" such as maven, npm, nuget, gem, pypi, etc.
@@ -170,7 +174,7 @@ public final class PackageURL implements Serializable {
      * @since 1.0.0
      */
     public String getScheme() {
-        return scheme;
+        return SCHEME;
     }
 
     /**
@@ -233,11 +237,10 @@ public final class PackageURL implements Serializable {
         return subpath;
     }
 
-    private String validateScheme(final String value) throws MalformedPackageURLException {
-        if ("pkg".equals(value)) {
-            return "pkg";
-        }
-        throw new MalformedPackageURLException("The PackageURL scheme is invalid");
+     private void validateScheme(final String value) throws MalformedPackageURLException {
+            if (!SCHEME.equals(value)) {
+                throw new MalformedPackageURLException("The PackageURL scheme '" + value + "' is invalid. It should be '" + SCHEME + "'");
+            }
     }
 
     private String validateType(final String value) throws MalformedPackageURLException {
@@ -364,8 +367,8 @@ public final class PackageURL implements Serializable {
                         }
                         return segment;
                     }).collect(Collectors.joining("/"));
-        } catch (ValidationException ex) {
-            throw new MalformedPackageURLException(ex.getMessage());
+        } catch (ValidationException e) {
+            throw new MalformedPackageURLException(e);
         }
     }
 
@@ -398,7 +401,7 @@ public final class PackageURL implements Serializable {
      */
     private String canonicalize(boolean coordinatesOnly) {
         final StringBuilder purl = new StringBuilder();
-        purl.append(scheme).append(":");
+        purl.append(SCHEME_PART);
         if (type != null) {
             purl.append(type);
         }
@@ -563,78 +566,79 @@ public final class PackageURL implements Serializable {
      */
     private void parse(final String purl) throws MalformedPackageURLException {
         if (purl == null || purl.trim().isEmpty()) {
-            throw new MalformedPackageURLException("Invalid purl: Contains an empty or null value");
+            throw new MalformedPackageURLException("Invalid purl: Is empty or null");
         }
 
         try {
-            final URI uri = new URI(purl);
-            // Check to ensure that none of these parts are parsed. If so, it's an invalid purl.
-            if (uri.getUserInfo() != null || uri.getPort() != -1) {
-                throw new MalformedPackageURLException("Invalid purl: Contains parts not supported by the purl spec");
+            if (!purl.startsWith(SCHEME_PART)) {
+                throw new MalformedPackageURLException("Invalid purl: " + purl + ". It does not start with '" + SCHEME_PART + "'");
             }
 
-            this.scheme = validateScheme(uri.getScheme());
+            final int length = purl.length();
+            int start = SCHEME_PART.length();
+
+            while (start < length && '/' == purl.charAt(start)) {
+                start++;
+            }
+
+            final URI uri = new URI(String.join("/", SCHEME_PART, purl.substring(start)));
+
+            validateScheme(uri.getScheme());
+
+            // Check to ensure that none of these parts are parsed. If so, it's an invalid purl.
+            if (uri.getRawAuthority() != null) {
+                throw new MalformedPackageURLException("Invalid purl: A purl must NOT contain a URL Authority ");
+            }
 
             // subpath is optional - check for existence
-            if (uri.getRawFragment() != null && !uri.getRawFragment().isEmpty()) {
-                this.subpath = validatePath(parsePath(uri.getRawFragment(), true), true);
+            final String rawFragment = uri.getRawFragment();
+            if (rawFragment != null && !rawFragment.isEmpty()) {
+                this.subpath = validatePath(parsePath(rawFragment, true), true);
             }
-            // This is the purl (minus the scheme) that needs parsed.
-            final StringBuilder remainder = new StringBuilder(uri.getRawSchemeSpecificPart());
-
             // qualifiers are optional - check for existence
-            int index = remainder.lastIndexOf("?");
-            if (index >= 0) {
-                this.qualifiers = parseQualifiers(remainder.substring(index + 1));
-                remainder.setLength(index);
-            }
+            final String rawQuery = uri.getRawQuery();
+            if (rawQuery != null && !rawQuery.isEmpty()) {
+                this.qualifiers = parseQualifiers(rawQuery);
 
-            // trim leading and trailing '/'
+            }
+            // this is the rest of the purl that needs to be parsed
+            String remainder = uri.getRawPath();
+            // trim trailing '/'
             int end = remainder.length() - 1;
             while (end > 0 && '/' == remainder.charAt(end)) {
                 end--;
             }
-            if (end < remainder.length() - 1) {
-                remainder.setLength(end + 1);
-            }
-            int start = 0;
-            while (start < remainder.length() && '/' == remainder.charAt(start)) {
-                start++;
-            }
-            //there is no need for the "expensive" delete operation if the start is tracked and used throughout the rest
-            // of the parsing.
-            //if (start > 0) {
-            //    remainder.delete(0, start);
-            //}
-
+            remainder = remainder.substring(0, end + 1);
+            // there is exactly one leading '/' at this point
+            start = 1;
             // type
-            index = remainder.indexOf("/", start);
+            int index = remainder.indexOf('/', start);
             if (index <= start) {
                 throw new MalformedPackageURLException("Invalid purl: does not contain both a type and name");
             }
             this.type = toLowerCase(validateType(remainder.substring(start, index)));
-            //remainder.delete(0, index + 1);
+
             start = index + 1;
 
             // version is optional - check for existence
-            index = remainder.lastIndexOf("@");
+            index = remainder.lastIndexOf('@');
             if (index >= start) {
                 this.version = validateVersion(percentDecode(remainder.substring(index + 1)));
-                remainder.setLength(index);
+                remainder = remainder.substring(0, index);
             }
 
-            // The 'remainder' should now consist of the an optional namespace, and the name
-            index = remainder.lastIndexOf("/");
+            // The 'remainder' should now consist of an optional namespace and the name
+            index = remainder.lastIndexOf('/');
             if (index <= start) {
                 this.name = validateName(percentDecode(remainder.substring(start)));
             } else {
                 this.name = validateName(percentDecode(remainder.substring(index + 1)));
-                remainder.setLength(index);
+                remainder = remainder.substring(0, index);
                 this.namespace = validateNamespace(parsePath(remainder.substring(start), false));
             }
             verifyTypeConstraints(this.type, this.namespace, this.name);
         } catch (URISyntaxException e) {
-            throw new MalformedPackageURLException("Invalid purl: " + e.getMessage());
+            throw new MalformedPackageURLException("Invalid purl: " + e.getMessage(), e);
         }
     }
 
@@ -669,8 +673,8 @@ public final class PackageURL implements Serializable {
                             },
                             TreeMap<String, String>::putAll);
             return validateQualifiers(results);
-        } catch (ValidationException ex) {
-            throw new MalformedPackageURLException(ex.getMessage());
+        } catch (ValidationException e) {
+            throw new MalformedPackageURLException(e);
         }
     }
 
@@ -717,8 +721,7 @@ public final class PackageURL implements Serializable {
      * @since 1.4.0
      */
     public boolean isCoordinatesEquals(final PackageURL purl) {
-        return Objects.equals(scheme, purl.scheme) &&
-                Objects.equals(type, purl.type) &&
+        return Objects.equals(type, purl.type) &&
                 Objects.equals(namespace, purl.namespace) &&
                 Objects.equals(name, purl.name) &&
                 Objects.equals(version, purl.version);
@@ -753,8 +756,7 @@ public final class PackageURL implements Serializable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         final PackageURL other = (PackageURL) o;
-        return Objects.equals(scheme, other.scheme) &&
-                Objects.equals(type, other.type) &&
+        return Objects.equals(type, other.type) &&
                 Objects.equals(namespace, other.namespace) &&
                 Objects.equals(name, other.name) &&
                 Objects.equals(version, other.version) &&
@@ -764,7 +766,7 @@ public final class PackageURL implements Serializable {
 
     @Override
     public int hashCode() {
-        return Objects.hash(scheme, type, namespace, name, version, qualifiers, subpath);
+        return Objects.hash(type, namespace, name, version, qualifiers, subpath);
     }
 
     /**
