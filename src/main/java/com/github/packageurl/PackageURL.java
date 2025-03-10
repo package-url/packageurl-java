@@ -446,21 +446,19 @@ public final class PackageURL implements Serializable {
             return source;
         }
 
-        StringBuilder builder = new StringBuilder(source.substring(0, pos));
+        StringBuilder sb = new StringBuilder(length * 3);
 
-        for (int i = pos; i < length; i++) {
-            byte b = bytes[i];
-
+        for (byte b : bytes) {
             if (isUnreserved(b)) {
-                builder.append((char) b);
+                sb.append((char) b);
             } else {
-                builder.append('%');
-                builder.append(Character.toUpperCase(Character.forDigit((b >> 4) & 0xF, 16)));
-                builder.append(Character.toUpperCase(Character.forDigit(b & 0xF, 16)));
+                sb.append('%');
+                sb.append(Character.toUpperCase(Character.forDigit((b >> 4) & 0xF, 16)));
+                sb.append(Character.toUpperCase(Character.forDigit(b & 0xF, 16)));
             }
         }
 
-        return builder.toString();
+        return sb.toString();
     }
 
     private static int indexOfFirstUnsafeChar(final byte[] bytes) {
