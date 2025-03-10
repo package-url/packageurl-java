@@ -25,7 +25,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collections;
@@ -434,24 +433,14 @@ public final class PackageURL implements Serializable {
         return purl.toString();
     }
 
-    /**
-     * Encodes the input in conformance with RFC 3986.
-     *
-     * @param input the String to encode
-     * @return an encoded String
-     */
-    private String percentEncode(final String input) {
-        return uriEncode(input, StandardCharsets.UTF_8);
-    }
-
-    private static String uriEncode(String source, Charset charset) {
+    private static String percentEncode(final String source) {
         if (source == null || source.isEmpty()) {
             return source;
         }
 
-        byte[] bytes = source.getBytes(charset);
+        byte[] bytes = source.getBytes(StandardCharsets.UTF_8);
         int length = bytes.length;
-        int pos = indexOfFirstUnreservedChar(bytes);
+        int pos = indexOfFirstUnsafeChar(bytes);
 
         if (pos == -1) {
             return source;
@@ -474,7 +463,7 @@ public final class PackageURL implements Serializable {
         return builder.toString();
     }
 
-    private static int indexOfFirstUnreservedChar(final byte[] bytes) {
+    private static int indexOfFirstUnsafeChar(final byte[] bytes) {
         final int length = bytes.length;
         int pos = -1;
 
@@ -543,23 +532,14 @@ public final class PackageURL implements Serializable {
         return new String(chars);
     }
 
-    /**
-     * Optionally decodes a String, if it's encoded. If String is not encoded,
-     * method will return the original input value.
-     *
-     * @param input the value String to decode
-     * @return a decoded String
-     */
-    private String percentDecode(final String input) {
-        return uriDecode(input);
-    }
-
-    public static String uriDecode(String source) {
+    public static String percentDecode(final String source) {
         if (source == null || source.isEmpty()) {
             return source;
         }
 
-        if (source.indexOf('%') == -1) {
+        int firstPercent = source.indexOf('%');
+
+        if (firstPercent == -1) {
             return source;
         }
 
