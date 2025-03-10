@@ -25,9 +25,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.TreeMap;
 
-import org.apache.commons.io.IOUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.json.JSONTokener;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Rule;
@@ -50,9 +50,10 @@ public class PackageURLTest {
 
     @BeforeClass
     public static void setup() throws IOException {
-        InputStream is = PackageURLTest.class.getResourceAsStream("/test-suite-data.json");
-        String jsonTxt = IOUtils.toString(is, "UTF-8");
-        json = new JSONArray(jsonTxt);
+        try (InputStream is = PackageURLTest.class.getResourceAsStream("/test-suite-data.json")) {
+            Assert.assertNotNull(is);
+            json = new JSONArray(new JSONTokener(is));
+        }
     }
 
     @Test
