@@ -31,6 +31,7 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
 import java.util.TreeMap;
+import java.util.function.IntPredicate;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -98,7 +99,7 @@ public final class PackageURL implements Serializable {
         this.namespace = validateNamespace(namespace);
         this.name = validateName(name);
         this.version = validateVersion(version);
-        this.qualifiers = validateQualifiers(qualifiers);
+        this.qualifiers = parseQualifiers(qualifiers);
         this.subpath = validatePath(subpath, true);
         verifyTypeConstraints(this.type, this.namespace, this.name);
     }
@@ -223,7 +224,7 @@ public final class PackageURL implements Serializable {
      * @since 1.0.0
      */
     public Map<String, String> getQualifiers() {
-        return (qualifiers != null)? Collections.unmodifiableMap(qualifiers) : null;
+        return (qualifiers != null) ? Collections.unmodifiableMap(qualifiers) : null;
     }
 
     /**
@@ -247,18 +248,31 @@ public final class PackageURL implements Serializable {
             throw new MalformedPackageURLException("The PackageURL type cannot be null or empty");
         }
 
-        if (isDigit(value.charAt(0))) {
-            throw new MalformedPackageURLException("The PackageURL type cannot start with a number");
-        }
-
-        if (!value.chars().allMatch(c -> (c == '.' || c == '+' || c == '-'
-                || isUpperCase(c)
-                || isLowerCase(c)
-                || isDigit(c)))) {
-            throw new MalformedPackageURLException("The PackageURL type contains invalid characters");
-        }
+        validateChars(value, PackageURL::isValidCharForType, "type");
 
         return value;
+    }
+
+    private static boolean isValidCharForType(int c) {
+        return (isAlphaNumeric(c) || c == '.' || c == '+' || c == '-');
+    }
+
+    private static boolean isValidCharForKey(int c) {
+        return (isAlphaNumeric(c) || c == '.' || c == '_' || c == '-');
+    }
+
+    private static void validateChars(String value, IntPredicate predicate, String component) throws MalformedPackageURLException {
+        char firstChar = value.charAt(0);
+
+        if (isDigit(firstChar)) {
+            throw new MalformedPackageURLException("The PackageURL " + component + " cannot start with a number: " + firstChar);
+        }
+
+        String invalidChars = value.chars().filter(predicate.negate()).mapToObj(c -> String.valueOf((char) c)).collect(Collectors.joining(", "));
+
+        if (!invalidChars.isEmpty()) {
+            throw new MalformedPackageURLException("The PackageURL " + component + " '" + value + "' contains invalid characters: " + invalidChars);
+        }
     }
 
     private String validateNamespace(final String value) throws MalformedPackageURLException {
@@ -319,7 +333,7 @@ public final class PackageURL implements Serializable {
     }
 
     private Map<String, String> validateQualifiers(final Map<String, String> values) throws MalformedPackageURLException {
-        if (values == null) {
+        if (values == null || values.isEmpty()) {
             return null;
         }
         for (Map.Entry<String, String> entry : values.entrySet()) {
@@ -337,10 +351,7 @@ public final class PackageURL implements Serializable {
             throw new MalformedPackageURLException("Qualifier key is invalid: " + value);
         }
 
-        if (isDigit(value.charAt(0))
-                || !value.chars().allMatch(c -> isLowerCase(c) || (isDigit(c)) || c == '.' || c == '-' || c == '_')) {
-            throw new MalformedPackageURLException("Qualifier key is invalid: " + value);
-        }
+        validateChars(value, PackageURL::isValidCharForKey, "qualifier key");
     }
 
     private String validatePath(final String value, final boolean isSubpath) throws MalformedPackageURLException {
@@ -463,7 +474,7 @@ public final class PackageURL implements Serializable {
     }
 
     private static boolean isUnreserved(int c) {
-        return (isAlpha(c) || isDigit(c) || '-' == c || '.' == c || '_' == c || '~' == c);
+        return (isValidCharForKey(c) || c == '~');
     }
 
     private static boolean isAlpha(int c) {
@@ -472,6 +483,10 @@ public final class PackageURL implements Serializable {
 
     private static boolean isDigit(int c) {
         return (c >= '0' && c <= '9');
+    }
+
+    private static boolean isAlphaNumeric(int c) {
+        return (isDigit(c) || isAlpha(c));
     }
 
     private static boolean isUpperCase(int c) {
@@ -653,6 +668,23 @@ public final class PackageURL implements Serializable {
             if (namespace == null || namespace.isEmpty() || name == null || name.isEmpty()) {
                 throw new MalformedPackageURLException("The PackageURL specified is invalid. Maven requires both a namespace and name.");
             }
+        }
+    }
+
+    private Map<String, String> parseQualifiers(final Map<String, String> qualifiers) throws MalformedPackageURLException {
+        if (qualifiers == null || qualifiers.isEmpty()) {
+            return null;
+        }
+
+        try {
+            final TreeMap<String, String> results = qualifiers.entrySet().stream()
+                    .filter(entry -> entry.getValue() != null && !entry.getValue().isEmpty())
+                    .collect(TreeMap::new,
+                            (map, value) -> map.put(toLowerCase(value.getKey()), value.getValue()),
+                            TreeMap::putAll);
+            return validateQualifiers(results);
+        } catch (ValidationException ex) {
+            throw new MalformedPackageURLException(ex.getMessage());
         }
     }
 
