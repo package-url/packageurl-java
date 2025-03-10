@@ -21,6 +21,8 @@
  */
 package com.github.packageurl;
 
+import java.util.Collections;
+import java.util.Map;
 import java.util.TreeMap;
 
 /**
@@ -132,7 +134,9 @@ public final class PackageURLBuilder {
     public PackageURLBuilder withoutQualifier(final String key) {
         if (qualifiers != null) {
             qualifiers.remove(key);
-            if (qualifiers.isEmpty()) { qualifiers = null; }
+            if (qualifiers.isEmpty()) {
+                qualifiers = null;
+            }
         }
         return this;
     }
@@ -191,9 +195,11 @@ public final class PackageURLBuilder {
      * An empty map is returned if no qualifiers is set.
      * @return all qualifiers set in this builder, or an empty map if none are set.
      */
-    public TreeMap<String, String> getQualifiers() {
-        if (qualifiers == null) { return new TreeMap<>(); }
-        return new TreeMap<>(qualifiers);
+    public Map<String, String> getQualifiers() {
+        if (qualifiers == null) {
+            return null;
+        }
+        return Collections.unmodifiableMap(qualifiers);
     }
 
     /**
@@ -202,7 +208,9 @@ public final class PackageURLBuilder {
      * @return qualifier value or {@code null} if one is not set.
      */
     public String getQualifier(String key) {
-        if (qualifiers == null) { return null; }
+        if (qualifiers == null) {
+            return null;
+        }
         return qualifiers.get(key);
     }
 

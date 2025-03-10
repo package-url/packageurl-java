@@ -205,15 +205,13 @@ public class PackageURLBuilderTest {
         Map<String, String> eQualifiers = expected.getQualifiers();
         Map<String, String> aQualifiers = actual.getQualifiers();
 
-        if (eQualifiers != null) {
-            eQualifiers.forEach((k,v)-> {
-                Assert.assertEquals(v, aQualifiers.remove(k));
+        assertEquals(eQualifiers, aQualifiers);
+
+        if (eQualifiers != null && aQualifiers != null) {
+            eQualifiers.forEach((k,v) -> {
                 Assert.assertEquals(v, actual.getQualifier(k));
             });
         }
-
-        Assert.assertTrue(aQualifiers.isEmpty());
-
     }
 
 }
