@@ -94,7 +94,7 @@ public final class PackageURL implements Serializable {
     public PackageURL(final String type, final String namespace, final String name, final String version,
                       final TreeMap<String, String> qualifiers, final String subpath)
             throws MalformedPackageURLException {
-        this.type = validateType(type);
+        this.type = toLowerCase(validateType(type));
         this.namespace = validateNamespace(namespace);
         this.name = validateName(name);
         this.version = validateVersion(version);
@@ -246,16 +246,19 @@ public final class PackageURL implements Serializable {
         if (value == null || value.isEmpty()) {
             throw new MalformedPackageURLException("The PackageURL type cannot be null or empty");
         }
-        if (value.charAt(0) >= '0' && value.charAt(0) <= '9') {
+
+        if (isDigit(value.charAt(0))) {
             throw new MalformedPackageURLException("The PackageURL type cannot start with a number");
         }
-        final String retVal = value.toLowerCase();
-        if (retVal.chars().anyMatch(c -> !(c == '.' || c == '+' || c == '-'
-                || (c >= 'a' && c <= 'z')
-                || (c >= '0' && c <= '9')))) {
+
+        if (!value.chars().allMatch(c -> (c == '.' || c == '+' || c == '-'
+                || isUpperCase(c)
+                || isLowerCase(c)
+                || isDigit(c)))) {
             throw new MalformedPackageURLException("The PackageURL type contains invalid characters");
         }
-        return retVal;
+
+        return value;
     }
 
     private String validateNamespace(final String value) throws MalformedPackageURLException {
@@ -270,7 +273,6 @@ public final class PackageURL implements Serializable {
             return null;
         }
         final String tempNamespace = validatePath(values, false);
-
         String retVal;
         switch (type) {
             case StandardTypes.BITBUCKET:
@@ -278,7 +280,7 @@ public final class PackageURL implements Serializable {
             case StandardTypes.GITHUB:
             case StandardTypes.GOLANG:
             case StandardTypes.RPM:
-                retVal = tempNamespace.toLowerCase();
+                retVal = tempNamespace != null ? toLowerCase(tempNamespace) : null;
                 break;
             default:
                 retVal = tempNamespace;
@@ -297,10 +299,10 @@ public final class PackageURL implements Serializable {
             case StandardTypes.DEBIAN:
             case StandardTypes.GITHUB:
             case StandardTypes.GOLANG:
-                temp = value.toLowerCase();
+                temp = toLowerCase(value);
                 break;
             case StandardTypes.PYPI:
-                temp = value.replaceAll("_", "-").toLowerCase();
+                temp = toLowerCase(value).replace('_', '-');
                 break;
             default:
                 temp = value;
@@ -330,16 +332,15 @@ public final class PackageURL implements Serializable {
         return values;
     }
 
-    private String validateKey(final String value) throws MalformedPackageURLException {
+    private void validateKey(final String value) throws MalformedPackageURLException {
         if (value == null || value.isEmpty()) {
             throw new MalformedPackageURLException("Qualifier key is invalid: " + value);
         }
-        final String retValue = value.toLowerCase();
-        if ((value.charAt(0) >= '0' && value.charAt(0) <= '9')
-                || !value.chars().allMatch(c -> (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || c == '.' || c == '-' || c == '_')) {
+
+        if (isDigit(value.charAt(0))
+                || !value.chars().allMatch(c -> isLowerCase(c) || (isDigit(c)) || c == '.' || c == '-' || c == '_')) {
             throw new MalformedPackageURLException("Qualifier key is invalid: " + value);
         }
-        return retValue;
     }
 
     private String validatePath(final String value, final boolean isSubpath) throws MalformedPackageURLException {
@@ -418,7 +419,7 @@ public final class PackageURL implements Serializable {
             if (qualifiers != null && qualifiers.size() > 0) {
                 purl.append("?");
                 qualifiers.entrySet().stream().forEachOrdered((entry) -> {
-                    purl.append(entry.getKey().toLowerCase());
+                    purl.append(toLowerCase(entry.getKey()));
                     purl.append("=");
                     purl.append(percentEncode(entry.getValue()));
                     purl.append("&");
@@ -466,11 +467,54 @@ public final class PackageURL implements Serializable {
     }
 
     private static boolean isAlpha(int c) {
-        return ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z'));
+        return (isLowerCase(c) || isUpperCase(c));
     }
 
     private static boolean isDigit(int c) {
         return (c >= '0' && c <= '9');
+    }
+
+    private static boolean isUpperCase(int c) {
+        return (c >= 'A' && c <= 'Z');
+    }
+
+    private static int indexOfFirstUpperCaseChar(String s) {
+        int length = s.length();
+
+        for (int i = 0; i < length; i++) {
+            if (isUpperCase(s.charAt(i))) {
+                return i;
+            }
+        }
+
+        return -1;
+    }
+
+    private static boolean isLowerCase(int c) {
+        return (c >= 'a' && c <= 'z');
+    }
+
+    private static int toLowerCase(int c) {
+        return (c ^ 0x20);
+    }
+
+    private static String toLowerCase(String s) {
+        int pos = indexOfFirstUpperCaseChar(s);
+
+        if (pos == -1) {
+            return s;
+        }
+
+        char[] chars = s.toCharArray();
+        int length = chars.length;
+
+        for (int i = pos; i < length; i++) {
+            if (isUpperCase(chars[i])) {
+                chars[i] = (char) toLowerCase(chars[i]);
+            }
+        }
+
+        return new String(chars);
     }
 
     /**
@@ -571,7 +615,8 @@ public final class PackageURL implements Serializable {
             if (index <= start) {
                 throw new MalformedPackageURLException("Invalid purl: does not contain both a type and name");
             }
-            this.type = validateType(remainder.substring(start, index).toLowerCase());
+            this.type = toLowerCase(validateType(remainder.substring(start, index)));
+
             start = index + 1;
 
             // version is optional - check for existence
@@ -619,8 +664,9 @@ public final class PackageURL implements Serializable {
                             (map, value) -> {
                                 final String[] entry = value.split("=", 2);
                                 if (entry.length == 2 && !entry[1].isEmpty()) {
-                                    if (map.put(entry[0].toLowerCase(), percentDecode(entry[1])) != null) {
-                                        throw new ValidationException("Duplicate package qualifier encountere - more then one value was specified for " + entry[0].toLowerCase());
+                                    String key = toLowerCase(entry[0]);
+                                    if (map.put(key, percentDecode(entry[1])) != null) {
+                                        throw new ValidationException("Duplicate package qualifier encountered. More then one value was specified for " + key);
                                     }
                                 }
                             },
