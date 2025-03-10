@@ -34,7 +34,6 @@ import java.util.Objects;
 import java.util.TreeMap;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 /**
  * <p>Package-URL (aka purl) is a "mostly universal" URL to describe a package. A purl is a URL composed of seven components:</p>
@@ -451,14 +450,18 @@ public final class PackageURL implements Serializable {
         }
 
         byte[] bytes = source.getBytes(charset);
+        int length = bytes.length;
+        int pos = indexOfFirstUnreservedChar(bytes);
 
-        if (IntStream.range(0, bytes.length).allMatch(i -> isUnreserved(bytes[i]))) {
+        if (pos == -1) {
             return source;
         }
 
-        StringBuilder builder = new StringBuilder(source.length());
+        StringBuilder builder = new StringBuilder(source.substring(0, pos));
 
-        for (byte b : bytes) {
+        for (int i = pos; i < length; i++) {
+            byte b = bytes[i];
+
             if (isUnreserved(b)) {
                 builder.append((char) b);
             } else {
@@ -469,6 +472,20 @@ public final class PackageURL implements Serializable {
         }
 
         return builder.toString();
+    }
+
+    private static int indexOfFirstUnreservedChar(final byte[] bytes) {
+        final int length = bytes.length;
+        int pos = -1;
+
+        for (int i = 0; i < length; i++) {
+            if (!isUnreserved(bytes[i])) {
+                pos = i;
+                break;
+            }
+        }
+
+        return pos;
     }
 
     private static boolean isUnreserved(int c) {
