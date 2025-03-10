@@ -21,10 +21,10 @@
  */
 package com.github.packageurl;
 
+import java.io.ByteArrayOutputStream;
 import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collections;
@@ -410,10 +410,10 @@ public final class PackageURL implements Serializable {
             purl.append("/");
         }
         if (name != null) {
-            purl.append(percentEncode(name));
+            purl.append(uriEncode(name));
         }
         if (version != null) {
-            purl.append("@").append(percentEncode(version));
+            purl.append("@").append(uriEncode(version));
         }
         if (! coordinatesOnly) {
             if (qualifiers != null && qualifiers.size() > 0) {
@@ -421,7 +421,7 @@ public final class PackageURL implements Serializable {
                 qualifiers.entrySet().stream().forEachOrdered((entry) -> {
                     purl.append(toLowerCase(entry.getKey()));
                     purl.append("=");
-                    purl.append(percentEncode(entry.getValue()));
+                    purl.append(uriEncode(entry.getValue()));
                     purl.append("&");
                 });
                 purl.setLength(purl.length() - 1);
@@ -433,33 +433,46 @@ public final class PackageURL implements Serializable {
         return purl.toString();
     }
 
-    /**
-     * Encodes the input in conformance with RFC 3986.
-     *
-     * @param input the String to encode
-     * @return an encoded String
-     */
-    private String percentEncode(final String input) {
-        return uriEncode(input, StandardCharsets.UTF_8);
-    }
-
-    private static String uriEncode(String source, Charset charset) {
-        if (source == null || source.length() == 0) {
+    private static String uriEncode(final String source) {
+        if (source == null || source.isEmpty()) {
             return source;
         }
 
-        StringBuilder builder = new StringBuilder();
-        for (byte b : source.getBytes(charset)) {
+        byte[] bytes = source.getBytes(StandardCharsets.UTF_8);
+        int length = bytes.length;
+        int pos = indexOfFirstUnsafeChar(bytes);
+
+        if (pos == -1) {
+            return source;
+        }
+
+        StringBuilder sb = new StringBuilder(length * 3);
+
+        for (byte b : bytes) {
             if (isUnreserved(b)) {
-                builder.append((char) b);
-            }
-            else {
-                // Substitution: A '%' followed by the hexadecimal representation of the ASCII value of the replaced character
-                builder.append('%');
-                builder.append(Integer.toHexString(b).toUpperCase());
+                sb.append((char) b);
+            } else {
+                sb.append('%');
+                sb.append(Character.toUpperCase(Character.forDigit((b >> 4) & 0xF, 16)));
+                sb.append(Character.toUpperCase(Character.forDigit(b & 0xF, 16)));
             }
         }
-        return builder.toString();
+
+        return sb.toString();
+    }
+
+    private static int indexOfFirstUnsafeChar(final byte[] bytes) {
+        final int length = bytes.length;
+        int pos = -1;
+
+        for (int i = 0; i < length; i++) {
+            if (!isUnreserved(bytes[i])) {
+                pos = i;
+                break;
+            }
+        }
+
+        return pos;
     }
 
     private static boolean isUnreserved(int c) {
@@ -517,42 +530,38 @@ public final class PackageURL implements Serializable {
         return new String(chars);
     }
 
-    /**
-     * Optionally decodes a String, if it's encoded. If String is not encoded,
-     * method will return the original input value.
-     *
-     * @param input the value String to decode
-     * @return a decoded String
-     */
-    private String percentDecode(final String input) {
-        if (input == null) {
-            return null;
-        }
-        final String decoded = uriDecode(input);
-        if (!decoded.equals(input)) {
-            return decoded;
-        }
-        return input;
-    }
-
-    public static String uriDecode(String source) {
-        if (source == null) {
+    public static String uriDecode(final String source) {
+        if (source == null || source.isEmpty()) {
             return source;
         }
-        int length = source.length();
-        StringBuilder builder = new StringBuilder();
+
+        int firstPercent = source.indexOf('%');
+
+        if (firstPercent == -1) {
+            return source;
+        }
+
+        byte[] bytes = source.getBytes(StandardCharsets.UTF_8);
+        int length = bytes.length;
+        ByteArrayOutputStream buffer = new ByteArrayOutputStream(length);
+
         for (int i = 0; i < length; i++) {
-            if (source.charAt(i) == '%') {
-                String str = source.substring(i + 1, i + 3);
-                char c = (char) Integer.parseInt(str, 16);
-                builder.append(c);
-                i += 2;
-            }
-            else {
-                builder.append(source.charAt(i));
+            int b = bytes[i];
+
+            if (b == '%') {
+                    if (i + 2 >= length) {
+                        return null;
+                    }
+
+                    int b1 = Character.digit(bytes[++i], 16);
+                    int b2 = Character.digit(bytes[++i], 16);
+                    buffer.write((char) ((b1 << 4) + b2));
+            } else {
+                buffer.write(b);
             }
         }
-        return builder.toString();
+
+        return new String(buffer.toByteArray(), StandardCharsets.UTF_8);
     }
 
     /**
@@ -622,16 +631,16 @@ public final class PackageURL implements Serializable {
             // version is optional - check for existence
             index = remainder.lastIndexOf('@');
             if (index >= start) {
-                this.version = validateVersion(percentDecode(remainder.substring(index + 1)));
+                this.version = validateVersion(uriDecode(remainder.substring(index + 1)));
                 remainder = remainder.substring(0, index);
             }
 
             // The 'remainder' should now consist of an optional namespace and the name
             index = remainder.lastIndexOf('/');
             if (index <= start) {
-                this.name = validateName(percentDecode(remainder.substring(start)));
+                this.name = validateName(uriDecode(remainder.substring(start)));
             } else {
-                this.name = validateName(percentDecode(remainder.substring(index + 1)));
+                this.name = validateName(uriDecode(remainder.substring(index + 1)));
                 remainder = remainder.substring(0, index);
                 this.namespace = validateNamespace(parsePath(remainder.substring(start), false));
             }
@@ -665,7 +674,7 @@ public final class PackageURL implements Serializable {
                                 final String[] entry = value.split("=", 2);
                                 if (entry.length == 2 && !entry[1].isEmpty()) {
                                     String key = toLowerCase(entry[0]);
-                                    if (map.put(key, percentDecode(entry[1])) != null) {
+                                    if (map.put(key, uriDecode(entry[1])) != null) {
                                         throw new ValidationException("Duplicate package qualifier encountered. More then one value was specified for " + key);
                                     }
                                 }
@@ -684,12 +693,12 @@ public final class PackageURL implements Serializable {
         }
         return PATH_SPLITTER.splitAsStream(value)
                 .filter(segment -> !segment.isEmpty() && !(isSubpath && (".".equals(segment) || "..".equals(segment))))
-                .map(segment -> percentDecode(segment))
+                .map(segment -> uriDecode(segment))
                 .toArray(String[]::new);
     }
 
     private String encodePath(final String path) {
-        return Arrays.stream(path.split("/")).map(segment -> percentEncode(segment)).collect(Collectors.joining("/"));
+        return Arrays.stream(path.split("/")).map(segment -> uriEncode(segment)).collect(Collectors.joining("/"));
     }
 
     /**
