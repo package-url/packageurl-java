@@ -482,7 +482,7 @@ public final class PackageURL implements Serializable {
         int length = s.length();
 
         for (int i = 0; i < length; i++) {
-            if (!isLowerCase(s.charAt(i))) {
+            if (isUpperCase(s.charAt(i))) {
                 return i;
             }
         }
