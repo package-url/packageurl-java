@@ -24,11 +24,15 @@ package com.github.packageurl;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Locale;
 import java.util.TreeMap;
 
 import org.apache.commons.io.IOUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Rule;
@@ -44,11 +48,12 @@ import org.junit.rules.ExpectedException;
  * @author Steve Springett
  */
 public class PackageURLTest {
-
     @Rule
     public ExpectedException exception = ExpectedException.none();
 
     private static JSONArray json = new JSONArray();
+
+    private static Locale defaultLocale;
 
     @BeforeClass
     public static void setup() throws IOException {
@@ -56,6 +61,13 @@ public class PackageURLTest {
         Assert.assertNotNull(is);
         String jsonTxt = IOUtils.toString(is, StandardCharsets.UTF_8);
         json = new JSONArray(jsonTxt);
+        defaultLocale = Locale.getDefault();
+        Locale.setDefault(new Locale("tr"));
+    }
+
+    @AfterClass
+    public static void resetLocale() {
+        Locale.setDefault(defaultLocale);
     }
 
     @Test
@@ -131,13 +143,17 @@ public class PackageURLTest {
             final String subpath = testDefinition.optString("subpath", null);
 
             TreeMap<String, String> map = null;
+            Map<String, String> hashMap = null;
             if (qualifiers != null) {
                 map = qualifiers.toMap().entrySet().stream().collect(
                         TreeMap::new,
                         (qmap, entry) -> qmap.put(entry.getKey(), (String) entry.getValue()),
                         TreeMap::putAll
                 );
+                hashMap = new HashMap<>(map);
             }
+
+
 
             if (invalid) {
                 try {
@@ -166,6 +182,8 @@ public class PackageURLTest {
                     Assert.assertTrue(purl.getQualifiers().containsKey(key));
                     Assert.assertEquals(value, purl.getQualifiers().get(key));
                 });
+                PackageURL purl2 = new PackageURL(type, namespace, name, version, hashMap, subpath);
+                Assert.assertEquals(purl.getQualifiers(), purl2.getQualifiers());
             }
         }
     }
@@ -268,6 +286,38 @@ public class PackageURLTest {
 
         PackageURL purl = new PackageURL("pkg://generic/name?key=one&key=two");
         Assert.fail("constructor with url with duplicate qualifiers should have thrown an error and this line should not be reached");
+    }
+
+    @Test
+    public void testConstructorDuplicateQualifiersMixedCase() throws MalformedPackageURLException {
+        exception.expect(MalformedPackageURLException.class);
+
+        PackageURL purl = new PackageURL("pkg://generic/name?key=one&KEY=two");
+        Assert.fail("constructor with url with duplicate qualifiers should have thrown an error and this line should not be reached");
+    }
+
+    @Test
+    public void testConstructorWithUppercaseKey() throws MalformedPackageURLException {
+        PackageURL purl = new PackageURL("pkg://generic/name?KEY=one");
+        Assert.assertNotNull(purl.getQualifiers());
+        Assert.assertEquals("one", purl.getQualifiers().get("key"));
+        TreeMap<String, String> qualifiers = new TreeMap<>();
+        qualifiers.put("key", "one");
+        PackageURL purl2 = new PackageURL("generic", null, "name", null, qualifiers, null);
+        Assert.assertEquals(purl, purl2);
+    }
+
+    @Test
+    public void testConstructorWithEmptyKey() throws MalformedPackageURLException {
+        PackageURL purl = new PackageURL("pkg://generic/name?KEY");
+        Assert.assertNull(purl.getQualifiers());
+        TreeMap<String, String> qualifiers = new TreeMap<>();
+        qualifiers.put("KEY", null);
+        PackageURL purl2 = new PackageURL("generic", null, "name", null, qualifiers, null);
+        Assert.assertEquals(purl, purl2);
+        qualifiers.put("KEY", "");
+        PackageURL purl3 = new PackageURL("generic", null, "name", null, qualifiers, null);
+        Assert.assertEquals(purl2, purl3);
     }
 
     @Test
