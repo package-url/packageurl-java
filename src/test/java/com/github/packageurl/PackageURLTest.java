@@ -80,7 +80,7 @@ public class PackageURLTest {
             if (invalid) {
                 try {
                     PackageURL purl = new PackageURL(purlString);
-                    Assert.fail("Inavlid purl should have caused an exception: " + purl);
+                    Assert.fail("Invalid purl should have caused an exception: " + purl);
                 } catch (MalformedPackageURLException e) {
                     Assert.assertNotNull(e.getMessage());
                 }
