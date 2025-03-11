@@ -118,7 +118,7 @@ public final class PackageURL implements Serializable {
     public PackageURL(final String type, final String namespace, final String name, final String version,
                       final Map<String, String> qualifiers, final String subpath)
             throws MalformedPackageURLException {
-        this(type, namespace, name, version, (qualifiers == null) ? null : ((qualifiers instanceof TreeMap) ? (TreeMap<String, String>) qualifiers : new TreeMap<>(qualifiers)), subpath);
+        this(type, namespace, name, version, (qualifiers != null) ? new TreeMap<>(qualifiers) : null, subpath);
     }
 
     /**
