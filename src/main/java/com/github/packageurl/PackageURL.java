@@ -168,6 +168,12 @@ public final class PackageURL implements Serializable {
      */
     private String subpath;
 
+    /**
+     * Converts this {@link PackageURL} to a {@link PackageURLBuilder}.
+     *
+     * @return the builder
+     * @deprecated Use {@link PackageURLBuilder#aPackageURL(PackageURL)} or {@link PackageURLBuilder#aPackageURL(String)}
+     */
     public PackageURLBuilder toBuilder() {
         PackageURLBuilder builder = PackageURLBuilder.aPackageURL()
                 .withType(getType())

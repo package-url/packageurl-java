@@ -43,19 +43,19 @@ public final class PackageURLBuilder {
     }
 
     /**
-     * Obtain a reference to a new builder object.
+     * Obtains a reference to a new builder object.
      *
-     * @return a new builder object.
+     * @return a new builder object
      */
     public static PackageURLBuilder aPackageURL() {
         return new PackageURLBuilder();
     }
 
     /**
-     * Obtain a reference to a new builder object initialized with the existing {@link PackageURL} object.
+     * Obtains a reference to a new builder object initialized with the existing {@link PackageURL} object.
      *
      * @param packageURL the existing Package URL object
-     * @return a new builder object.
+     * @return a new builder object
      */
     public static PackageURLBuilder aPackageURL(final PackageURL packageURL) {
         return packageURL.toBuilder();
@@ -65,7 +65,8 @@ public final class PackageURLBuilder {
      * Obtain a reference to a new builder object initialized with the existing Package URL string.
      *
      * @param purl the existing Package URL string
-     * @return a new builder object.
+     * @return a new builder object
+     * @throws MalformedPackageURLException if an error occurs while parsing the input
      */
     public static PackageURLBuilder aPackageURL(final String purl) throws MalformedPackageURLException {
         return new PackageURL(purl).toBuilder();
@@ -170,6 +171,7 @@ public final class PackageURLBuilder {
 
     /**
      * Removes a package qualifier. This is a no-op if the qualifier is not present.
+     *
      * @param key the package qualifier key to remove
      * @return a reference to the builder
      */
@@ -210,6 +212,7 @@ public final class PackageURLBuilder {
 
     /**
      * Removes all qualifiers, if any.
+     *
      * @return a reference to this builder.
      */
     public PackageURLBuilder withNoQualifiers() {
@@ -219,6 +222,7 @@ public final class PackageURLBuilder {
 
     /**
      * Returns current type value set in the builder.
+     *
      * @return type set in this builder
      */
     public String getType() {
@@ -227,6 +231,7 @@ public final class PackageURLBuilder {
 
     /**
      * Returns current namespace value set in the builder.
+     *
      * @return namespace set in this builder
      */
     public String getNamespace() {
@@ -235,6 +240,7 @@ public final class PackageURLBuilder {
 
     /**
      * Returns current name value set in the builder.
+     *
      * @return name set in this builder
      */
     public String getName() {
@@ -243,6 +249,7 @@ public final class PackageURLBuilder {
 
     /**
      * Returns current version value set in the builder.
+     *
      * @return version set in this builder
      */
     public String getVersion() {
@@ -251,6 +258,7 @@ public final class PackageURLBuilder {
 
     /**
      * Returns current subpath value set in the builder.
+     *
      * @return subpath set in this builder
      */
     public String getSubpath() {
@@ -259,8 +267,9 @@ public final class PackageURLBuilder {
 
     /**
      * Returns sorted map containing all qualifiers set in this builder.
-     * An empty map is returned if no qualifiers is set.
-     * @return all qualifiers set in this builder, or an empty map if none are set.
+     * An empty map is returned if no qualifiers are set
+     *
+     * @return all qualifiers set in this builder, or an empty map if none are set
      */
     public Map<String, String> getQualifiers() {
         if (qualifiers == null) {
@@ -271,8 +280,9 @@ public final class PackageURLBuilder {
 
     /**
      * Returns a currently set qualifier value set in the builder for the specified key.
+     *s
      * @param key qualifier key
-     * @return qualifier value or {@code null} if one is not set.
+     * @return qualifier value or {@code null} if one is not set
      */
     public String getQualifier(String key) {
         if (qualifiers == null) {
