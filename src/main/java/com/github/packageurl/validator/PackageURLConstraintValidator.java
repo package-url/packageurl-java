@@ -22,8 +22,8 @@
 package com.github.packageurl.validator;
 
 import com.github.packageurl.MalformedPackageURLException;
-import javax.validation.ConstraintValidator;
-import javax.validation.ConstraintValidatorContext;
+import jakarta.validation.ConstraintValidator;
+import jakarta.validation.ConstraintValidatorContext;
 
 /**
  * A JSR-303 compliant validator that validates String fields conform to the Package URL specification.
