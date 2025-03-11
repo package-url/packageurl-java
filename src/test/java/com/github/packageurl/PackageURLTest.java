@@ -23,6 +23,8 @@ package com.github.packageurl;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Locale;
 import java.util.TreeMap;
 
@@ -138,13 +140,17 @@ public class PackageURLTest {
             final String subpath = testDefinition.optString("subpath", null);
 
             TreeMap<String, String> map = null;
+            Map<String, String> hashMap = null;
             if (qualifiers != null) {
                 map = qualifiers.toMap().entrySet().stream().collect(
                         TreeMap<String, String>::new,
                         (qmap, entry) -> qmap.put(entry.getKey(), (String) entry.getValue()),
                         TreeMap<String, String>::putAll
                 );
+                hashMap = new HashMap<>(map);
             }
+
+
 
             if (invalid) {
                 try {
@@ -173,6 +179,8 @@ public class PackageURLTest {
                     Assert.assertTrue(purl.getQualifiers().containsKey(key));
                     Assert.assertEquals(value, purl.getQualifiers().get(key));
                 });
+                PackageURL purl2 = new PackageURL(type, namespace, name, version, hashMap, subpath);
+                Assert.assertEquals(purl.getQualifiers(), purl2.getQualifiers());
             }
         }
     }
