@@ -23,6 +23,8 @@ package com.github.packageurl;
 
 import java.util.Map;
 import java.util.Set;
+import java.util.Collections;
+import java.util.Map;
 import java.util.TreeMap;
 
 /**
@@ -240,11 +242,11 @@ public final class PackageURLBuilder {
      * An empty map is returned if no qualifiers is set.
      * @return all qualifiers set in this builder, or an empty map if none are set.
      */
-    public TreeMap<String, String> getQualifiers() {
+    public Map<String, String> getQualifiers() {
         if (qualifiers == null) {
-            return new TreeMap<>();
+            return null;
         }
-        return new TreeMap<>(qualifiers);
+        return Collections.unmodifiableMap(qualifiers);
     }
 
     /**

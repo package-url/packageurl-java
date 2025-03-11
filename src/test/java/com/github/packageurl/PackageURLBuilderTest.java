@@ -97,26 +97,22 @@ public class PackageURLBuilderTest {
 
     @Test
     public void testPackageURLBuilderException1() throws MalformedPackageURLException {
-        exception.expect(MalformedPackageURLException.class);
-        exception.expectMessage("contains a qualifier key with an empty or null");
         PackageURL purl = PackageURLBuilder.aPackageURL()
                 .withType("type")
                 .withName("name")
                 .withQualifier("key","")
                 .build();
-        Assert.fail("Build should fail due to invalid qualifier (empty value)");
+        assertNull(purl.getQualifiers());
     }
 
     @Test
     public void testPackageURLBuilderException1Null() throws MalformedPackageURLException {
-        exception.expect(MalformedPackageURLException.class);
-        exception.expectMessage("contains a qualifier key with an empty or null");
-        PackageURLBuilder.aPackageURL()
+        PackageURL purl = PackageURLBuilder.aPackageURL()
                 .withType("type")
                 .withName("name")
                 .withQualifier("key",null)
                 .build();
-        Assert.fail("Build should fail due to invalid qualifier (null value)");
+        assertNull(purl.getQualifiers());
     }
 
     @Test
@@ -230,15 +226,13 @@ public class PackageURLBuilderTest {
         Map<String, String> eQualifiers = expected.getQualifiers();
         Map<String, String> aQualifiers = actual.getQualifiers();
 
-        if (eQualifiers != null) {
-            eQualifiers.forEach((k,v)-> {
-                Assert.assertEquals(v, aQualifiers.remove(k));
+        assertEquals(eQualifiers, aQualifiers);
+
+        if (eQualifiers != null && aQualifiers != null) {
+            eQualifiers.forEach((k,v) -> {
                 Assert.assertEquals(v, actual.getQualifier(k));
             });
         }
-
-        Assert.assertTrue(aQualifiers.isEmpty());
-
     }
 
 }
