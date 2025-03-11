@@ -23,6 +23,7 @@ package com.github.packageurl;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Locale;
@@ -41,7 +42,8 @@ import org.junit.rules.ExpectedException;
 /**
  * Test cases for PackageURL parsing
  * <p>
- * Original test cases retrieved from: https://raw.githubusercontent.com/package-url/purl-spec/master/test-suite-data.json
+ * Original test cases retrieved from:
+ * <a href="https://raw.githubusercontent.com/package-url/purl-spec/master/test-suite-data.json">https://raw.githubusercontent.com/package-url/purl-spec/master/test-suite-data.json</a>
  *
  * @author Steve Springett
  */
@@ -56,7 +58,8 @@ public class PackageURLTest {
     @BeforeClass
     public static void setup() throws IOException {
         InputStream is = PackageURLTest.class.getResourceAsStream("/test-suite-data.json");
-        String jsonTxt = IOUtils.toString(is, "UTF-8");
+        Assert.assertNotNull(is);
+        String jsonTxt = IOUtils.toString(is, StandardCharsets.UTF_8);
         json = new JSONArray(jsonTxt);
         defaultLocale = Locale.getDefault();
         Locale.setDefault(new Locale("tr"));
@@ -89,7 +92,7 @@ public class PackageURLTest {
             if (invalid) {
                 try {
                     PackageURL purl = new PackageURL(purlString);
-                    Assert.fail("Inavlid purl should have caused an exception: " + purl.toString());
+                    Assert.fail("Invalid purl should have caused an exception: " + purl);
                 } catch (MalformedPackageURLException e) {
                     Assert.assertNotNull(e.getMessage());
                 }
@@ -109,7 +112,7 @@ public class PackageURLTest {
             } else {
                 Assert.assertNotNull(purl.getQualifiers());
                 Assert.assertEquals(qualifiers.length(), purl.getQualifiers().size());
-                qualifiers.keySet().forEach((key) -> {
+                qualifiers.keySet().forEach(key -> {
                     String value = qualifiers.getString(key);
                     Assert.assertTrue(purl.getQualifiers().containsKey(key));
                     Assert.assertEquals(value, purl.getQualifiers().get(key));
@@ -143,9 +146,9 @@ public class PackageURLTest {
             Map<String, String> hashMap = null;
             if (qualifiers != null) {
                 map = qualifiers.toMap().entrySet().stream().collect(
-                        TreeMap<String, String>::new,
+                        TreeMap::new,
                         (qmap, entry) -> qmap.put(entry.getKey(), (String) entry.getValue()),
-                        TreeMap<String, String>::putAll
+                        TreeMap::putAll
                 );
                 hashMap = new HashMap<>(map);
             }
@@ -155,7 +158,7 @@ public class PackageURLTest {
             if (invalid) {
                 try {
                     PackageURL purl = new PackageURL(type, namespace, name, version, map, subpath);
-                    Assert.fail("Invalid package url components should have caused an exception: " + purl.toString());
+                    Assert.fail("Invalid package url components should have caused an exception: " + purl);
                 } catch (MalformedPackageURLException e) {
                     Assert.assertNotNull(e.getMessage());
                 }
@@ -174,7 +177,7 @@ public class PackageURLTest {
             if (qualifiers != null) {
                 Assert.assertNotNull(purl.getQualifiers());
                 Assert.assertEquals(qualifiers.length(), purl.getQualifiers().size());
-                qualifiers.keySet().forEach((key) -> {
+                qualifiers.keySet().forEach(key -> {
                     String value = qualifiers.getString(key);
                     Assert.assertTrue(purl.getQualifiers().containsKey(key));
                     Assert.assertEquals(value, purl.getQualifiers().get(key));
@@ -195,6 +198,7 @@ public class PackageURLTest {
 
         purl = new PackageURL("pkg:generic/namespace/name@1.0.0?key=value==");
         Assert.assertEquals("generic", purl.getType());
+        Assert.assertNotNull(purl.getQualifiers());
         Assert.assertEquals(1, purl.getQualifiers().size());
         Assert.assertTrue(purl.getQualifiers().containsValue("value=="));
 
@@ -318,24 +322,23 @@ public class PackageURLTest {
 
     @Test
     public void testStandardTypes() {
-        exception = ExpectedException.none();
-        Assert.assertEquals(PackageURL.StandardTypes.BITBUCKET, "bitbucket");
-        Assert.assertEquals(PackageURL.StandardTypes.CARGO, "cargo");
-        Assert.assertEquals(PackageURL.StandardTypes.COMPOSER, "composer");
-        Assert.assertEquals(PackageURL.StandardTypes.DEBIAN, "deb");
-        Assert.assertEquals(PackageURL.StandardTypes.DOCKER, "docker");
-        Assert.assertEquals(PackageURL.StandardTypes.GEM, "gem");
-        Assert.assertEquals(PackageURL.StandardTypes.GENERIC, "generic");
-        Assert.assertEquals(PackageURL.StandardTypes.GITHUB, "github");
-        Assert.assertEquals(PackageURL.StandardTypes.GOLANG, "golang");
-        Assert.assertEquals(PackageURL.StandardTypes.HEX, "hex");
-        Assert.assertEquals(PackageURL.StandardTypes.MAVEN, "maven");
-        Assert.assertEquals(PackageURL.StandardTypes.NPM, "npm");
-        Assert.assertEquals(PackageURL.StandardTypes.NUGET, "nuget");
-        Assert.assertEquals(PackageURL.StandardTypes.PYPI, "pypi");
-        Assert.assertEquals(PackageURL.StandardTypes.RPM, "rpm");
-        Assert.assertEquals(PackageURL.StandardTypes.NIXPKGS, "nixpkgs");
-        Assert.assertEquals(PackageURL.StandardTypes.HACKAGE, "hackage");
+        Assert.assertEquals("bitbucket", PackageURL.StandardTypes.BITBUCKET);
+        Assert.assertEquals("cargo", PackageURL.StandardTypes.CARGO);
+        Assert.assertEquals("composer", PackageURL.StandardTypes.COMPOSER);
+        Assert.assertEquals("deb", PackageURL.StandardTypes.DEBIAN);
+        Assert.assertEquals("docker", PackageURL.StandardTypes.DOCKER);
+        Assert.assertEquals("gem", PackageURL.StandardTypes.GEM);
+        Assert.assertEquals("generic", PackageURL.StandardTypes.GENERIC);
+        Assert.assertEquals("github", PackageURL.StandardTypes.GITHUB);
+        Assert.assertEquals("golang", PackageURL.StandardTypes.GOLANG);
+        Assert.assertEquals("hex", PackageURL.StandardTypes.HEX);
+        Assert.assertEquals("maven", PackageURL.StandardTypes.MAVEN);
+        Assert.assertEquals("npm", PackageURL.StandardTypes.NPM);
+        Assert.assertEquals("nuget", PackageURL.StandardTypes.NUGET);
+        Assert.assertEquals("pypi", PackageURL.StandardTypes.PYPI);
+        Assert.assertEquals("rpm", PackageURL.StandardTypes.RPM);
+        Assert.assertEquals("nixpkgs", PackageURL.StandardTypes.NIXPKGS);
+        Assert.assertEquals("hackage", PackageURL.StandardTypes.HACKAGE);
     }
 
     @Test
@@ -369,14 +372,14 @@ public class PackageURLTest {
     public void testNpmCaseSensitive() throws Exception {
         // e.g. https://www.npmjs.com/package/base64/v/1.0.0
         PackageURL base64Lowercase = new PackageURL("pkg:npm/base64@1.0.0");
-        Assert.assertEquals(base64Lowercase.getType(), "npm");
-        Assert.assertEquals(base64Lowercase.getName(), "base64");
-        Assert.assertEquals(base64Lowercase.getVersion(), "1.0.0");
+        Assert.assertEquals("npm", base64Lowercase.getType());
+        Assert.assertEquals("base64", base64Lowercase.getName());
+        Assert.assertEquals("1.0.0", base64Lowercase.getVersion());
 
         // e.g. https://www.npmjs.com/package/Base64/v/1.0.0
         PackageURL base64Uppercase = new PackageURL("pkg:npm/Base64@1.0.0");
-        Assert.assertEquals(base64Uppercase.getType(), "npm");
-        Assert.assertEquals(base64Uppercase.getName(), "Base64");
-        Assert.assertEquals(base64Uppercase.getVersion(), "1.0.0");
+        Assert.assertEquals("npm", base64Uppercase.getType());
+        Assert.assertEquals("Base64", base64Uppercase.getName());
+        Assert.assertEquals("1.0.0", base64Uppercase.getVersion());
     }
 }
