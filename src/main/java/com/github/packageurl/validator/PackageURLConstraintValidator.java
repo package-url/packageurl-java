@@ -22,8 +22,8 @@
 package com.github.packageurl.validator;
 
 import com.github.packageurl.MalformedPackageURLException;
-import javax.validation.ConstraintValidator;
-import javax.validation.ConstraintValidatorContext;
+import jakarta.validation.ConstraintValidator;
+import jakarta.validation.ConstraintValidatorContext;
 import org.jspecify.annotations.Nullable;
 
 /**

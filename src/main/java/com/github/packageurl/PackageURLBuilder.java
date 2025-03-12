@@ -23,7 +23,9 @@ package com.github.packageurl;
 
 import static java.util.Objects.requireNonNull;
 
-import java.util.Objects;
+import java.util.Collections;
+import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 import org.jspecify.annotations.Nullable;
 
@@ -39,16 +41,37 @@ public final class PackageURLBuilder {
     private @Nullable TreeMap<String, String> qualifiers = null;
 
     private PackageURLBuilder() {
-        //empty constructor for utility class
+        // empty constructor for utility class
     }
 
     /**
-     * Obtain a reference to a new builder object.
+     * Obtains a reference to a new builder object.
      *
-     * @return a new builder object.
+     * @return a new builder object
      */
     public static PackageURLBuilder aPackageURL() {
         return new PackageURLBuilder();
+    }
+
+    /**
+     * Obtains a reference to a new builder object initialized with the existing {@link PackageURL} object.
+     *
+     * @param packageURL the existing Package URL object
+     * @return a new builder object
+     */
+    public static PackageURLBuilder aPackageURL(final PackageURL packageURL) {
+        return packageURL.toBuilder();
+    }
+
+    /**
+     * Obtain a reference to a new builder object initialized with the existing Package URL string.
+     *
+     * @param purl the existing Package URL string
+     * @return a new builder object
+     * @throws MalformedPackageURLException if an error occurs while parsing the input
+     */
+    public static PackageURLBuilder aPackageURL(final String purl) throws MalformedPackageURLException {
+        return new PackageURL(purl).toBuilder();
     }
 
     /**
@@ -132,7 +155,28 @@ public final class PackageURLBuilder {
     }
 
     /**
+     * Adds the package qualifiers.
+     *
+     * @param qualifiers the package qualifiers, or {@code null}
+     * @return a reference to the builder
+     * @see PackageURL#getQualifiers()
+     */
+    public PackageURLBuilder withQualifiers(final @Nullable Map<String, String> qualifiers) {
+        if (qualifiers == null) {
+            this.qualifiers = null;
+        } else {
+            if (this.qualifiers == null) {
+                this.qualifiers = new TreeMap<>(qualifiers);
+            } else {
+                this.qualifiers.putAll(qualifiers);
+            }
+        }
+        return this;
+    }
+
+    /**
      * Removes a package qualifier. This is a no-op if the qualifier is not present.
+     *
      * @param key the package qualifier key to remove
      * @return a reference to the builder
      * @throws NullPointerException if {@code key} is {@code null}
@@ -140,13 +184,41 @@ public final class PackageURLBuilder {
     public PackageURLBuilder withoutQualifier(final String key) {
         if (qualifiers != null) {
             qualifiers.remove(requireNonNull(key));
-            if (qualifiers.isEmpty()) { qualifiers = null; }
+            if (qualifiers.isEmpty()) {
+                qualifiers = null;
+            }
         }
         return this;
     }
 
     /**
+     * Removes a package qualifier. This is a no-op if the qualifier is not present.
+     * @param keys the package qualifier keys to remove
+     * @return a reference to the builder
+     */
+    public PackageURLBuilder withoutQualifiers(final Set<String> keys) {
+        if (this.qualifiers != null) {
+            keys.forEach(k -> this.qualifiers.remove(k));
+            if (this.qualifiers.isEmpty()) {
+                this.qualifiers = null;
+            }
+        }
+        return this;
+    }
+
+
+    /**
      * Removes all qualifiers, if any.
+     * @return a reference to this builder.
+     */
+    public PackageURLBuilder withoutQualifiers() {
+        qualifiers = null;
+        return this;
+    }
+
+    /**
+     * Removes all qualifiers, if any.
+     *
      * @return a reference to this builder.
      */
     public PackageURLBuilder withNoQualifiers() {
@@ -156,6 +228,7 @@ public final class PackageURLBuilder {
 
     /**
      * Returns current type value set in the builder.
+     *
      * @return type set in this builder
      */
     public @Nullable String getType() {
@@ -164,6 +237,7 @@ public final class PackageURLBuilder {
 
     /**
      * Returns current namespace value set in the builder.
+     *
      * @return namespace set in this builder
      */
     public @Nullable String getNamespace() {
@@ -172,6 +246,7 @@ public final class PackageURLBuilder {
 
     /**
      * Returns current name value set in the builder.
+     *
      * @return name set in this builder
      */
     public @Nullable String getName() {
@@ -180,6 +255,7 @@ public final class PackageURLBuilder {
 
     /**
      * Returns current version value set in the builder.
+     *
      * @return version set in this builder
      */
     public @Nullable String getVersion() {
@@ -188,6 +264,7 @@ public final class PackageURLBuilder {
 
     /**
      * Returns current subpath value set in the builder.
+     *
      * @return subpath set in this builder
      */
     public @Nullable String getSubpath() {
@@ -196,21 +273,22 @@ public final class PackageURLBuilder {
 
     /**
      * Returns sorted map containing all qualifiers set in this builder.
-     * An empty map is returned if no qualifiers is set.
-     * @return all qualifiers set in this builder, or an empty map if none are set.
+     * An empty map is returned if no qualifiers are set
+     *
+     * @return all qualifiers set in this builder, or an empty map if none are set
      */
-    public TreeMap<String, String> getQualifiers() {
-        if (qualifiers == null) { return new TreeMap<>(); }
-        return new TreeMap<>(qualifiers);
+    public Map<String, String> getQualifiers() {
+        return qualifiers != null ? Collections.unmodifiableMap(qualifiers) : Collections.emptyMap();
     }
 
     /**
      * Returns a currently set qualifier value set in the builder for the specified key.
+     *s
      * @param key qualifier key
-     * @return qualifier value or {@code null} if one is not set.
+     * @return qualifier value or {@code null} if one is not set
      */
     public @Nullable String getQualifier(String key) {
-        return qualifiers == null ? null : qualifiers.get(key);
+        return qualifiers == null ? null : qualifiers.get(requireNonNull(key));
     }
 
     /**

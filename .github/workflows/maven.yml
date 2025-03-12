@@ -2,21 +2,36 @@ name: Maven CI
 
 on: [push, pull_request]
 
+permissions: read-all
+
 jobs:
   build:
     strategy:
       matrix:
         os: [ ubuntu-latest ]
-        java-version: [ 8 ]
+        java-version: [ 17 ]
         distro: [ 'zulu', 'temurin' ]
     runs-on: ${{ matrix.os }}
 
     steps:
-    - uses: actions/checkout@v4.1.1
-    - name: Set up JDK ${{ matrix.java-version }}
+
+    - name: Checkout repository
+      uses: actions/checkout@v4.2.2
+
+    - name: Set up JDK 8 and ${{ matrix.java-version }}
       uses: actions/setup-java@v4
       with:
         distribution: ${{ matrix.distro }}
-        java-version: ${{ matrix.java-version }}
+        # We install two JDKs:
+        # * The first one is used by tests through Maven Toolchains.
+        # * The second one is used by Maven itself to perform the build.
+        #
+        # WARNING: The order matters.
+        #          The last version specified will be assigned to JAVA_HOME.
+        java-version: |
+          8
+          ${{ matrix.java-version }}
+
     - name: Build with Maven
-      run: mvn package --file pom.xml
+      shell: bash
+      run: mvn verify

@@ -37,21 +37,39 @@
 
     <properties>
         <!-- Maven Build Properties -->
-        <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
+        <maven.compiler.release>8</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <maven.javadoc.failOnError>false</maven.javadoc.failOnError>
 
+        <!-- Build requirements -->
+        <!--
+          ~ Minimum JDK version required to build the library:
+          ~ Maven plugins MUST be compatible with this version.
+          -->
+        <min.jdk.version>17</min.jdk.version>
+        <!--
+          ~ Upper bound for the JDK version in an official release:
+          ~ Builds MUST use a JDK version between `min.jdk.version` (inclusive) and `max.jdk.version` (exclusive)
+          ~ to be reproducible.
+          -->
+        <max.jdk.version>18</max.jdk.version>
+
         <!-- Maven Plugin Versions -->
-        <maven.compiler.plugin.version>3.11.0</maven.compiler.plugin.version>
+        <maven.clean.plugin.version>2.5</maven.clean.plugin.version>
+        <maven.compiler.plugin.version>3.14.0</maven.compiler.plugin.version>
+        <maven.deploy.plugin.version>2.7</maven.deploy.plugin.version>
+        <maven.enforcer.plugin.version>3.4.1</maven.enforcer.plugin.version>
+        <maven.install.plugin.version>2.4</maven.install.plugin.version>
         <maven.jar.plugin.version>3.3.0</maven.jar.plugin.version>
         <maven.javadoc.plugin.version>3.6.3</maven.javadoc.plugin.version>
         <maven.release.plugin.version>3.0.1</maven.release.plugin.version>
+        <maven.resources.plugin.version>2.6</maven.resources.plugin.version>
+        <maven.site.plugin.version>3.3</maven.site.plugin.version>
         <maven.source.plugin.version>3.3.0</maven.source.plugin.version>
+        <maven.surefire.plugin.version>3.5.2</maven.surefire.plugin.version>
         <!-- Maven build plugins for quality checks -->
-        <plexus.compiler.javac.errorprone.version>2.8.5</plexus.compiler.javac.errorprone.version>
-        <error.prone.core.version>2.3.2</error.prone.core.version>
+        <error.prone.core.version>2.36.0</error.prone.core.version>
         <jacoco.maven.plugin.version>0.8.11</jacoco.maven.plugin.version>
         <spotbugs.maven.plugin.version>4.8.3.1</spotbugs.maven.plugin.version>
         <com.github.spotbugs.version>4.8.3</com.github.spotbugs.version>
@@ -87,9 +105,9 @@
 
     <dependencies>
         <dependency>
-            <groupId>javax.validation</groupId>
-            <artifactId>validation-api</artifactId>
-            <version>2.0.1.Final</version>
+            <groupId>jakarta.validation</groupId>
+            <artifactId>jakarta.validation-api</artifactId>
+            <version>3.1.1</version>
             <optional>true</optional>
             <scope>provided</scope>
         </dependency>
@@ -110,17 +128,36 @@
             <version>20240303</version>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>commons-io</groupId>
-            <artifactId>commons-io</artifactId>
-            <version>2.15.1</version>
-            <scope>test</scope>
-        </dependency>
     </dependencies>
 
     <build>
         <pluginManagement>
             <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-clean-plugin</artifactId>
+                    <version>${maven.clean.plugin.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>${maven.compiler.plugin.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-deploy-plugin</artifactId>
+                    <version>${maven.deploy.plugin.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-enforcer-plugin</artifactId>
+                    <version>${maven.enforcer.plugin.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-install-plugin</artifactId>
+                    <version>${maven.install.plugin.version}</version>
+                </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-jar-plugin</artifactId>
@@ -133,33 +170,77 @@
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-compiler-plugin</artifactId>
-                    <version>${maven.compiler.plugin.version}</version>
-                    <configuration>
-                        <compilerId>javac-with-errorprone</compilerId>
-                        <forceJavacCompilerUse>true</forceJavacCompilerUse>
-                        <showDeprecation>true</showDeprecation>
-                        <compilerArgs>
-                            <arg>-Xlint</arg>
-                        </compilerArgs>
-                    </configuration>
-                    <dependencies>
-                        <dependency>
-                            <groupId>org.codehaus.plexus</groupId>
-                            <artifactId>plexus-compiler-javac-errorprone</artifactId>
-                            <version>${plexus.compiler.javac.errorprone.version}</version>
-                        </dependency>
-                        <!-- override plexus-compiler-javac-errorprone's dependency on Error Prone with the latest version -->
-                        <dependency>
-                            <groupId>com.google.errorprone</groupId>
-                            <artifactId>error_prone_core</artifactId>
-                            <version>${error.prone.core.version}</version>
-                        </dependency>
-                    </dependencies>
+                    <artifactId>maven-resources-plugin</artifactId>
+                    <version>${maven.resources.plugin.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-site-plugin</artifactId>
+                    <version>${maven.site.plugin.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>${maven.surefire.plugin.version}</version>
                 </plugin>
             </plugins>
         </pluginManagement>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>enforce-build-environment</id>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <requireJavaVersion>
+                                    <display>true</display>
+                                    <version>[${min.jdk.version},)</version>
+                                    <message>To build this library you need JDK ${min.jdk.version} or higher.</message>
+                                </requireJavaVersion>
+                                <requirePluginVersions/>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <release>${maven.compiler.release}</release>
+                    <showDeprecation>true</showDeprecation>
+                    <compilerArgs>
+                        <arg>-Xlint:all</arg>
+                        <!-- Error Prone plugin -->
+                        <arg>-XDcompilePolicy=simple</arg>
+                        <arg>--should-stop=ifError=FLOW</arg>
+                        <arg>-Xplugin:ErrorProne</arg>
+                        <!-- No annotation processors for now -->
+                        <arg>-proc:none</arg>
+                    </compilerArgs>
+                    <!--
+                      ~ Due to the changes to annotation processor policy in JDK 23, all annotation processors
+                      ~ should be mentioned explicitly.
+                      ~ To add an annotation processor, add it to `annotationProcessors` below and remove
+                      ~ `-proc:none` above.
+                      ~
+                      ~ See: https://inside.java/2024/06/18/quality-heads-up/
+                      -->
+                    <annotationProcessors/>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>com.google.errorprone</groupId>
+                            <artifactId>error_prone_core</artifactId>
+                            <version>${error.prone.core.version}</version>
+                        </path>
+                    </annotationProcessorPaths>
+                </configuration>
+            </plugin>
             <plugin>
                 <groupId>com.github.spotbugs</groupId>
                 <artifactId>spotbugs-maven-plugin</artifactId>
@@ -230,7 +311,7 @@
             <plugin>
                 <groupId>org.cyclonedx</groupId>
                 <artifactId>cyclonedx-maven-plugin</artifactId>
-                <version>2.7.10</version>
+                <version>2.9.1</version>
                 <configuration>
                     <projectType>library</projectType>
                 </configuration>
@@ -255,6 +336,41 @@
     </build>
 
     <profiles>
+
+        <!--
+          ~ Profile to run tests using JRE 8.
+          ~
+          ~ It activates if a toolchains configuration file is present.
+          ~ See: https://maven.apache.org/guides/mini/guide-using-toolchains.html
+          -->
+        <profile>
+            <id>java8-tests</id>
+            <activation>
+                <file>
+                    <exists>${user.home}/.m2/toolchains.xml</exists>
+                </file>
+            </activation>
+
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>default-test</id>
+                                <configuration>
+                                    <jdkToolchain>
+                                        <version>[1.8,9)</version>
+                                    </jdkToolchain>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
         <profile>
             <id>release</id>
             <activation>
@@ -265,17 +381,15 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-enforcer-plugin</artifactId>
-                        <version>3.4.1</version>
                         <executions>
                             <execution>
-                                <id>enforce-java</id>
-                                <goals>
-                                    <goal>enforce</goal>
-                                </goals>
+                                <id>enforce-build-environment</id>
                                 <configuration>
                                     <rules>
                                         <requireJavaVersion>
-                                            <version>1.8.0</version>
+                                            <display>true</display>
+                                            <version>[${min.jdk.version},${max.jdk.version})</version>
+                                            <message>To release this library you need JDK ${min.jdk.version}.</message>
                                         </requireJavaVersion>
                                     </rules>
                                 </configuration>

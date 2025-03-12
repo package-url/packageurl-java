@@ -28,6 +28,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 
 import static org.hamcrest.CoreMatchers.allOf;
@@ -99,26 +101,22 @@ public class PackageURLBuilderTest {
 
     @Test
     public void testPackageURLBuilderException1() throws MalformedPackageURLException {
-        exception.expect(MalformedPackageURLException.class);
-        exception.expectMessage(allOf(containsString("qualifier value"), containsString("empty or null")));
-        PackageURLBuilder.aPackageURL()
+        PackageURL purl = PackageURLBuilder.aPackageURL()
                 .withType("type")
                 .withName("name")
                 .withQualifier("key","")
                 .build();
-        Assert.fail("Build should fail due to invalid qualifier (empty value)");
+        assertNull(purl.getQualifiers());
     }
 
     @Test
     public void testPackageURLBuilderException1Null() throws MalformedPackageURLException {
-        exception.expect(NullPointerException.class);
-        exception.expectMessage("can not be null");
-        PackageURLBuilder.aPackageURL()
+        PackageURL purl = PackageURLBuilder.aPackageURL()
                 .withType("type")
                 .withName("name")
                 .withQualifier("key",null)
                 .build();
-        Assert.fail("Build should fail due to invalid qualifier (null value)");
+        assertNull(purl.getQualifiers());
     }
 
     @Test
@@ -197,6 +195,39 @@ public class PackageURLBuilderTest {
 
     }
 
+    @Test
+    public void testQualifiers() throws MalformedPackageURLException {
+        Map<String, String> qualifiers = new HashMap<>();
+        qualifiers.put("key2", "value2");
+        Map<String, String> qualifiers2 = new HashMap<>();
+        qualifiers.put("key3", "value3");
+        PackageURL purl = PackageURLBuilder.aPackageURL()
+                .withType(PackageURL.StandardTypes.GENERIC)
+                .withNamespace("")
+                .withName("name")
+                .withVersion("version")
+                .withQualifier("key", "value")
+                .withQualifier("next", "value")
+                .withQualifiers(qualifiers)
+                .withQualifier("key4", "value4")
+                .withQualifiers(qualifiers2)
+                .withSubpath("")
+                .withoutQualifiers(Collections.singleton("key4"))
+                .build();
+
+        assertEquals("pkg:generic/name@version?key=value&key2=value2&key3=value3&next=value", purl.toString());
+    }
+
+    @Test
+    public void testFromExistingPurl() throws MalformedPackageURLException {
+        String purl = "pkg:generic/namespace/name@1.0.0?k=v#s";
+        PackageURL p = new PackageURL(purl);
+        PackageURL purl2 = PackageURLBuilder.aPackageURL(p).build();
+        PackageURL purl3 = PackageURLBuilder.aPackageURL(purl).build();
+        assertEquals(p, purl2);
+        assertEquals(purl2, purl3);
+    }
+
     private void assertBuilderMatch(PackageURL expected, PackageURLBuilder actual) throws MalformedPackageURLException {
 
         Assert.assertEquals(expected.toString(), actual.build().toString());
@@ -209,15 +240,13 @@ public class PackageURLBuilderTest {
         Map<String, String> eQualifiers = expected.getQualifiers();
         Map<String, String> aQualifiers = actual.getQualifiers();
 
-        if (eQualifiers != null) {
-            eQualifiers.forEach((k,v)-> {
-                Assert.assertEquals(v, aQualifiers.remove(k));
+        assertEquals(eQualifiers, aQualifiers);
+
+        if (eQualifiers != null && aQualifiers != null) {
+            eQualifiers.forEach((k,v) -> {
                 Assert.assertEquals(v, actual.getQualifier(k));
             });
         }
-
-        Assert.assertTrue(aQualifiers.isEmpty());
-
     }
 
 }
