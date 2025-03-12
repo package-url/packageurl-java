@@ -21,6 +21,8 @@
  */
 package com.github.packageurl;
 
+import org.hamcrest.CoreMatchers;
+import org.hamcrest.MatcherAssert;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -30,6 +32,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.hamcrest.CoreMatchers.allOf;
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.junit.Assert.*;
 
 public class PackageURLBuilderTest {
@@ -102,7 +106,7 @@ public class PackageURLBuilderTest {
                 .withName("name")
                 .withQualifier("key","")
                 .build();
-        assertNull(purl.getQualifiers());
+        assertEquals("qualifier count", 0, purl.getQualifiers().size());
     }
 
     @Test
@@ -112,13 +116,13 @@ public class PackageURLBuilderTest {
                 .withName("name")
                 .withQualifier("key",null)
                 .build();
-        assertNull(purl.getQualifiers());
+        assertEquals("qualifier count", 0, purl.getQualifiers().size());
     }
 
     @Test
     public void testPackageURLBuilderException2() throws MalformedPackageURLException {
         exception.expect(MalformedPackageURLException.class);
-        PackageURL purl = PackageURLBuilder.aPackageURL()
+        PackageURLBuilder.aPackageURL()
                 .withType("type")
                 .withNamespace("invalid//namespace")
                 .withName("name")
@@ -129,7 +133,7 @@ public class PackageURLBuilderTest {
     @Test
     public void testPackageURLBuilderException3() throws MalformedPackageURLException {
         exception.expect(MalformedPackageURLException.class);
-        PackageURL purl = PackageURLBuilder.aPackageURL()
+        PackageURLBuilder.aPackageURL()
                 .withType("typ^e")
                 .withSubpath("invalid/name%2Fspace")
                 .withName("name")
@@ -140,7 +144,7 @@ public class PackageURLBuilderTest {
     @Test
     public void testPackageURLBuilderException4() throws MalformedPackageURLException {
         exception.expect(MalformedPackageURLException.class);
-        PackageURL purl = PackageURLBuilder.aPackageURL()
+        PackageURLBuilder.aPackageURL()
                 .withType("0_type")
                 .withName("name")
                 .build();
@@ -150,7 +154,7 @@ public class PackageURLBuilderTest {
     @Test
     public void testPackageURLBuilderException5() throws MalformedPackageURLException {
         exception.expect(MalformedPackageURLException.class);
-        PackageURL purl = PackageURLBuilder.aPackageURL()
+        PackageURLBuilder.aPackageURL()
                 .withType("ype")
                 .withName("name")
                 .withQualifier("0_key","value")
@@ -161,7 +165,7 @@ public class PackageURLBuilderTest {
     @Test
     public void testPackageURLBuilderException6() throws MalformedPackageURLException {
         exception.expect(MalformedPackageURLException.class);
-        PackageURL purl = PackageURLBuilder.aPackageURL()
+        PackageURLBuilder.aPackageURL()
                 .withType("ype")
                 .withName("name")
                 .withQualifier("","value")

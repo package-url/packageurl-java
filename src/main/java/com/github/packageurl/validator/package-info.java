@@ -19,28 +19,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+@NullMarked
 package com.github.packageurl.validator;
 
-import com.github.packageurl.MalformedPackageURLException;
-import jakarta.validation.ConstraintValidator;
-import jakarta.validation.ConstraintValidatorContext;
-import org.jspecify.annotations.Nullable;
-
-/**
- * A JSR-303 compliant validator that validates String fields conform to the Package URL specification.
- * @since 1.3.0
- */
-public class PackageURLConstraintValidator implements ConstraintValidator<PackageURL, String> {
-
-    @Override
-    public boolean isValid(@Nullable String value, ConstraintValidatorContext context) {
-        try {
-            if (value != null) {
-                new com.github.packageurl.PackageURL(value);
-            }
-            return true;
-        } catch (MalformedPackageURLException e) {
-            return false;
-        }
-    }
-}
+import org.jspecify.annotations.NullMarked;

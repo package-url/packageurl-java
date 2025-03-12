@@ -21,22 +21,24 @@
  */
 package com.github.packageurl;
 
-import java.util.Map;
-import java.util.Set;
+import static java.util.Objects.requireNonNull;
+
 import java.util.Collections;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
+import org.jspecify.annotations.Nullable;
 
 /**
  * A builder construct for Package-URL objects.
  */
 public final class PackageURLBuilder {
-    private String type = null;
-    private String namespace = null;
-    private String name = null;
-    private String version = null;
-    private String subpath = null;
-    private TreeMap<String, String> qualifiers = null;
+    private @Nullable String type = null;
+    private @Nullable String namespace = null;
+    private @Nullable String name = null;
+    private @Nullable String version = null;
+    private @Nullable String subpath = null;
+    private @Nullable Map<String, String> qualifiers = null;
 
     private PackageURLBuilder() {
         // empty constructor for utility class
@@ -75,24 +77,25 @@ public final class PackageURLBuilder {
     /**
      * Adds the package URL type.
      *
-     * @param type the package type
+     * @param type the package type, not {@code null}
      * @return a reference to the builder
+     * @throws NullPointerException if the argument is {@code null}
      * @see PackageURL#getName()
      * @see com.github.packageurl.PackageURL.StandardTypes
      */
     public PackageURLBuilder withType(final String type) {
-        this.type = type;
+        this.type = requireNonNull(type, "type");
         return this;
     }
 
     /**
      * Adds the package namespace.
      *
-     * @param namespace the package namespace
+     * @param namespace the package namespace or {@code null}
      * @return a reference to the builder
      * @see PackageURL#getNamespace()
      */
-    public PackageURLBuilder withNamespace(final String namespace) {
+    public PackageURLBuilder withNamespace(final @Nullable String namespace) {
         this.namespace = namespace;
         return this;
     }
@@ -100,23 +103,24 @@ public final class PackageURLBuilder {
     /**
      * Adds the package name.
      *
-     * @param name the package name
+     * @param name the package name, not {@code null}
      * @return a reference to the builder
+     * @throws NullPointerException if the argument is {@code null}
      * @see PackageURL#getName()
      */
     public PackageURLBuilder withName(final String name) {
-        this.name = name;
+        this.name = requireNonNull(name, "name");
         return this;
     }
 
     /**
      * Adds the package version.
      *
-     * @param version the package version
+     * @param version the package version or {@code null}
      * @return a reference to the builder
      * @see PackageURL#getVersion()
      */
-    public PackageURLBuilder withVersion(final String version) {
+    public PackageURLBuilder withVersion(final @Nullable String version) {
         this.version = version;
         return this;
     }
@@ -124,39 +128,50 @@ public final class PackageURLBuilder {
     /**
      * Adds the package subpath.
      *
-     * @param subpath the package subpath
+     * @param subpath the package subpath or {@code null}
      * @return a reference to the builder
      * @see PackageURL#getSubpath()
      */
-    public PackageURLBuilder withSubpath(final String subpath) {
+    public PackageURLBuilder withSubpath(final @Nullable String subpath) {
         this.subpath = subpath;
         return this;
     }
 
     /**
      * Adds a package qualifier.
+     * <p>
+     *     If {@code value} is empty or {@code null}, the given qualifier is removed instead.
+     * </p>
      *
-     * @param key   the package qualifier key
-     * @param value the package qualifier value
+     * @param key   the package qualifier key, not {@code null}
+     * @param value the package qualifier value or {@code null}
      * @return a reference to the builder
+     * @throws NullPointerException if {@code key} is {@code null}
      * @see PackageURL#getQualifiers()
      */
-    public PackageURLBuilder withQualifier(final String key, final String value) {
-        if (qualifiers == null) {
-            qualifiers = new TreeMap<>();
+    public PackageURLBuilder withQualifier(final String key, final @Nullable String value) {
+        requireNonNull(key, "qualifier key can not be null");
+        if (value == null || value.isEmpty()) {
+            if (qualifiers != null) {
+                qualifiers.remove(key);
+            }
+        } else {
+            if (qualifiers == null) {
+                qualifiers = new TreeMap<>();
+            }
+            qualifiers.put(requireNonNull(key, "qualifier key can not be null"), value);
         }
-        qualifiers.put(key, value);
         return this;
     }
 
     /**
      * Adds the package qualifiers.
      *
-     * @param qualifiers the package qualifiers
+     * @param qualifiers the package qualifiers, or {@code null}
      * @return a reference to the builder
      * @see PackageURL#getQualifiers()
      */
-    public PackageURLBuilder withQualifiers(final Map<String, String> qualifiers) {
+    public PackageURLBuilder withQualifiers(final @Nullable Map<String, String> qualifiers) {
         if (qualifiers == null) {
             this.qualifiers = null;
         } else {
@@ -174,10 +189,11 @@ public final class PackageURLBuilder {
      *
      * @param key the package qualifier key to remove
      * @return a reference to the builder
+     * @throws NullPointerException if {@code key} is {@code null}
      */
     public PackageURLBuilder withoutQualifier(final String key) {
         if (qualifiers != null) {
-            qualifiers.remove(key);
+            qualifiers.remove(requireNonNull(key));
             if (qualifiers.isEmpty()) {
                 qualifiers = null;
             }
@@ -225,7 +241,7 @@ public final class PackageURLBuilder {
      *
      * @return type set in this builder
      */
-    public String getType() {
+    public @Nullable String getType() {
         return type;
     }
 
@@ -234,7 +250,7 @@ public final class PackageURLBuilder {
      *
      * @return namespace set in this builder
      */
-    public String getNamespace() {
+    public @Nullable String getNamespace() {
         return namespace;
     }
 
@@ -243,7 +259,7 @@ public final class PackageURLBuilder {
      *
      * @return name set in this builder
      */
-    public String getName() {
+    public @Nullable String getName() {
         return name;
     }
 
@@ -252,7 +268,7 @@ public final class PackageURLBuilder {
      *
      * @return version set in this builder
      */
-    public String getVersion() {
+    public @Nullable String getVersion() {
         return version;
     }
 
@@ -261,7 +277,7 @@ public final class PackageURLBuilder {
      *
      * @return subpath set in this builder
      */
-    public String getSubpath() {
+    public @Nullable String getSubpath() {
         return subpath;
     }
 
@@ -272,10 +288,7 @@ public final class PackageURLBuilder {
      * @return all qualifiers set in this builder, or an empty map if none are set
      */
     public Map<String, String> getQualifiers() {
-        if (qualifiers == null) {
-            return null;
-        }
-        return Collections.unmodifiableMap(qualifiers);
+        return qualifiers != null ? Collections.unmodifiableMap(qualifiers) : Collections.emptyMap();
     }
 
     /**
@@ -284,11 +297,8 @@ public final class PackageURLBuilder {
      * @param key qualifier key
      * @return qualifier value or {@code null} if one is not set
      */
-    public String getQualifier(String key) {
-        if (qualifiers == null) {
-            return null;
-        }
-        return qualifiers.get(key);
+    public @Nullable String getQualifier(String key) {
+        return qualifiers == null ? null : qualifiers.get(requireNonNull(key));
     }
 
     /**
@@ -298,6 +308,12 @@ public final class PackageURLBuilder {
      * @throws MalformedPackageURLException thrown if the type or name has not been specified or if a field fails validation
      */
     public PackageURL build() throws MalformedPackageURLException {
+        if (type == null) {
+            throw new MalformedPackageURLException("type is required");
+        }
+        if (name == null) {
+            throw new MalformedPackageURLException("name is required");
+        }
         return new PackageURL(type, namespace, name, version, qualifiers, subpath);
     }
 }

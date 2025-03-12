@@ -24,14 +24,13 @@ package com.github.packageurl;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.Locale;
+import java.util.Map;
 import java.util.TreeMap;
-
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.junit.AfterClass;
 import org.json.JSONTokener;
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Rule;
@@ -107,11 +106,9 @@ public class PackageURLTest {
             Assert.assertEquals(name, purl.getName());
             Assert.assertEquals(version, purl.getVersion());
             Assert.assertEquals(subpath, purl.getSubpath());
-            if (qualifiers == null) {
-                Assert.assertNull(purl.getQualifiers());
-            } else {
-                Assert.assertNotNull(purl.getQualifiers());
-                Assert.assertEquals(qualifiers.length(), purl.getQualifiers().size());
+            Assert.assertNotNull(purl.getQualifiers());
+            Assert.assertEquals("qualifier count", qualifiers != null ? qualifiers.length() : 0, purl.getQualifiers().size());
+            if (qualifiers != null){
                 qualifiers.keySet().forEach(key -> {
                     String value = qualifiers.getString(key);
                     Assert.assertTrue(purl.getQualifiers().containsKey(key));
@@ -142,7 +139,7 @@ public class PackageURLTest {
             final JSONObject qualifiers = testDefinition.optJSONObject("qualifiers");
             final String subpath = testDefinition.optString("subpath", null);
 
-            TreeMap<String, String> map = null;
+            Map<String, String> map = null;
             Map<String, String> hashMap = null;
             if (qualifiers != null) {
                 map = qualifiers.toMap().entrySet().stream().collect(
@@ -159,7 +156,7 @@ public class PackageURLTest {
                 try {
                     PackageURL purl = new PackageURL(type, namespace, name, version, map, subpath);
                     Assert.fail("Invalid package url components should have caused an exception: " + purl);
-                } catch (MalformedPackageURLException e) {
+                } catch (NullPointerException | MalformedPackageURLException e) {
                     Assert.assertNotNull(e.getMessage());
                 }
                 continue;
@@ -174,9 +171,9 @@ public class PackageURLTest {
             Assert.assertEquals(name, purl.getName());
             Assert.assertEquals(version, purl.getVersion());
             Assert.assertEquals(subpath, purl.getSubpath());
+            Assert.assertNotNull(purl.getQualifiers());
+            Assert.assertEquals("qualifier count", qualifiers != null ? qualifiers.length() : 0, purl.getQualifiers().size());
             if (qualifiers != null) {
-                Assert.assertNotNull(purl.getQualifiers());
-                Assert.assertEquals(qualifiers.length(), purl.getQualifiers().size());
                 qualifiers.keySet().forEach(key -> {
                     String value = qualifiers.getString(key);
                     Assert.assertTrue(purl.getQualifiers().containsKey(key));
@@ -242,7 +239,7 @@ public class PackageURLTest {
 
     @Test
     public void testConstructorWithNullPurl() throws MalformedPackageURLException {
-        exception.expect(MalformedPackageURLException.class);
+        exception.expect(NullPointerException.class);
 
         PackageURL purl = new PackageURL(null);
         Assert.fail("constructor with null purl should have thrown an error and this line should not be reached");
@@ -299,9 +296,9 @@ public class PackageURLTest {
     @Test
     public void testConstructorWithUppercaseKey() throws MalformedPackageURLException {
         PackageURL purl = new PackageURL("pkg://generic/name?KEY=one");
-        Assert.assertNotNull(purl.getQualifiers());
+        Assert.assertEquals("qualifier count", 1, purl.getQualifiers().size());
         Assert.assertEquals("one", purl.getQualifiers().get("key"));
-        TreeMap<String, String> qualifiers = new TreeMap<>();
+        Map<String, String> qualifiers = new TreeMap<>();
         qualifiers.put("key", "one");
         PackageURL purl2 = new PackageURL("generic", null, "name", null, qualifiers, null);
         Assert.assertEquals(purl, purl2);
@@ -310,8 +307,8 @@ public class PackageURLTest {
     @Test
     public void testConstructorWithEmptyKey() throws MalformedPackageURLException {
         PackageURL purl = new PackageURL("pkg://generic/name?KEY");
-        Assert.assertNull(purl.getQualifiers());
-        TreeMap<String, String> qualifiers = new TreeMap<>();
+        Assert.assertEquals("qualifier count", 0, purl.getQualifiers().size());
+        Map<String, String> qualifiers = new TreeMap<>();
         qualifiers.put("KEY", null);
         PackageURL purl2 = new PackageURL("generic", null, "name", null, qualifiers, null);
         Assert.assertEquals(purl, purl2);
@@ -357,10 +354,10 @@ public class PackageURLTest {
     }
 
     @Test
-    public void testBaseEquals() throws Exception {
+    public void testCoordinatesEquals() throws Exception {
         PackageURL p1 = new PackageURL("pkg:generic/acme/example-component@1.0.0?key1=value1&key2=value2");
         PackageURL p2 = new PackageURL("pkg:generic/acme/example-component@1.0.0");
-        Assert.assertTrue(p1.isBaseEquals(p2));
+        Assert.assertTrue(p1.isCoordinatesEquals(p2));
     }
 
     @Test
