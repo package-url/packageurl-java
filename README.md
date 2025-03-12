@@ -6,7 +6,13 @@
 
 This project implements a purl parser and class for Java.
 
+## Requirements
+
+- The library has a **runtime** requirement of JRE 8 or newer.
+- To **build** the library from source, you need JDK 17 or newer.
+
 ## Compiling
+
 ```bash
 mvn clean install
 ````
