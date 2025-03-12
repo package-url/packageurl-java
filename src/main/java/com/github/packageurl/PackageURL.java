@@ -96,7 +96,7 @@ public final class PackageURL implements Serializable {
         this.type = toLowerCase(validateType(type));
         this.namespace = validateNamespace(namespace);
         this.name = validateName(name);
-        this.version = validateVersion(version);
+        this.version = validateVersion(type, version);
         this.qualifiers = parseQualifiers(qualifiers);
         this.subpath = validateSubpath(subpath);
         verifyTypeConstraints(this.type, this.namespace, this.name);
@@ -309,12 +309,24 @@ public final class PackageURL implements Serializable {
         final String tempNamespace = validatePath(values, false);
         String retVal;
         switch (type) {
+            case StandardTypes.APK:
             case StandardTypes.BITBUCKET:
-            case StandardTypes.DEBIAN:
+            case StandardTypes.COMPOSER:
+            case StandardTypes.DEB:
             case StandardTypes.GITHUB:
             case StandardTypes.GOLANG:
+            case StandardTypes.HEX:
+            case StandardTypes.LUAROCKS:
+            case StandardTypes.QPKG:
             case StandardTypes.RPM:
                 retVal = tempNamespace != null ? toLowerCase(tempNamespace) : null;
+                break;
+            case StandardTypes.MLFLOW:
+            case StandardTypes.OCI:
+                if (tempNamespace != null) {
+                    throw new MalformedPackageURLException("The PackageURL specified contains a namespace which is not allowed for type: " + type);
+                }
+                retVal = null;
                 break;
             default:
                 retVal = tempNamespace;
@@ -329,11 +341,20 @@ public final class PackageURL implements Serializable {
         }
         String temp;
         switch (type) {
+            case StandardTypes.APK:
             case StandardTypes.BITBUCKET:
-            case StandardTypes.DEBIAN:
+            case StandardTypes.BITNAMI:
+            case StandardTypes.COMPOSER:
+            case StandardTypes.DEB:
             case StandardTypes.GITHUB:
             case StandardTypes.GOLANG:
+            case StandardTypes.HEX:
+            case StandardTypes.LUAROCKS:
+            case StandardTypes.OCI:
                 temp = toLowerCase(value);
+                break;
+            case StandardTypes.PUB:
+                temp = toLowerCase(value).replaceAll("[^a-z0-9_]", "_");
                 break;
             case StandardTypes.PYPI:
                 temp = toLowerCase(value).replace('_', '-');
@@ -345,14 +366,26 @@ public final class PackageURL implements Serializable {
         return temp;
     }
 
-    private String validateVersion(final String value) {
-        return value;
+    private String validateVersion(final String type, final String value) {
+        if (value == null) {
+            return null;
+        }
+
+        switch (type) {
+            case StandardTypes.HUGGINGFACE:
+            case StandardTypes.LUAROCKS:
+            case StandardTypes.OCI:
+                return toLowerCase(value);
+            default:
+                return value;
+        }
     }
 
     private Map<String, String> validateQualifiers(final Map<String, String> values) throws MalformedPackageURLException {
         if (values == null || values.isEmpty()) {
             return null;
         }
+
         for (Map.Entry<String, String> entry : values.entrySet()) {
             validateKey(entry.getKey());
             final String value = entry.getValue();
@@ -654,7 +687,7 @@ public final class PackageURL implements Serializable {
             // version is optional - check for existence
             index = remainder.lastIndexOf('@');
             if (index >= start) {
-                this.version = validateVersion(percentDecode(remainder.substring(index + 1)));
+                this.version = validateVersion(this.type, percentDecode(remainder.substring(index + 1)));
                 remainder = remainder.substring(0, index);
             }
 
@@ -818,24 +851,48 @@ public final class PackageURL implements Serializable {
      *
      * @since 1.0.0
      */
-    public static class StandardTypes {
+    public static final class StandardTypes {
+        public static final String ALPM = "alpm";
+        public static final String APK = "apk";
         public static final String BITBUCKET = "bitbucket";
+        public static final String BITNAMI = "bitnami";
         public static final String CARGO = "cargo";
+        public static final String COCOAPODS = "cocoapods";
         public static final String COMPOSER = "composer";
-        public static final String DEBIAN = "deb";
+        public static final String CONAN = "conan";
+        public static final String CONDA = "conda";
+        public static final String CPAN = "cpan";
+        public static final String CRAN = "cran";
+        public static final String DEB = "deb";
         public static final String DOCKER = "docker";
         public static final String GEM = "gem";
         public static final String GENERIC = "generic";
         public static final String GITHUB = "github";
         public static final String GOLANG = "golang";
+        public static final String HACKAGE = "hackage";
         public static final String HEX = "hex";
+        public static final String HUGGINGFACE = "huggingface";
+        public static final String LUAROCKS = "luarocks";
         public static final String MAVEN = "maven";
+        public static final String MLFLOW = "mlflow";
+        public static final String NIX = "nix";
         public static final String NPM = "npm";
         public static final String NUGET = "nuget";
+        public static final String OCI = "oci";
+        public static final String PUB = "pub";
         public static final String PYPI = "pypi";
+        public static final String QPKG = "qpkg";
         public static final String RPM = "rpm";
-        public static final String NIXPKGS = "nixpkgs";
-        public static final String HACKAGE = "hackage";
+        public static final String SWID = "swid";
+        public static final String SWIFT = "swift";
+        @Deprecated
+        public static final String DEBIAN = "deb";
+        @Deprecated
+        public static final String NIXPKGS = "nix";
+
+        private StandardTypes() {
+
+        }
     }
 
 }
