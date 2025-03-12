@@ -139,18 +139,28 @@ public final class PackageURLBuilder {
 
     /**
      * Adds a package qualifier.
+     * <p>
+     *     If {@code value} is empty or {@code null}, the given qualifier is removed instead.
+     * </p>
      *
      * @param key   the package qualifier key, not {@code null}
-     * @param value the package qualifier value, not {@code null}
+     * @param value the package qualifier value or {@code null}
      * @return a reference to the builder
-     * @throws NullPointerException if either {@code key} or {@code value} are {@code null}
+     * @throws NullPointerException if {@code key} is {@code null}
      * @see PackageURL#getQualifiers()
      */
-    public PackageURLBuilder withQualifier(final String key, final String value) {
-        if (qualifiers == null) {
-            qualifiers = new TreeMap<>();
+    public PackageURLBuilder withQualifier(final String key, final @Nullable String value) {
+        requireNonNull(key, "qualifier key can not be null");
+        if (value == null || value.isEmpty()) {
+            if (qualifiers != null) {
+                qualifiers.remove(key);
+            }
+        } else {
+            if (qualifiers == null) {
+                qualifiers = new TreeMap<>();
+            }
+            qualifiers.put(requireNonNull(key, "qualifier key can not be null"), value);
         }
-        qualifiers.put(requireNonNull(key, "qualifier key can not be null"), requireNonNull(value, "qualifier value can not be null"));
         return this;
     }
 

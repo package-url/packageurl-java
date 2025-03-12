@@ -122,7 +122,7 @@ public final class PackageURL implements Serializable {
      * @since 1.6.0
      */
     public PackageURL(final String type, final @Nullable String namespace, final String name, final @Nullable String version,
-                      final @Nullable Map<String, String> qualifiers, final @Nullable String subpath)
+                      final @Nullable Map<String, @Nullable String> qualifiers, final @Nullable String subpath)
             throws MalformedPackageURLException {
         this(type, namespace, name, version, (qualifiers != null) ? new TreeMap<>(qualifiers) : null, subpath);
     }
@@ -180,18 +180,13 @@ public final class PackageURL implements Serializable {
      * @deprecated Use {@link PackageURLBuilder#aPackageURL(PackageURL)} or {@link PackageURLBuilder#aPackageURL(String)}
      */
     public PackageURLBuilder toBuilder() {
-        PackageURLBuilder builder = PackageURLBuilder.aPackageURL()
+        return PackageURLBuilder.aPackageURL()
                 .withType(getType())
                 .withNamespace(getNamespace())
                 .withName(getName())
                 .withVersion(getVersion())
+                .withQualifiers(getQualifiers())
                 .withSubpath(getSubpath());
-
-        if (qualifiers != null) {
-            qualifiers.forEach(builder::withQualifier);
-        }
-
-        return builder;
     }
 
     /**
@@ -247,11 +242,12 @@ public final class PackageURL implements Serializable {
     /**
      * Returns extra qualifying data for a package such as an OS, architecture, a distro, etc.
      * This method returns an UnmodifiableMap.
-     * @return qualifiers
+     *
+     * @return all the qualifiers, or an empty map if none are set
      * @since 1.0.0
      */
-    public @Nullable Map<String, String> getQualifiers() {
-        return (qualifiers != null) ? Collections.unmodifiableMap(qualifiers) : null;
+    public Map<String, String> getQualifiers() {
+        return qualifiers != null ? Collections.unmodifiableMap(qualifiers) : Collections.emptyMap();
     }
 
     /**
@@ -728,7 +724,7 @@ public final class PackageURL implements Serializable {
 
         try {
             final TreeMap<String, String> results = qualifiers.entrySet().stream()
-                    .filter(entry -> isEmpty(entry.getValue()))
+                    .filter(entry -> !isEmpty(entry.getValue()))
                     .collect(TreeMap::new,
                             (map, value) -> map.put(toLowerCase(value.getKey()), value.getValue()),
                             TreeMap::putAll);

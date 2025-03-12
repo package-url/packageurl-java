@@ -106,7 +106,7 @@ public class PackageURLBuilderTest {
                 .withName("name")
                 .withQualifier("key","")
                 .build();
-        assertNull(purl.getQualifiers());
+        assertEquals("qualifier count", 0, purl.getQualifiers().size());
     }
 
     @Test
@@ -116,7 +116,7 @@ public class PackageURLBuilderTest {
                 .withName("name")
                 .withQualifier("key",null)
                 .build();
-        assertNull(purl.getQualifiers());
+        assertEquals("qualifier count", 0, purl.getQualifiers().size());
     }
 
     @Test
