@@ -33,14 +33,15 @@ import java.lang.annotation.Target;
  * the JSR-303 compliant validator to validate the field to ensure it meets the Package URL specification.
  * @since 1.3.0
  */
-@Target({ ElementType.FIELD})
+@Target({ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
 @Constraint(validatedBy = PackageURLConstraintValidator.class)
 public @interface PackageURL {
 
-    String message() default "The Package URL (purl) must be a valid URI and conform to https://github.com/package-url/purl-spec";
+    String message() default
+            "The Package URL (purl) must be a valid URI and conform to https://github.com/package-url/purl-spec";
 
-    Class<?>[] groups() default { };
+    Class<?>[] groups() default {};
 
-    Class<? extends Payload>[] payload() default { };
+    Class<? extends Payload>[] payload() default {};
 }

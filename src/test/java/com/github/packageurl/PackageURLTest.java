@@ -24,14 +24,13 @@ package com.github.packageurl;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.Locale;
+import java.util.Map;
 import java.util.TreeMap;
-
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.junit.AfterClass;
 import org.json.JSONTokener;
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Rule;
@@ -145,15 +144,13 @@ public class PackageURLTest {
             TreeMap<String, String> map = null;
             Map<String, String> hashMap = null;
             if (qualifiers != null) {
-                map = qualifiers.toMap().entrySet().stream().collect(
-                        TreeMap::new,
-                        (qmap, entry) -> qmap.put(entry.getKey(), (String) entry.getValue()),
-                        TreeMap::putAll
-                );
+                map = qualifiers.toMap().entrySet().stream()
+                        .collect(
+                                TreeMap::new,
+                                (qmap, entry) -> qmap.put(entry.getKey(), (String) entry.getValue()),
+                                TreeMap::putAll);
                 hashMap = new HashMap<>(map);
             }
-
-
 
             if (invalid) {
                 try {
@@ -204,7 +201,6 @@ public class PackageURLTest {
 
         purl = new PackageURL("validtype", "name");
         Assert.assertNotNull(purl);
-
     }
 
     @Test
@@ -236,9 +232,9 @@ public class PackageURLTest {
         exception.expect(MalformedPackageURLException.class);
 
         PackageURL purl = new PackageURL("pkg:GOLANG/google.golang.org/genproto@abcdedf#invalid/%2F/subpath");
-        Assert.fail("constructor with `invalid/%2F/subpath` should have thrown an error and this line should not be reached");
+        Assert.fail(
+                "constructor with `invalid/%2F/subpath` should have thrown an error and this line should not be reached");
     }
-
 
     @Test
     public void testConstructorWithNullPurl() throws MalformedPackageURLException {
@@ -285,7 +281,8 @@ public class PackageURLTest {
         exception.expect(MalformedPackageURLException.class);
 
         PackageURL purl = new PackageURL("pkg://generic/name?key=one&key=two");
-        Assert.fail("constructor with url with duplicate qualifiers should have thrown an error and this line should not be reached");
+        Assert.fail(
+                "constructor with url with duplicate qualifiers should have thrown an error and this line should not be reached");
     }
 
     @Test
@@ -293,7 +290,8 @@ public class PackageURLTest {
         exception.expect(MalformedPackageURLException.class);
 
         PackageURL purl = new PackageURL("pkg://generic/name?key=one&KEY=two");
-        Assert.fail("constructor with url with duplicate qualifiers should have thrown an error and this line should not be reached");
+        Assert.fail(
+                "constructor with url with duplicate qualifiers should have thrown an error and this line should not be reached");
     }
 
     @Test
