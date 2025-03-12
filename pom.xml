@@ -82,7 +82,9 @@
         <!-- Maven build plugins for quality checks -->
         <error.prone.core.version>2.36.0</error.prone.core.version>
         <jacoco.maven.plugin.version>0.8.12</jacoco.maven.plugin.version>
+        <palantir.java.format.version>2.58.0</palantir.java.format.version>
         <spotbugs.maven.plugin.version>4.9.3.0</spotbugs.maven.plugin.version>
+        <spotless.maven.plugin.version>2.44.3</spotless.maven.plugin.version>
         <com.github.spotbugs.version>4.9.3</com.github.spotbugs.version>
         <!-- Dependency versions -->
         <jakarta.validation-api.version>3.1.1</jakarta.validation-api.version>
@@ -315,6 +317,40 @@
                         </path>
                     </annotationProcessorPaths>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>com.diffplug.spotless</groupId>
+                <artifactId>spotless-maven-plugin</artifactId>
+                <version>${spotless.maven.plugin.version}</version>
+                <configuration>
+                    <java>
+                        <licenseHeader>
+                            <file>src/headers/java.txt</file>
+                        </licenseHeader>
+                        <palantirJavaFormat>
+                            <version>${palantir.java.format.version}</version>
+                        </palantirJavaFormat>
+                    </java>
+                    <pom>
+                        <licenseHeader>
+                            <file>src/headers/xml.txt</file>
+                            <delimiter>&lt;project</delimiter>
+                        </licenseHeader>
+                        <sortPom>
+                            <expandEmptyElements>false</expandEmptyElements>
+                            <!-- Maven Release plugin uses this style -->
+                            <spaceBeforeCloseEmptyElement>true</spaceBeforeCloseEmptyElement>
+                        </sortPom>
+                    </pom>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>check-formatting</id>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <groupId>com.github.spotbugs</groupId>
