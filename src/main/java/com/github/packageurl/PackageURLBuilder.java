@@ -38,7 +38,7 @@ public final class PackageURLBuilder {
     private @Nullable String name = null;
     private @Nullable String version = null;
     private @Nullable String subpath = null;
-    private @Nullable TreeMap<String, String> qualifiers = null;
+    private @Nullable Map<String, String> qualifiers = null;
 
     private PackageURLBuilder() {
         // empty constructor for utility class

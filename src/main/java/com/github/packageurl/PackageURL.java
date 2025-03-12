@@ -84,16 +84,18 @@ public final class PackageURL implements Serializable {
     /**
      * Constructs a new PackageURL object.
      *
-     * @param type       the type of package (i.e. maven, npm, gem, etc), not {@code null}
+     * @param type the type of package (i.e. maven, npm, gem, etc), not {@code null}
      * @param namespace  the name prefix (i.e. group, owner, organization)
-     * @param name       the name of the package, not {@code null}
-     * @param version    the version of the package
+     * @param name the name of the package, not {@code null}
+     * @param version the version of the package
      * @param qualifiers an array of key/value pair qualifiers
-     * @param subpath    the subpath string
+     * @param subpath the subpath string
      * @throws MalformedPackageURLException if parsing fails
      * @throws NullPointerException if {@code type} or {@code name} are {@code null}
      * @since 1.0.0
+     * @deprecated use {@link #PackageURL(String, String, String, String, Map, String)} instead
      */
+    @Deprecated
     public PackageURL(final String type, final @Nullable String namespace, final String name, final @Nullable String version,
                       final @Nullable TreeMap<String, String> qualifiers, final @Nullable String subpath)
             throws MalformedPackageURLException {
@@ -103,7 +105,7 @@ public final class PackageURL implements Serializable {
         this.version = validateVersion(type, version);
         this.qualifiers = parseQualifiers(qualifiers);
         this.subpath = validateSubpath(subpath);
-        verifyTypeConstraints(this.type, this.namespace);
+        verifyTypeConstraints(this.type, this.namespace, this.name);
     }
 
     /**
