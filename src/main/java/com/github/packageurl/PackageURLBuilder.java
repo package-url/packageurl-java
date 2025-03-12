@@ -21,10 +21,9 @@
  */
 package com.github.packageurl;
 
-import java.util.Map;
-import java.util.Set;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 
 /**
@@ -199,7 +198,6 @@ public final class PackageURLBuilder {
         }
         return this;
     }
-
 
     /**
      * Removes all qualifiers, if any.

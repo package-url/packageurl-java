@@ -21,16 +21,16 @@
  */
 package com.github.packageurl;
 
-import org.junit.Assert;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-
-import static org.junit.Assert.*;
+import org.junit.Assert;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 public class PackageURLBuilderTest {
 
@@ -54,7 +54,7 @@ public class PackageURLBuilderTest {
                 .withNamespace("namespace")
                 .withName("name")
                 .withVersion("version")
-                .withQualifier("key","value")
+                .withQualifier("key", "value")
                 .withSubpath("subpath")
                 .build();
 
@@ -65,7 +65,7 @@ public class PackageURLBuilderTest {
                 .withNamespace("namespace")
                 .withName("name")
                 .withVersion("version")
-                .withQualifier("key_1.1-","value")
+                .withQualifier("key_1.1-", "value")
                 .withSubpath("subpath")
                 .build();
 
@@ -76,7 +76,7 @@ public class PackageURLBuilderTest {
                 .withNamespace("/////")
                 .withName("name")
                 .withVersion("version")
-                .withQualifier("key","value")
+                .withQualifier("key", "value")
                 .withSubpath("/////")
                 .build();
 
@@ -87,8 +87,8 @@ public class PackageURLBuilderTest {
                 .withNamespace("")
                 .withName("name")
                 .withVersion("version")
-                .withQualifier("key","value")
-                .withQualifier("next","value")
+                .withQualifier("key", "value")
+                .withQualifier("next", "value")
                 .withSubpath("")
                 .build();
 
@@ -100,7 +100,7 @@ public class PackageURLBuilderTest {
         PackageURL purl = PackageURLBuilder.aPackageURL()
                 .withType("type")
                 .withName("name")
-                .withQualifier("key","")
+                .withQualifier("key", "")
                 .build();
         assertNull(purl.getQualifiers());
     }
@@ -110,7 +110,7 @@ public class PackageURLBuilderTest {
         PackageURL purl = PackageURLBuilder.aPackageURL()
                 .withType("type")
                 .withName("name")
-                .withQualifier("key",null)
+                .withQualifier("key", null)
                 .build();
         assertNull(purl.getQualifiers());
     }
@@ -153,7 +153,7 @@ public class PackageURLBuilderTest {
         PackageURL purl = PackageURLBuilder.aPackageURL()
                 .withType("ype")
                 .withName("name")
-                .withQualifier("0_key","value")
+                .withQualifier("0_key", "value")
                 .build();
         Assert.fail("Build should fail due to invalid qualifier key");
     }
@@ -164,7 +164,7 @@ public class PackageURLBuilderTest {
         PackageURL purl = PackageURLBuilder.aPackageURL()
                 .withType("ype")
                 .withName("name")
-                .withQualifier("","value")
+                .withQualifier("", "value")
                 .build();
         Assert.fail("Build should fail due to invalid qualifier key");
     }
@@ -188,7 +188,6 @@ public class PackageURLBuilderTest {
                 .withoutQualifier("dark");
 
         assertBuilderMatch(new PackageURL("pkg:maven/org.junit/junit5@3.1.2?repo=maven&ping=pong#sub"), b);
-
     }
 
     @Test
@@ -239,10 +238,9 @@ public class PackageURLBuilderTest {
         assertEquals(eQualifiers, aQualifiers);
 
         if (eQualifiers != null && aQualifiers != null) {
-            eQualifiers.forEach((k,v) -> {
+            eQualifiers.forEach((k, v) -> {
                 Assert.assertEquals(v, actual.getQualifier(k));
             });
         }
     }
-
 }

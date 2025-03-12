@@ -33,8 +33,7 @@ public class MalformedPackageURLException extends Exception {
     /**
      * Constructs a {@code MalformedPackageURLException} with no detail message.
      */
-    public MalformedPackageURLException() {
-    }
+    public MalformedPackageURLException() {}
 
     /**
      * Constructs a {@code MalformedPackageURLException} with the
