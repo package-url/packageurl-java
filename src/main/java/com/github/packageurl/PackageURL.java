@@ -32,7 +32,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.TreeMap;
 import java.util.function.IntPredicate;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -54,7 +53,6 @@ import java.util.stream.Collectors;
 public final class PackageURL implements Serializable {
 
     private static final long serialVersionUID = 3243226021636427586L;
-    private static final Pattern PATH_SPLITTER = Pattern.compile("/");
 
     /**
      * Constructs a new PackageURL object by parsing the specified string.
@@ -724,19 +722,15 @@ public final class PackageURL implements Serializable {
         }
     }
 
-    @SuppressWarnings("StringSplitter")//reason: surprising behavior is okay in this case
-    private String[] parsePath(final String value, final boolean isSubpath) {
-        if (value == null || value.isEmpty()) {
-            return null;
-        }
-        return PATH_SPLITTER.splitAsStream(value)
+    private String[] parsePath(final String path, final boolean isSubpath) {
+        return Arrays.stream(path.split("/"))
                 .filter(segment -> !segment.isEmpty() && !(isSubpath && (".".equals(segment) || "..".equals(segment))))
-                .map(segment -> percentDecode(segment))
+                .map(this::percentDecode)
                 .toArray(String[]::new);
     }
 
     private String encodePath(final String path) {
-        return Arrays.stream(path.split("/")).map(segment -> percentEncode(segment)).collect(Collectors.joining("/"));
+        return Arrays.stream(path.split("/")).map(this::percentEncode).collect(Collectors.joining("/"));
     }
 
     /**
