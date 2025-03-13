@@ -21,23 +21,25 @@
  */
 package com.github.packageurl;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.TreeMap;
-
 import org.json.JSONArray;
-
-import static org.junit.jupiter.api.Assertions.*;
-
 import org.json.JSONObject;
 import org.json.JSONTokener;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.junit.rules.ExpectedException;
 
 /**
  * Test cases for PackageURL parsing
@@ -71,7 +73,6 @@ class PackageURLTest {
 
     @Test
     void constructorParsing() throws Exception {
-        exception = ExpectedException.none();
         for (int i = 0; i < json.length(); i++) {
             JSONObject testDefinition = json.getJSONObject(i);
 
@@ -122,7 +123,6 @@ class PackageURLTest {
     @Test
     @SuppressWarnings("unchecked")
     void constructorParameters() throws MalformedPackageURLException {
-        exception = ExpectedException.none();
         for (int i = 0; i < json.length(); i++) {
             JSONObject testDefinition = json.getJSONObject(i);
 
@@ -187,8 +187,6 @@ class PackageURLTest {
 
     @Test
     void constructor() throws MalformedPackageURLException {
-        exception = ExpectedException.none();
-
         PackageURL purl = new PackageURL("pkg:generic/namespace/name@1.0.0#");
         assertEquals("generic", purl.getType());
         assertNull(purl.getSubpath());
@@ -243,9 +241,9 @@ class PackageURLTest {
 
     @Test
     void constructorWithNullPurl() {
-        PackageURL purl = new PackageURL(null);
         assertThrows(NullPointerException.class, () ->
-            fail("constructor with null purl should have thrown an error and this line should not be reached"));
+                        new PackageURL(null),
+                "constructor with null purl should have thrown an error and this line should not be reached");
     }
 
     @Test

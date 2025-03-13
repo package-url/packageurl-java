@@ -21,25 +21,19 @@
  */
 package com.github.packageurl;
 
-import org.hamcrest.CoreMatchers;
-import org.hamcrest.MatcherAssert;
-import org.junit.jupiter.api.Test;
-import org.junit.rules.ExpectedException;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-
-import static org.hamcrest.CoreMatchers.allOf;
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
 
 class PackageURLBuilderTest {
 
     @Test
     void packageURLBuilder() throws MalformedPackageURLException {
-        exception = ExpectedException.none();
-
         PackageURL purl = PackageURLBuilder.aPackageURL()
                 .withType("my.type-9+")
                 .withName("name")

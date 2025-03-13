@@ -73,6 +73,8 @@
         <jacoco.maven.plugin.version>0.8.11</jacoco.maven.plugin.version>
         <spotbugs.maven.plugin.version>4.8.3.1</spotbugs.maven.plugin.version>
         <com.github.spotbugs.version>4.8.3</com.github.spotbugs.version>
+        <!-- Dependency versions -->
+        <junit.version>5.12.0</junit.version>
     </properties>
 
     <scm>
@@ -103,6 +105,21 @@
         </repository>
     </distributionManagement>
 
+    <dependencyManagement>
+        <dependencies>
+
+            <!-- BOMs at the end, so they don't overwrite the dependencies above -->
+            <dependency>
+                <groupId>org.junit</groupId>
+                <artifactId>junit-bom</artifactId>
+                <version>${junit.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+        </dependencies>
+    </dependencyManagement>
+
     <dependencies>
         <dependency>
             <groupId>jakarta.validation</groupId>
@@ -122,12 +139,11 @@
             <version>20240303</version>
             <scope>test</scope>
         </dependency>
-    <dependency>
-      <groupId>org.junit.jupiter</groupId>
-      <artifactId>junit-jupiter</artifactId>
-      <version>5.12.0</version>
-      <scope>test</scope>
-    </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
@@ -182,18 +198,6 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
                     <version>${maven.surefire.plugin.version}</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.openrewrite.maven</groupId>
-                    <artifactId>rewrite-maven-plugin</artifactId>
-                    <version>6.3.0</version>
-                    <dependencies>
-                        <dependency>
-                            <groupId>org.openrewrite.recipe</groupId>
-                            <artifactId>rewrite-testing-frameworks</artifactId>
-                            <version>3.4.0</version>
-                        </dependency>
-                    </dependencies>
                 </plugin>
             </plugins>
         </pluginManagement>
