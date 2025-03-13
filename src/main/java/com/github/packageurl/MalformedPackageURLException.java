@@ -34,6 +34,8 @@ public class MalformedPackageURLException extends Exception {
 
     /**
      * Constructs a {@code MalformedPackageURLException} with no detail message.
+     *
+     * @since 1.0.0
      */
     public MalformedPackageURLException() {
     }
@@ -42,7 +44,8 @@ public class MalformedPackageURLException extends Exception {
      * Constructs a {@code MalformedPackageURLException} with the
      * specified detail message.
      *
-     * @param msg the detail message.
+     * @param msg the detail message
+     * @since 1.0.0
      */
     public MalformedPackageURLException(@Nullable String msg) {
         super(msg);
@@ -54,6 +57,7 @@ public class MalformedPackageURLException extends Exception {
      *
      * @param message the detail message
      * @param cause the cause
+     * @since 1.6.0
      */
     public MalformedPackageURLException(String message, Throwable cause) {
         super(message, cause);
@@ -64,6 +68,7 @@ public class MalformedPackageURLException extends Exception {
      * message of {@code (cause==null ? null : cause.toString())}.
      *
      * @param cause the cause
+     * @since 1.6.0
      */
     public MalformedPackageURLException(Throwable cause) {
         super(cause);
