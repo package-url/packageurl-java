@@ -70,7 +70,7 @@
         <maven.surefire.plugin.version>3.5.2</maven.surefire.plugin.version>
         <!-- Maven build plugins for quality checks -->
         <error.prone.core.version>2.36.0</error.prone.core.version>
-        <jacoco.maven.plugin.version>0.8.11</jacoco.maven.plugin.version>
+        <jacoco.maven.plugin.version>0.8.12</jacoco.maven.plugin.version>
         <spotbugs.maven.plugin.version>4.8.3.1</spotbugs.maven.plugin.version>
         <com.github.spotbugs.version>4.8.3</com.github.spotbugs.version>
     </properties>
