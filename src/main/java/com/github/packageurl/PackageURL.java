@@ -630,7 +630,8 @@ public final class PackageURL implements Serializable {
         return ((byte) ((c1 << 4) + c2));
     }
 
-    private static String percentDecode(final String source) {
+    // package-private for testing
+    static String percentDecode(final String source) {
         if (source.isEmpty()) {
             return source;
         }
@@ -671,7 +672,8 @@ public final class PackageURL implements Serializable {
         return (c == PERCENT_CHAR);
     }
 
-    private static String percentEncode(final String source) {
+    // package-private for testing
+    static String percentEncode(final String source) {
         if (source.isEmpty()) {
             return source;
         }
