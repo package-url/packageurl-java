@@ -26,6 +26,7 @@ import static java.util.Objects.requireNonNull;
 import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collections;
@@ -34,6 +35,7 @@ import java.util.Objects;
 import java.util.TreeMap;
 import java.util.function.IntPredicate;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -53,8 +55,9 @@ import org.jspecify.annotations.Nullable;
  * @since 1.0.0
  */
 public final class PackageURL implements Serializable {
-
     private static final long serialVersionUID = 3243226021636427586L;
+
+    private static final char PERCENT_CHAR = '%';
 
     /**
      * Constructs a new PackageURL object by parsing the specified string.
@@ -494,33 +497,12 @@ public final class PackageURL implements Serializable {
         return purl.toString();
     }
 
-    /**
-     * Encodes the input in conformance with RFC 3986.
-     *
-     * @param input the String to encode
-     * @return an encoded String
-     */
-    private String percentEncode(final String input) {
-        if (input.isEmpty()) {
-            return input;
-        }
-
-        StringBuilder builder = new StringBuilder();
-        for (byte b : input.getBytes(StandardCharsets.UTF_8)) {
-            if (isUnreserved(b)) {
-                builder.append((char) b);
-            }
-            else {
-                // Substitution: A '%' followed by the hexadecimal representation of the ASCII value of the replaced character
-                builder.append('%');
-                builder.append(Integer.toHexString(b).toUpperCase());
-            }
-        }
-        return builder.toString();
-    }
-
     private static boolean isUnreserved(int c) {
         return (isValidCharForKey(c) || c == '~');
+    }
+
+    private static boolean shouldEncode(int c) {
+        return !isUnreserved(c);
     }
 
     private static boolean isAlpha(int c) {
@@ -578,43 +560,134 @@ public final class PackageURL implements Serializable {
         return new String(chars);
     }
 
-    /**
-     * Optionally decodes a String, if it's encoded. If String is not encoded,
-     * method will return the original input value.
-     *
-     * @param input the value String to decode
-     * @return a decoded String
-     */
-    private String percentDecode(final String input) {
-        final String decoded = uriDecode(input);
-        if (!decoded.equals(input)) {
-            return decoded;
-        }
-        return input;
+    private static int indexOfPercentChar(final byte[] bytes, final int start) {
+        return IntStream.range(start, bytes.length).filter(i -> isPercent(bytes[i])).findFirst().orElse(-1);
     }
 
-    /**
-     * Decodes a percent-encoded string.
-     *
-     * @param source string to decode, not {@code null}
-     * @return A decoded string
-     * @throws NullPointerException if {@code source} is {@code null}
-     */
-    public static String uriDecode(String source) {
-        int length = source.length();
-        StringBuilder builder = new StringBuilder();
-        for (int i = 0; i < length; i++) {
-            if (source.charAt(i) == '%') {
-                String str = source.substring(i + 1, i + 3);
-                char c = (char) Integer.parseInt(str, 16);
-                builder.append(c);
-                i += 2;
+    private static int indexOfUnsafeChar(final byte[] bytes, final int start) {
+        return IntStream.range(start, bytes.length).filter(i -> shouldEncode(bytes[i])).findFirst().orElse(-1);
+    }
+
+    private static byte percentDecode(final byte[] bytes, final int start) {
+        if (start + 2 >= bytes.length) {
+            throw new ValidationException("Incomplete percent encoding at offset " + start + " with value '" + new String(bytes, start, bytes.length - start, StandardCharsets.UTF_8) + "'");
+        }
+
+        int pos1 = start + 1;
+        byte b1 = bytes[pos1];
+        int c1 = Character.digit(b1, 16);
+
+        if (c1 == -1) {
+            throw new ValidationException("Invalid percent encoding char 1 at offset " + pos1 + " with value '" + ((char) b1) + "'");
+        }
+
+        int pos2 = pos1 + 1;
+        byte b2 = bytes[pos2];
+        int c2 = Character.digit(bytes[pos2], 16);
+
+        if (c2 == -1) {
+            throw new ValidationException("Invalid percent encoding char 2 at offset " + pos2 + " with value '" + ((char) b2) + "'");
+        }
+
+        return ((byte) ((c1 << 4) + c2));
+    }
+
+    public static String percentDecode(final String source) {
+        if (source.isEmpty()) {
+            return source;
+        }
+
+        byte[] bytes = source.getBytes(StandardCharsets.UTF_8);
+
+        int off = 0;
+        int idx = indexOfPercentChar(bytes, off);
+
+        if (idx == -1) {
+            return source;
+        }
+
+        ByteBuffer buffer = ByteBuffer.wrap(bytes);
+
+        while (true) {
+            int len = idx - off;
+
+            if (len > 0) {
+                buffer.put(bytes, off, len);
+                off += len;
             }
-            else {
-                builder.append(source.charAt(i));
+
+            buffer.put(percentDecode(bytes, off));
+            off += 3;
+            idx = indexOfPercentChar(bytes, off);
+
+            if (idx == -1) {
+                int rem = bytes.length - off;
+
+                if (rem > 0) {
+                    buffer.put(bytes, off, rem);
+                }
+
+                break;
             }
         }
-        return builder.toString();
+
+        return new String(buffer.array(), 0, buffer.position(), StandardCharsets.UTF_8);
+    }
+
+    @Deprecated
+    public String uriDecode(final String source) {
+        return source != null ? percentDecode(source) : null;
+    }
+
+    private static boolean isPercent(int c) {
+        return (c == PERCENT_CHAR);
+    }
+
+    private static byte[] percentEncode(byte b) {
+        byte b1 = (byte) Character.toUpperCase(Character.forDigit((b >> 4) & 0xF, 16));
+        byte b2 = (byte) Character.toUpperCase(Character.forDigit(b & 0xF, 16));
+        return new byte[] {(byte) PERCENT_CHAR, b1, b2};
+    }
+
+    public static String percentEncode(final String source) {
+        if (source.isEmpty()) {
+            return source;
+        }
+
+        byte[] bytes = source.getBytes(StandardCharsets.UTF_8);
+
+        int off = 0;
+        int idx = indexOfUnsafeChar(bytes, off);
+
+        if (idx == -1) {
+            return source;
+        }
+
+        ByteBuffer buffer = ByteBuffer.allocate(bytes.length * 3);
+
+        while (true) {
+            int len = idx - off;
+
+            if (len > 0) {
+                buffer.put(bytes, off, len);
+                off += len;
+            }
+
+            buffer.put(percentEncode(bytes[off++]));
+            idx = indexOfUnsafeChar(bytes, off);
+
+            if (idx == -1) {
+                int rem = bytes.length - off;
+
+                if (rem > 0) {
+                    buffer.put(bytes, off, rem);
+                }
+
+                break;
+            }
+        }
+
+        return new String(buffer.array(), 0, buffer.position(), StandardCharsets.UTF_8);
     }
 
     /**
@@ -758,12 +831,12 @@ public final class PackageURL implements Serializable {
     private String[] parsePath(final String path, final boolean isSubpath) {
         return Arrays.stream(path.split("/"))
                 .filter(segment -> !segment.isEmpty() && !(isSubpath && (".".equals(segment) || "..".equals(segment))))
-                .map(this::percentDecode)
+                .map(PackageURL::percentDecode)
                 .toArray(String[]::new);
     }
 
     private String encodePath(final String path) {
-        return Arrays.stream(path.split("/")).map(this::percentEncode).collect(Collectors.joining("/"));
+        return Arrays.stream(path.split("/")).map(PackageURL::percentEncode).collect(Collectors.joining("/"));
     }
 
     /**
@@ -894,5 +967,4 @@ public final class PackageURL implements Serializable {
 
         }
     }
-
 }
