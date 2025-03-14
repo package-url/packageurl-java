@@ -72,6 +72,31 @@ class PackageURLTest {
     }
 
     @Test
+    void validPercentEncoding() throws MalformedPackageURLException {
+        PackageURL purl = new PackageURL("maven", "com.google.summit", "summit-ast", "2.2.0\n", null, null);
+        assertEquals("pkg:maven/com.google.summit/summit-ast@2.2.0%0A", purl.toString());
+        PackageURL purl2 = new PackageURL("pkg:nuget/%D0%9Cicros%D0%BEft.%D0%95ntit%D1%83Fram%D0%B5work%D0%A1%D0%BEr%D0%B5");
+        assertEquals("Мicrosоft.ЕntitуFramеworkСоrе", purl2.getName());
+        assertEquals("pkg:nuget/%D0%9Cicros%D0%BEft.%D0%95ntit%D1%83Fram%D0%B5work%D0%A1%D0%BEr%D0%B5", purl2.toString());
+    }
+
+    @SuppressWarnings("deprecation")
+    @Test
+    void invalidPercentEncoding() throws MalformedPackageURLException {
+        assertThrows(MalformedPackageURLException.class, () -> new PackageURL("pkg:maven/com.google.summit/summit-ast@2.2.0%"));
+        assertThrows(MalformedPackageURLException.class, () -> new PackageURL("pkg:maven/com.google.summit/summit-ast@2.2.0%0"));
+        PackageURL purl = new PackageURL("pkg:maven/com.google.summit/summit-ast@2.2.0");
+        Throwable t1 = assertThrows(ValidationException.class, () -> purl.uriDecode("%"));
+        assertEquals("Incomplete percent encoding at offset 0 with value '%'", t1.getMessage());
+        Throwable t2 = assertThrows(ValidationException.class, () -> purl.uriDecode("a%0"));
+        assertEquals("Incomplete percent encoding at offset 1 with value '%0'", t2.getMessage());
+        Throwable t3 = assertThrows(ValidationException.class, () -> purl.uriDecode("aaaa%%0A"));
+        assertEquals("Invalid percent encoding char 1 at offset 5 with value '%'", t3.getMessage());
+        Throwable t4 = assertThrows(ValidationException.class, () -> purl.uriDecode("%0G"));
+        assertEquals("Invalid percent encoding char 2 at offset 2 with value 'G'", t4.getMessage());
+    }
+
+    @Test
     void constructorParsing() throws Exception {
         for (int i = 0; i < json.length(); i++) {
             JSONObject testDefinition = json.getJSONObject(i);
