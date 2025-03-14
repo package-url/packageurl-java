@@ -24,7 +24,7 @@ package com.github.packageurl;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -204,100 +204,58 @@ class PackageURLTest {
 
     @Test
     void constructorWithEmptyType() {
-        assertThrows(MalformedPackageURLException.class, () -> {
-
-            PackageURL purl = new PackageURL("", "name");
-            fail("constructor with an empty type should have thrown an error and this line should not be reached");
-        });
+        assertThrowsExactly(MalformedPackageURLException.class, () -> new PackageURL("", "name"), "constructor with an empty type should have thrown an error and this line should not be reached");
     }
 
     @Test
     void constructorWithInvalidCharsType() {
-        assertThrows(MalformedPackageURLException.class, () -> {
-
-            PackageURL purl = new PackageURL("invalid^type", "name");
-            fail("constructor with `invalid^type` should have thrown an error and this line should not be reached");
-        });
+        assertThrowsExactly(MalformedPackageURLException.class, () -> new PackageURL("invalid^type", "name"), "constructor with `invalid^type` should have thrown an error and this line should not be reached");
     }
 
     @Test
     void constructorWithInvalidNumberType() {
-        assertThrows(MalformedPackageURLException.class, () -> {
-
-            PackageURL purl = new PackageURL("0invalid", "name");
-            fail("constructor with `0invalid` should have thrown an error and this line should not be reached");
-        });
+        assertThrowsExactly(MalformedPackageURLException.class, () -> new PackageURL("0invalid", "name"), "constructor with `0invalid` should have thrown an error and this line should not be reached");
     }
 
     @Test
     void constructorWithInvalidSubpath() {
-        assertThrows(MalformedPackageURLException.class, () -> {
-
-            PackageURL purl = new PackageURL("pkg:GOLANG/google.golang.org/genproto@abcdedf#invalid/%2F/subpath");
-            fail("constructor with `invalid/%2F/subpath` should have thrown an error and this line should not be reached");
-        });
+        assertThrowsExactly(MalformedPackageURLException.class, () -> new PackageURL("pkg:GOLANG/google.golang.org/genproto@abcdedf#invalid/%2F/subpath"), "constructor with `invalid/%2F/subpath` should have thrown an error and this line should not be reached");
     }
 
 
     @Test
     void constructorWithNullPurl() {
-        assertThrows(NullPointerException.class, () ->
-                        new PackageURL(null),
-                "constructor with null purl should have thrown an error and this line should not be reached");
+        assertThrowsExactly(NullPointerException.class, () -> new PackageURL(null), "constructor with null purl should have thrown an error and this line should not be reached");
     }
 
     @Test
     void constructorWithEmptyPurl() {
-        assertThrows(MalformedPackageURLException.class, () -> {
-
-            PackageURL purl = new PackageURL("");
-            fail("constructor with empty purl should have thrown an error and this line should not be reached");
-        });
+        assertThrowsExactly(MalformedPackageURLException.class, () -> new PackageURL(""), "constructor with empty purl should have thrown an error and this line should not be reached");
     }
 
     @Test
     void constructorWithPortNumber() {
-        assertThrows(MalformedPackageURLException.class, () -> {
-
-            PackageURL purl = new PackageURL("pkg://generic:8080/name");
-            fail("constructor with port number should have thrown an error and this line should not be reached");
-        });
+        assertThrowsExactly(MalformedPackageURLException.class, () -> new PackageURL("pkg://generic:8080/name"), "constructor with port number should have thrown an error and this line should not be reached");
     }
 
     @Test
     void constructorWithUsername() {
-        assertThrows(MalformedPackageURLException.class, () -> {
-
-            PackageURL purl = new PackageURL("pkg://user@generic/name");
-            fail("constructor with username should have thrown an error and this line should not be reached");
-        });
+        assertThrowsExactly(MalformedPackageURLException.class, () -> new PackageURL("pkg://user@generic/name"), "constructor with username should have thrown an error and this line should not be reached");
     }
 
     @Test
     void constructorWithInvalidUrl() {
-        assertThrows(MalformedPackageURLException.class, () -> {
-
-            PackageURL purl = new PackageURL("invalid url");
-            fail("constructor with invalid url should have thrown an error and this line should not be reached");
-        });
+        assertThrowsExactly(MalformedPackageURLException.class, () -> new PackageURL("invalid url"), "constructor with invalid url should have thrown an error and this line should not be reached");
     }
 
     @Test
     void constructorWithDuplicateQualifiers() {
-        assertThrows(MalformedPackageURLException.class, () -> {
-
-            PackageURL purl = new PackageURL("pkg://generic/name?key=one&key=two");
-            fail("constructor with url with duplicate qualifiers should have thrown an error and this line should not be reached");
-        });
+        assertThrowsExactly(MalformedPackageURLException.class, () -> new PackageURL("pkg://generic/name?key=one&key=two"), "constructor with url with duplicate qualifiers should have thrown an error and this line should not be reached");
     }
 
     @Test
     void constructorDuplicateQualifiersMixedCase() {
-        assertThrows(MalformedPackageURLException.class, () -> {
-
-            PackageURL purl = new PackageURL("pkg://generic/name?key=one&KEY=two");
-            fail("constructor with url with duplicate qualifiers should have thrown an error and this line should not be reached");
-        });
+        assertThrowsExactly(MalformedPackageURLException.class, () -> new PackageURL("pkg://generic/name?key=one&KEY=two"), "constructor with url with duplicate qualifiers should have thrown an error and this line should not be reached");
     }
 
     @Test
