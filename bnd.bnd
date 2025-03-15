@@ -1,0 +1,55 @@
+#
+# MIT License
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+#
+##
+
+# Create OSGi and JPMS module names based on the `groupId` and `artifactId`.
+# This almost agrees with `maven-bundle-plugin`, but replaces non-alphanumeric characters
+# with full stops `.`.
+Bundle-SymbolicName: com.github.packageurl.java
+-jpms-module-info: $[Bundle-SymbolicName];access=0
+
+# Convert API leakage warnings to errors
+-fixupmessages.priv_refs: "private references";restrict:=warning;is:=error
+
+
+
+# Options specific to dependency packages:
+#
+# Jakarta Validation is an optional dependency.
+Import-Package: \
+  jakarta.validation;resolution:=optional,\
+  *
+
+# Options specific to dependency modules:
+#
+# Jakarta Validation is optional, so it can not be `transitive`, otherwise consumers will need it at compile time.
+-jpms-module-info-options: \
+  jakarta.validation;transitive=false
+
+# Adds certain `Implementation-*` and `Specification-*` entries to the generated `MANIFEST.MF`.
+# We set these values to their Maven Archiver defaults: https://maven.apache.org/shared/maven-archiver/#class_manifest
+Implementation-Title: ${project.name}
+# Implementation-Vendor: ${project.organization.name}
+Implementation-Version: ${project.version}
+Specification-Title: ${project.name}
+# Specification-Vendor: ${project.organization.name}
+Specification-Version: ${parsedVersion.majorVersion}.${parsedVersion.minorVersion}
