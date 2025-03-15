@@ -22,69 +22,64 @@
 package com.github.packageurl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Stream;
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 class PackageURLBuilderTest {
 
-    @Test
-    void packageURLBuilder() throws MalformedPackageURLException {
-        PackageURL purl = PackageURLBuilder.aPackageURL()
-                .withType("my.type-9+")
-                .withName("name")
-                .build();
+    static Stream<Arguments> packageURLBuilder() throws IOException {
+        return PurlParameters.getTestDataFromFiles("test-suite-data.json", "components-constructor-only.json");
+    }
 
-        assertEquals("pkg:my.type-9+/name", purl.toString());
-        assertEquals("pkg:my.type-9+/name", purl.canonicalize());
-
-        purl = PackageURLBuilder.aPackageURL()
-                .withType("type")
-                .withNamespace("namespace")
-                .withName("name")
-                .withVersion("version")
-                .withQualifier("key","value")
-                .withSubpath("subpath")
-                .build();
-
-        assertEquals("pkg:type/namespace/name@version?key=value#subpath", purl.toString());
-
-        purl = PackageURLBuilder.aPackageURL()
-                .withType(PackageURL.StandardTypes.GENERIC)
-                .withNamespace("namespace")
-                .withName("name")
-                .withVersion("version")
-                .withQualifier("key_1.1-","value")
-                .withSubpath("subpath")
-                .build();
-
-        assertEquals("pkg:generic/namespace/name@version?key_1.1-=value#subpath", purl.toString());
-
-        purl = PackageURLBuilder.aPackageURL()
-                .withType(PackageURL.StandardTypes.GENERIC)
-                .withNamespace("/////")
-                .withName("name")
-                .withVersion("version")
-                .withQualifier("key","value")
-                .withSubpath("/////")
-                .build();
-
-        assertEquals("pkg:generic/name@version?key=value", purl.toString());
-
-        purl = PackageURLBuilder.aPackageURL()
-                .withType(PackageURL.StandardTypes.GENERIC)
-                .withNamespace("")
-                .withName("name")
-                .withVersion("version")
-                .withQualifier("key","value")
-                .withQualifier("next","value")
-                .withSubpath("")
-                .build();
-
-        assertEquals("pkg:generic/name@version?key=value&next=value", purl.toString());
+    @ParameterizedTest(name = "{0}: {1}")
+    @MethodSource
+    void packageURLBuilder(String description,
+                           @Nullable String ignoredPurl,
+                           PurlParameters parameters,
+                           String canonicalPurl,
+                           boolean invalid) throws MalformedPackageURLException {
+        if (parameters.getType() == null || parameters.getName() == null) {
+            assertTrue(invalid, "valid test case with type or name `null`");
+            return;
+        }
+        PackageURLBuilder builder = PackageURLBuilder.aPackageURL().withType(parameters.getType()).withName(parameters.getName());
+        String namespace = parameters.getNamespace();
+        if (namespace != null) {
+            builder.withNamespace(namespace);
+        }
+        String version = parameters.getVersion();
+        if (version != null) {
+            builder.withVersion(version);
+        }
+        parameters.getQualifiers().forEach(builder::withQualifier);
+        String subpath = parameters.getSubpath();
+        if (subpath != null) {
+            builder.withSubpath(subpath);
+        }
+        if (invalid) {
+            assertThrows(MalformedPackageURLException.class, builder::build);
+        } else {
+            assertEquals(parameters.getType(), builder.getType(), "type");
+            assertEquals(parameters.getNamespace(), builder.getNamespace(), "namespace");
+            assertEquals(parameters.getName(), builder.getName(), "name");
+            assertEquals(parameters.getVersion(), builder.getVersion(), "version");
+            assertEquals(parameters.getQualifiers(), builder.getQualifiers(), "qualifiers");
+            assertEquals(parameters.getSubpath(), builder.getSubpath(), "subpath");
+            PackageURL actual = builder.build();
+            assertEquals(canonicalPurl, actual.canonicalize(), "canonical PURL");
+        }
     }
 
     @Test
@@ -229,10 +224,8 @@ class PackageURLBuilderTest {
 
         assertEquals(eQualifiers, aQualifiers);
 
-        if (eQualifiers != null && aQualifiers != null) {
-            eQualifiers.forEach((k,v) ->
-                assertEquals(v, actual.getQualifier(k)));
-        }
+        eQualifiers.forEach((k, v) ->
+            assertEquals(v, actual.getQualifier(k)));
     }
 
 }
