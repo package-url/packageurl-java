@@ -24,8 +24,11 @@ package com.github.packageurl;
 import static java.util.Objects.requireNonNull;
 
 import java.io.Serializable;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collections;
@@ -53,7 +56,6 @@ import org.jspecify.annotations.Nullable;
  * @since 1.0.0
  */
 public final class PackageURL implements Serializable {
-
     private static final long serialVersionUID = 3243226021636427586L;
 
     /**
@@ -418,21 +420,31 @@ public final class PackageURL implements Serializable {
         return validatePath(value.split("/"), true);
     }
 
-    private static @Nullable String validatePath(final String[] segments, final boolean isSubPath) throws MalformedPackageURLException {
-        if (segments.length == 0) {
+    private static boolean shouldKeepSegment(final String segment, final boolean isSubpath) {
+        return (!isSubpath || (!segment.isEmpty() && !".".equals(segment) && !"..".equals(segment)));
+    }
+
+    private static String validatePath(final String[] segments, final boolean isSubpath) throws MalformedPackageURLException {
+        if (segments == null || segments.length == 0) {
             return null;
         }
+
         try {
             return Arrays.stream(segments)
-                    .peek(segment -> {
-                        if (isSubPath && ("..".equals(segment) || ".".equals(segment))) {
-                            throw new ValidationException("Segments in the subpath may not be a period ('.') or repeated period ('..')");
-                        } else if (segment.contains("/")) {
-                            throw new ValidationException("Segments in the namespace and subpath may not contain a forward slash ('/')");
-                        } else if (segment.isEmpty()) {
-                            throw new ValidationException("Segments in the namespace and subpath may not be empty");
+                    .map(segment -> {
+                        if (!isSubpath) {
+                            if ("..".equals(segment) || ".".equals(segment)) {
+                                throw new ValidationException("Segments in the namespace may not be a period ('.') or repeated period ('..')");
+                            } else if (segment.contains("/")) {
+                                throw new ValidationException("Segments in the namespace and subpath may not contain a forward slash ('/')");
+                            } else if (segment.isEmpty()) {
+                                throw new ValidationException("Segments in the namespace and subpath may not be empty");
+                            }
                         }
-                    }).collect(Collectors.joining("/"));
+                        return segment;
+                    })
+                    .filter(segment1 -> shouldKeepSegment(segment1, isSubpath))
+                    .collect(Collectors.joining("/"));
         } catch (ValidationException e) {
             throw new MalformedPackageURLException(e);
         }
@@ -494,6 +506,10 @@ public final class PackageURL implements Serializable {
         return purl.toString();
     }
 
+    private String percentEncode(final String input, final Charset charset, final String charsToExclude) {
+        return uriEncode(input, charset, charsToExclude);
+    }
+
     /**
      * Encodes the input in conformance with RFC 3986.
      *
@@ -501,13 +517,17 @@ public final class PackageURL implements Serializable {
      * @return an encoded String
      */
     private String percentEncode(final String input) {
-        if (input.isEmpty()) {
-            return input;
+        return percentEncode(input, StandardCharsets.UTF_8, null);
+    }
+
+    private static String uriEncode(String source, Charset charset, String chars) {
+        if (source == null || source.length() == 0) {
+            return source;
         }
 
         StringBuilder builder = new StringBuilder();
-        for (byte b : input.getBytes(StandardCharsets.UTF_8)) {
-            if (isUnreserved(b)) {
+        for (byte b : source.getBytes(charset)) {
+            if (isUnreserved(b) || chars != null && chars.indexOf(b) != -1) {
                 builder.append((char) b);
             }
             else {
@@ -520,7 +540,7 @@ public final class PackageURL implements Serializable {
     }
 
     private static boolean isUnreserved(int c) {
-        return (isValidCharForKey(c) || c == '~');
+        return (isValidCharForKey(c) || c == '~' || c == '/' || c == ':');
     }
 
     private static boolean isAlpha(int c) {
@@ -585,7 +605,10 @@ public final class PackageURL implements Serializable {
      * @param input the value String to decode
      * @return a decoded String
      */
-    private String percentDecode(final String input) {
+    private static String percentDecode(final String input) {
+        if (input == null) {
+            return null;
+        }
         final String decoded = uriDecode(input);
         if (!decoded.equals(input)) {
             return decoded;
@@ -709,11 +732,58 @@ public final class PackageURL implements Serializable {
      * @param namespace the purl namespace
      * @throws MalformedPackageURLException if constraints are not met
      */
-    private void verifyTypeConstraints(String type, @Nullable String namespace, @Nullable String name) throws MalformedPackageURLException {
-        if (StandardTypes.MAVEN.equals(type)) {
-            if (isEmpty(namespace) || isEmpty(name)) {
-                throw new MalformedPackageURLException("The PackageURL specified is invalid. Maven requires both a namespace and name.");
-            }
+    private void verifyTypeConstraints(String type, String namespace, String name) throws MalformedPackageURLException {
+        switch (type) {
+            case StandardTypes.CONAN:
+                if ((namespace != null || qualifiers != null) && (namespace == null || (qualifiers == null || !qualifiers.containsKey("channel")))) {
+                    throw new MalformedPackageURLException("The PackageURL specified is invalid. Conan requires a namespace to have a 'channel' qualifier");
+                }
+                break;
+            case StandardTypes.CPAN:
+                if (name == null || name.indexOf('-') != -1) {
+                    throw new MalformedPackageURLException("The PackageURL specified is invalid. CPAN requires a name");
+                }
+                if (namespace != null && (name.contains("::") || name.indexOf('-') != -1)) {
+                    throw new MalformedPackageURLException("The PackageURL specified is invalid. CPAN name may not contain '::' or '-'");
+                }
+                break;
+            case StandardTypes.CRAN:
+                if (version == null) {
+                    throw new MalformedPackageURLException("The PackageURL specified is invalid. CRAN requires a version");
+                }
+                break;
+            case StandardTypes.HACKAGE:
+                if (name == null || version == null) {
+                    throw new MalformedPackageURLException("The PackageURL specified is invalid. Hackage requires a name and version");
+                }
+                break;
+            case StandardTypes.MAVEN:
+                if (namespace == null || name == null) {
+                    throw new MalformedPackageURLException("The PackageURL specified is invalid. Maven requires both a namespace and name");
+                }
+                break;
+            case StandardTypes.MLFLOW:
+                if (qualifiers != null) {
+                    String repositoryUrl = qualifiers.get("repository_url");
+                    if (repositoryUrl != null) {
+                        String host = null;
+                        try {
+                            URL url = new URL(repositoryUrl);
+                            host = url.getHost();
+                            if (host.matches(".*[.]?azuredatabricks.net$")) {
+                                this.name = name.toLowerCase();
+                            }
+                        } catch (MalformedURLException e) {
+                            throw new MalformedPackageURLException("The PackageURL specified is invalid. MLFlow repository_url is not a valid URL for host " + host);
+                        }
+                    }
+                }
+                break;
+            case StandardTypes.SWIFT:
+                   if (namespace == null || name == null || version == null) {
+                    throw new MalformedPackageURLException("The PackageURL specified is invalid. Swift requires a namespace, name, and version");
+                   }
+                   break;
         }
     }
 
@@ -755,10 +825,13 @@ public final class PackageURL implements Serializable {
         }
     }
 
-    private String[] parsePath(final String path, final boolean isSubpath) {
-        return Arrays.stream(path.split("/"))
-                .filter(segment -> !segment.isEmpty() && !(isSubpath && (".".equals(segment) || "..".equals(segment))))
-                .map(this::percentDecode)
+    private static String[] parsePath(final String value, final boolean isSubpath) {
+        if (value == null || value.isEmpty()) {
+            return null;
+        }
+
+        return Arrays.stream(percentDecode(value).split("/"))
+                .filter(segment -> shouldKeepSegment(segment, isSubpath))
                 .toArray(String[]::new);
     }
 
@@ -889,10 +962,5 @@ public final class PackageURL implements Serializable {
         public static final String DEBIAN = "deb";
         @Deprecated
         public static final String NIXPKGS = "nix";
-
-        private StandardTypes() {
-
-        }
     }
-
 }
