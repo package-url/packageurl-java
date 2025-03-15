@@ -24,7 +24,7 @@
 # Create OSGi and JPMS module names based on the `groupId` and `artifactId`.
 # This almost agrees with `maven-bundle-plugin`, but replaces non-alphanumeric characters
 # with full stops `.`.
-Bundle-SymbolicName: com.github.packageurl.java
+Bundle-SymbolicName: com.github.packageurl
 -jpms-module-info: $[Bundle-SymbolicName];access=0
 
 # Convert API leakage warnings to errors
