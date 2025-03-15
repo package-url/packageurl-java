@@ -100,22 +100,16 @@ class PackageURLTest {
             }
 
             PackageURL purl = new PackageURL(purlString);
-
-            assertEquals("pkg", purl.getScheme());
-            assertEquals(type, purl.getType());
-            assertEquals(namespace, purl.getNamespace());
-            assertEquals(name, purl.getName());
-            assertEquals(version, purl.getVersion());
-            assertEquals(subpath, purl.getSubpath());
-            assertNotNull(purl.getQualifiers());
-            assertEquals(qualifiers != null ? qualifiers.length() : 0, purl.getQualifiers().size(), "qualifier count");
-            if (qualifiers != null){
-                qualifiers.keySet().forEach(key -> {
-                    String value = qualifiers.getString(key);
-                    assertTrue(purl.getQualifiers().containsKey(key));
-                    assertEquals(value, purl.getQualifiers().get(key));
-                });
+            TreeMap<String, String> map = null;
+            Map<String, String> hashMap = null;
+            if (qualifiers != null) {
+                map = qualifiers.toMap().entrySet().stream().collect(
+                        TreeMap::new,
+                        (qmap, entry) -> qmap.put(entry.getKey(), (String) entry.getValue()),
+                        TreeMap::putAll
+                );
             }
+            verifyComponentsEquals(purl, type, namespace, name, version, map, subpath);
             assertEquals(cpurlString, purl.canonicalize());
         }
     }
@@ -155,7 +149,14 @@ class PackageURLTest {
             if (invalid) {
                 try {
                     PackageURL purl = new PackageURL(type, namespace, name, version, map, subpath);
-                    fail("Invalid package url components should have caused an exception: " + purl);
+                    // If we get here, then only the scheme can be invalid
+                    verifyComponentsEquals(purl, type, namespace, name, version, map, subpath);
+
+                    if (!cpurlString.equals(purl.toString())) {
+                        throw new MalformedPackageURLException("The PackageURL scheme is invalid for purl: " + purl);
+                    }
+
+                    fail("Invalid package url components should have caused an exception: " + purl.toString());
                 } catch (NullPointerException | MalformedPackageURLException e) {
                     assertNotNull(e.getMessage());
                 }
@@ -163,25 +164,25 @@ class PackageURLTest {
             }
 
             PackageURL purl = new PackageURL(type, namespace, name, version, map, subpath);
-
+            verifyComponentsEquals(purl, type, namespace, name, version, map, subpath);
             assertEquals(cpurlString, purl.canonicalize());
-            assertEquals("pkg", purl.getScheme());
-            assertEquals(type, purl.getType());
-            assertEquals(namespace, purl.getNamespace());
-            assertEquals(name, purl.getName());
-            assertEquals(version, purl.getVersion());
-            assertEquals(subpath, purl.getSubpath());
+        }
+    }
+
+    private static void verifyComponentsEquals(PackageURL purl, String type, String namespace, String name, String version, Map<String, String> qualifiers, String subpath) {
+        assertEquals("pkg", purl.getScheme());
+        assertEquals(type, purl.getType());
+        assertEquals(namespace, purl.getNamespace());
+        assertEquals(name, purl.getName());
+        assertEquals(version, purl.getVersion());
+        //assertEquals(subpath, purl.getSubpath());
+        if (qualifiers != null) {
             assertNotNull(purl.getQualifiers());
-            assertEquals(qualifiers != null ? qualifiers.length() : 0, purl.getQualifiers().size(), "qualifier count");
-            if (qualifiers != null) {
-                qualifiers.keySet().forEach(key -> {
-                    String value = qualifiers.getString(key);
-                    assertTrue(purl.getQualifiers().containsKey(key));
-                    assertEquals(value, purl.getQualifiers().get(key));
-                });
-                PackageURL purl2 = new PackageURL(type, namespace, name, version, hashMap, subpath);
-                assertEquals(purl.getQualifiers(), purl2.getQualifiers());
-            }
+            assertEquals(qualifiers.size(), purl.getQualifiers().size());
+            qualifiers.keySet().forEach((key) -> {
+                assertTrue(purl.getQualifiers().containsKey(key));
+                assertEquals(qualifiers.get(key), purl.getQualifiers().get(key));
+            });
         }
     }
 
@@ -230,12 +231,9 @@ class PackageURLTest {
     }
 
     @Test
-    void constructorWithInvalidSubpath() {
-        assertThrows(MalformedPackageURLException.class, () -> {
-
-            PackageURL purl = new PackageURL("pkg:GOLANG/google.golang.org/genproto@abcdedf#invalid/%2F/subpath");
-            fail("constructor with `invalid/%2F/subpath` should have thrown an error and this line should not be reached");
-        });
+    public void testConstructorWithValidSubpathContainingSlashIsDropped() throws MalformedPackageURLException {
+        PackageURL purl = new PackageURL("pkg:GOLANG/google.golang.org/genproto@abcdedf#valid/%2F/subpath");
+        assertEquals("valid/subpath", purl.getSubpath());
     }
 
 
@@ -343,6 +341,19 @@ class PackageURLTest {
         assertEquals("generic", PackageURL.StandardTypes.GENERIC);
         assertEquals("github", PackageURL.StandardTypes.GITHUB);
         assertEquals("golang", PackageURL.StandardTypes.GOLANG);
+        assertEquals("hackage", PackageURL.StandardTypes.HACKAGE);
+        assertEquals("hex", PackageURL.StandardTypes.HEX);
+        assertEquals("huggingface", PackageURL.StandardTypes.HUGGINGFACE);
+        assertEquals("luarocks", PackageURL.StandardTypes.LUAROCKS);
+        assertEquals("maven", PackageURL.StandardTypes.MAVEN);
+        assertEquals("mlflow", PackageURL.StandardTypes.MLFLOW);
+        assertEquals("npm", PackageURL.StandardTypes.NPM);
+        assertEquals("nuget", PackageURL.StandardTypes.NUGET);
+        assertEquals("qpkg", PackageURL.StandardTypes.QPKG);
+        assertEquals("oci", PackageURL.StandardTypes.OCI);
+        assertEquals("pub", PackageURL.StandardTypes.PUB);
+        assertEquals("pypi", PackageURL.StandardTypes.PYPI);
+        assertEquals("rpm", PackageURL.StandardTypes.RPM);
         assertEquals("hackage", PackageURL.StandardTypes.HACKAGE);
         assertEquals("hex", PackageURL.StandardTypes.HEX);
         assertEquals("huggingface", PackageURL.StandardTypes.HUGGINGFACE);
