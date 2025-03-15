@@ -42,6 +42,13 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <maven.javadoc.failOnError>false</maven.javadoc.failOnError>
 
+        <!--
+          ~ `project.build.outputTimestamp` is required to be present for reproducible builds
+          ~
+          ~ Its value fixes various timestamps present in the JAR and should be incremented at each release.
+          -->
+        <project.build.outputTimestamp>2025-03-15T10:12:28Z</project.build.outputTimestamp>
+
         <!-- Build requirements -->
         <!--
           ~ Minimum JDK version required to build the library:
