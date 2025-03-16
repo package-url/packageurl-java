@@ -22,8 +22,7 @@
 package com.github.packageurl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -110,61 +109,56 @@ class PackageURLBuilderTest {
 
     @Test
     void packageURLBuilderException2() {
-        assertThrows(MalformedPackageURLException.class, () -> {
+        assertThrowsExactly(MalformedPackageURLException.class, () -> {
             PackageURLBuilder.aPackageURL()
                     .withType("type")
                     .withNamespace("invalid//namespace")
                     .withName("name")
                     .build();
-            fail("Build should fail due to invalid namespace");
-        });
+        }, "Build should fail due to invalid namespace");
     }
 
     @Test
     void packageURLBuilderException3() {
-        assertThrows(MalformedPackageURLException.class, () -> {
+        assertThrowsExactly(MalformedPackageURLException.class, () -> {
             PackageURLBuilder.aPackageURL()
                     .withType("typ^e")
                     .withSubpath("invalid/name%2Fspace")
                     .withName("name")
                     .build();
-            fail("Build should fail due to invalid subpath");
-        });
+        }, "Build should fail due to invalid subpath");
     }
 
     @Test
     void packageURLBuilderException4() {
-        assertThrows(MalformedPackageURLException.class, () -> {
+        assertThrowsExactly(MalformedPackageURLException.class, () -> {
             PackageURLBuilder.aPackageURL()
                     .withType("0_type")
                     .withName("name")
                     .build();
-            fail("Build should fail due to invalid type");
-        });
+        }, "Build should fail due to invalid type");
     }
 
     @Test
     void packageURLBuilderException5() {
-        assertThrows(MalformedPackageURLException.class, () -> {
+        assertThrowsExactly(MalformedPackageURLException.class, () -> {
             PackageURLBuilder.aPackageURL()
                     .withType("ype")
                     .withName("name")
                     .withQualifier("0_key", "value")
                     .build();
-            fail("Build should fail due to invalid qualifier key");
-        });
+        }, "Build should fail due to invalid qualifier key");
     }
 
     @Test
     void packageURLBuilderException6() {
-        assertThrows(MalformedPackageURLException.class, () -> {
+        assertThrowsExactly(MalformedPackageURLException.class, () -> {
             PackageURLBuilder.aPackageURL()
                     .withType("ype")
                     .withName("name")
                     .withQualifier("", "value")
                     .build();
-            fail("Build should fail due to invalid qualifier key");
-        });
+        }, "Build should fail due to invalid qualifier key");
     }
 
     @Test
@@ -186,7 +180,6 @@ class PackageURLBuilderTest {
                 .withoutQualifier("dark");
 
         assertBuilderMatch(new PackageURL("pkg:maven/org.junit/junit5@3.1.2?repo=maven&ping=pong#sub"), b);
-
     }
 
     @Test

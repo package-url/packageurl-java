@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.github.package-url</groupId>
     <artifactId>packageurl-java</artifactId>
@@ -65,25 +64,31 @@
         <!-- Maven Plugin Versions -->
         <bnd.maven.plugin.version>7.1.0</bnd.maven.plugin.version>
         <builder.helper.maven.plugin.version>3.6.0</builder.helper.maven.plugin.version>
+        <cyclonedx-maven-plugin.version>2.9.1</cyclonedx-maven-plugin.version>
         <maven.clean.plugin.version>3.4.1</maven.clean.plugin.version>
         <maven.compiler.plugin.version>3.14.0</maven.compiler.plugin.version>
-        <maven.deploy.plugin.version>2.7</maven.deploy.plugin.version>
-        <maven.enforcer.plugin.version>3.4.1</maven.enforcer.plugin.version>
-        <maven.install.plugin.version>2.4</maven.install.plugin.version>
+        <maven.deploy.plugin.version>3.1.4</maven.deploy.plugin.version>
+        <maven.enforcer.plugin.version>3.5.0</maven.enforcer.plugin.version>
+        <maven.gpg.plugin.version>3.2.7</maven.gpg.plugin.version>
+        <maven.install.plugin.version>3.1.4</maven.install.plugin.version>
         <maven.jar.plugin.version>3.4.2</maven.jar.plugin.version>
-        <maven.javadoc.plugin.version>3.6.3</maven.javadoc.plugin.version>
-        <maven.release.plugin.version>3.0.1</maven.release.plugin.version>
-        <maven.resources.plugin.version>2.6</maven.resources.plugin.version>
+        <maven.javadoc.plugin.version>3.11.2</maven.javadoc.plugin.version>
+        <maven.release.plugin.version>3.1.1</maven.release.plugin.version>
+        <maven.resources.plugin.version>3.3.1</maven.resources.plugin.version>
         <maven.site.plugin.version>3.21.0</maven.site.plugin.version>
-        <maven.source.plugin.version>3.3.0</maven.source.plugin.version>
+        <maven.source.plugin.version>3.3.1</maven.source.plugin.version>
         <maven.surefire.plugin.version>3.5.2</maven.surefire.plugin.version>
+        <versions-maven-plugin.version>2.18.0</versions-maven-plugin.version>
         <!-- Maven build plugins for quality checks -->
         <error.prone.core.version>2.36.0</error.prone.core.version>
         <jacoco.maven.plugin.version>0.8.12</jacoco.maven.plugin.version>
-        <spotbugs.maven.plugin.version>4.8.3.1</spotbugs.maven.plugin.version>
-        <com.github.spotbugs.version>4.8.3</com.github.spotbugs.version>
+        <spotbugs.maven.plugin.version>4.9.3.0</spotbugs.maven.plugin.version>
+        <com.github.spotbugs.version>4.9.3</com.github.spotbugs.version>
         <!-- Dependency versions -->
-        <junit.version>5.12.0</junit.version>
+        <jakarta.validation-api.version>3.1.1</jakarta.validation-api.version>
+        <json.version>20250107</json.version>
+        <junit-bom.version>5.12.1</junit-bom.version>
+        <maven-surefire-junit5-tree-reporter.version>1.4.0</maven-surefire-junit5-tree-reporter.version>
     </properties>
 
     <scm>
@@ -116,16 +121,14 @@
 
     <dependencyManagement>
         <dependencies>
-
             <!-- BOMs at the end, so they don't overwrite the dependencies above -->
             <dependency>
                 <groupId>org.junit</groupId>
                 <artifactId>junit-bom</artifactId>
-                <version>${junit.version}</version>
+                <version>${junit-bom.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
-
         </dependencies>
     </dependencyManagement>
 
@@ -133,7 +136,7 @@
         <dependency>
             <groupId>jakarta.validation</groupId>
             <artifactId>jakarta.validation-api</artifactId>
-            <version>3.1.1</version>
+            <version>${jakarta.validation-api.version}</version>
             <optional>true</optional>
             <scope>provided</scope>
         </dependency>
@@ -151,12 +154,17 @@
         <dependency>
             <groupId>org.json</groupId>
             <artifactId>json</artifactId>
-            <version>20240303</version>
+            <version>${json.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-params</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -198,6 +206,11 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-install-plugin</artifactId>
                     <version>${maven.install.plugin.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-gpg-plugin</artifactId>
+                    <version>${maven-gpg-plugin.version}</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -280,18 +293,18 @@
                         <arg>-XDcompilePolicy=simple</arg>
                         <arg>--should-stop=ifError=FLOW</arg>
                         <arg>-Xplugin:ErrorProne</arg>
-                        <!-- No annotation processors for now -->
-                        <arg>-proc:none</arg>
+                        <!--
+                          ~ Due to a bug in IntelliJ IDEA, annotation processing MUST be enabled.
+                          ~ Failing to do so will cause IDEA to ignore the annotation processor path
+                          ~ and choke on the Error Prone compiler arguments.
+                          ~
+                          ~ On the other hand, we cannot pass an empty `annotationProcessors` list to Maven,
+                          ~ since the `-processor` compiler argument requires at least one processor class name.
+                          ~
+                          ~ If you add an annotation processor, please also add an `annotationProcessors` configuration
+                          ~ option.
+                          -->
                     </compilerArgs>
-                    <!--
-                      ~ Due to the changes to annotation processor policy in JDK 23, all annotation processors
-                      ~ should be mentioned explicitly.
-                      ~ To add an annotation processor, add it to `annotationProcessors` below and remove
-                      ~ `-proc:none` above.
-                      ~
-                      ~ See: https://inside.java/2024/06/18/quality-heads-up/
-                      -->
-                    <annotationProcessors/>
                     <annotationProcessorPaths>
                         <path>
                             <groupId>com.google.errorprone</groupId>
@@ -321,6 +334,14 @@
                         <version>${com.github.spotbugs.version}</version>
                     </dependency>
                 </dependencies>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>versions-maven-plugin</artifactId>
+                <version>${versions-maven-plugin.version}</version>
+                <configuration>
+                    <ignoredVersions>(?i).+[-.](alpha|beta|cr|dev|m|rc)([-.]?\d+)?</ignoredVersions>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.jacoco</groupId>
@@ -419,7 +440,7 @@
             <plugin>
                 <groupId>org.cyclonedx</groupId>
                 <artifactId>cyclonedx-maven-plugin</artifactId>
-                <version>2.9.1</version>
+                <version>${cyclonedx-maven-plugin.version}</version>
                 <configuration>
                     <projectType>library</projectType>
                 </configuration>
@@ -444,7 +465,6 @@
     </build>
 
     <profiles>
-
         <!--
           ~ Profile to run tests using JRE 8.
           ~
@@ -458,7 +478,6 @@
                     <exists>${user.home}/.m2/toolchains.xml</exists>
                 </file>
             </activation>
-
             <build>
                 <plugins>
                     <plugin>
@@ -474,11 +493,26 @@
                                 </configuration>
                             </execution>
                         </executions>
+                        <dependencies>
+                            <dependency>
+                                <groupId>me.fabriciorby</groupId>
+                                <artifactId>maven-surefire-junit5-tree-reporter</artifactId>
+                                <version>${maven-surefire-junit5-tree-reporter.version}</version>
+                            </dependency>
+                        </dependencies>
+                        <configuration>
+                            <reportFormat>plain</reportFormat>
+                            <consoleOutputReporter>
+                                <disable>true</disable>
+                            </consoleOutputReporter>
+                            <statelessTestsetInfoReporter
+                                    implementation="org.apache.maven.plugin.surefire.extensions.junit5.JUnit5StatelessTestsetInfoTreeReporter">
+                            </statelessTestsetInfoReporter>
+                        </configuration>
                     </plugin>
                 </plugins>
             </build>
         </profile>
-
         <profile>
             <id>release</id>
             <activation>
@@ -507,7 +541,6 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-gpg-plugin</artifactId>
-                        <version>3.2.7</version>
                         <executions>
                             <execution>
                                 <id>sign-artifacts</id>
@@ -522,5 +555,4 @@
             </build>
         </profile>
     </profiles>
-
 </project>
