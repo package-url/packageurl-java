@@ -236,18 +236,18 @@
                         <arg>-XDcompilePolicy=simple</arg>
                         <arg>--should-stop=ifError=FLOW</arg>
                         <arg>-Xplugin:ErrorProne</arg>
-                        <!-- No annotation processors for now -->
-                        <arg>-proc:none</arg>
+                        <!--
+                          ~ Due to a bug in IntelliJ IDEA, annotation processing MUST be enabled.
+                          ~ Failing to do so will cause IDEA to ignore the annotation processor path
+                          ~ and choke on the Error Prone compiler arguments.
+                          ~
+                          ~ On the other hand, we cannot pass an empty `annotationProcessors` list to Maven,
+                          ~ since the `-processor` compiler argument requires at least one processor class name.
+                          ~
+                          ~ If you add an annotation processor, please also add an `annotationProcessors` configuration
+                          ~ option.
+                          -->
                     </compilerArgs>
-                    <!--
-                      ~ Due to the changes to annotation processor policy in JDK 23, all annotation processors
-                      ~ should be mentioned explicitly.
-                      ~ To add an annotation processor, add it to `annotationProcessors` below and remove
-                      ~ `-proc:none` above.
-                      ~
-                      ~ See: https://inside.java/2024/06/18/quality-heads-up/
-                      -->
-                    <annotationProcessors/>
                     <annotationProcessorPaths>
                         <path>
                             <groupId>com.google.errorprone</groupId>
