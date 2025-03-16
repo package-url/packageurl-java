@@ -30,20 +30,20 @@ Bundle-SymbolicName: com.github.packageurl
 # Convert API leakage warnings to errors
 -fixupmessages.priv_refs: "private references";restrict:=warning;is:=error
 
-
-
 # Options specific to dependency packages:
 #
-# Jakarta Validation is an optional dependency.
+# Jakarta Validation and JSpecify are optional dependencies.
 Import-Package: \
   jakarta.validation;resolution:=optional,\
+  org.jspecify.annotations;resolution:=optional,\
   *
 
 # Options specific to dependency modules:
 #
-# Jakarta Validation is optional, so it can not be `transitive`, otherwise consumers will need it at compile time.
+# Optional dependencies can not be `transitive`, otherwise consumers will need them at compile time.
 -jpms-module-info-options: \
-  jakarta.validation;transitive=false
+  jakarta.validation;transitive=false,\
+  org.jspecify;transitive=false
 
 # Adds certain `Implementation-*` and `Specification-*` entries to the generated `MANIFEST.MF`.
 # We set these values to their Maven Archiver defaults: https://maven.apache.org/shared/maven-archiver/#class_manifest
