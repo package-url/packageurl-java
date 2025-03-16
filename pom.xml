@@ -79,6 +79,7 @@
         <jakarta.validation-api.version>3.1.1</jakarta.validation-api.version>
         <json.version>20250107</json.version>
         <junit-bom.version>5.12.1</junit-bom.version>
+        <maven-surefire-junit5-tree-reporter.version>1.4.0</maven-surefire-junit5-tree-reporter.version>
     </properties>
 
     <scm>
@@ -144,6 +145,11 @@
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-params</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -395,6 +401,22 @@
                                 </configuration>
                             </execution>
                         </executions>
+                        <dependencies>
+                            <dependency>
+                                <groupId>me.fabriciorby</groupId>
+                                <artifactId>maven-surefire-junit5-tree-reporter</artifactId>
+                                <version>${maven-surefire-junit5-tree-reporter.version}</version>
+                            </dependency>
+                        </dependencies>
+                        <configuration>
+                            <reportFormat>plain</reportFormat>
+                            <consoleOutputReporter>
+                                <disable>true</disable>
+                            </consoleOutputReporter>
+                            <statelessTestsetInfoReporter
+                                    implementation="org.apache.maven.plugin.surefire.extensions.junit5.JUnit5StatelessTestsetInfoTreeReporter">
+                            </statelessTestsetInfoReporter>
+                        </configuration>
                     </plugin>
                 </plugins>
             </build>
