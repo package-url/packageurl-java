@@ -83,16 +83,16 @@ class PackageURLTest {
     @SuppressWarnings("deprecation")
     @Test
     void invalidPercentEncoding() throws MalformedPackageURLException {
-        assertThrows(MalformedPackageURLException.class, () -> new PackageURL("pkg:maven/com.google.summit/summit-ast@2.2.0%"));
-        assertThrows(MalformedPackageURLException.class, () -> new PackageURL("pkg:maven/com.google.summit/summit-ast@2.2.0%0"));
+        assertThrowsExactly(MalformedPackageURLException.class, () -> new PackageURL("pkg:maven/com.google.summit/summit-ast@2.2.0%"));
+        assertThrowsExactly(MalformedPackageURLException.class, () -> new PackageURL("pkg:maven/com.google.summit/summit-ast@2.2.0%0"));
         PackageURL purl = new PackageURL("pkg:maven/com.google.summit/summit-ast@2.2.0");
-        Throwable t1 = assertThrows(ValidationException.class, () -> purl.uriDecode("%"));
+        Throwable t1 = assertThrowsExactly(ValidationException.class, () -> purl.uriDecode("%"));
         assertEquals("Incomplete percent encoding at offset 0 with value '%'", t1.getMessage());
-        Throwable t2 = assertThrows(ValidationException.class, () -> purl.uriDecode("a%0"));
+        Throwable t2 = assertThrowsExactly(ValidationException.class, () -> purl.uriDecode("a%0"));
         assertEquals("Incomplete percent encoding at offset 1 with value '%0'", t2.getMessage());
-        Throwable t3 = assertThrows(ValidationException.class, () -> purl.uriDecode("aaaa%%0A"));
+        Throwable t3 = assertThrowsExactly(ValidationException.class, () -> purl.uriDecode("aaaa%%0A"));
         assertEquals("Invalid percent encoding char 1 at offset 5 with value '%'", t3.getMessage());
-        Throwable t4 = assertThrows(ValidationException.class, () -> purl.uriDecode("%0G"));
+        Throwable t4 = assertThrowsExactly(ValidationException.class, () -> purl.uriDecode("%0G"));
         assertEquals("Invalid percent encoding char 2 at offset 2 with value 'G'", t4.getMessage());
     }
 
