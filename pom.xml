@@ -80,8 +80,6 @@
         <json.version>20250107</json.version>
         <junit-bom.version>5.12.1</junit-bom.version>
         <maven-surefire-junit5-tree-reporter.version>1.4.0</maven-surefire-junit5-tree-reporter.version>
-        <jackson.version>2.18.3</jackson.version>
-        <junit.pioneer.version>1.9.1</junit.pioneer.version>
     </properties>
 
     <scm>
@@ -114,7 +112,6 @@
 
     <dependencyManagement>
         <dependencies>
-
             <!-- BOMs at the end, so they don't overwrite the dependencies above -->
             <dependency>
                 <groupId>org.junit</groupId>
@@ -123,7 +120,6 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
-
         </dependencies>
     </dependencyManagement>
 
