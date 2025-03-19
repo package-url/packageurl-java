@@ -942,7 +942,7 @@ public final class PackageURL implements Serializable {
      * @since 1.2.0
      */
     public boolean isCanonicalEquals(final PackageURL purl) {
-        return (this.canonicalize().equals(purl.canonicalize()));
+        return this.canonicalize().equals(purl.canonicalize());
     }
 
     private static boolean isEmpty(@Nullable String value) {
