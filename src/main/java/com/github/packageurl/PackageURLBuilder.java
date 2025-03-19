@@ -216,7 +216,6 @@ public final class PackageURLBuilder {
         return this;
     }
 
-
     /**
      * Removes all qualifiers, if any.
      * @return a reference to this builder.
