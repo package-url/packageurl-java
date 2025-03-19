@@ -24,6 +24,8 @@
  * <p><a href="https://github.com/package-url/purl-spec">https://github.com/package-url/purl-spec</a></p>
  */
 @NullMarked
+@Export
 package com.github.packageurl;
 
 import org.jspecify.annotations.NullMarked;
+import org.osgi.annotation.bundle.Export;

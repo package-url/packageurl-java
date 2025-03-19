@@ -19,7 +19,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+/**
+ * This package contains a validator for Jakarta Validation.
+ */
 @NullMarked
+@Export
 package com.github.packageurl.validator;
 
 import org.jspecify.annotations.NullMarked;
+import org.osgi.annotation.bundle.Export;

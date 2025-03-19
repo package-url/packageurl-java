@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.github.package-url</groupId>
     <artifactId>packageurl-java</artifactId>
-    <version>1.5.1-SNAPSHOT</version>
+    <version>1.6.0-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>Package URL</name>
@@ -41,6 +41,13 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <maven.javadoc.failOnError>false</maven.javadoc.failOnError>
 
+        <!--
+          ~ `project.build.outputTimestamp` is required to be present for reproducible builds
+          ~
+          ~ Its value fixes various timestamps present in the JAR and should be incremented at each release.
+          -->
+        <project.build.outputTimestamp>2025-03-15T10:12:28Z</project.build.outputTimestamp>
+
         <!-- Build requirements -->
         <!--
           ~ Minimum JDK version required to build the library:
@@ -55,6 +62,8 @@
         <max.jdk.version>18</max.jdk.version>
 
         <!-- Maven Plugin Versions -->
+        <bnd.maven.plugin.version>7.1.0</bnd.maven.plugin.version>
+        <builder.helper.maven.plugin.version>3.6.0</builder.helper.maven.plugin.version>
         <cyclonedx-maven-plugin.version>2.9.1</cyclonedx-maven-plugin.version>
         <maven.clean.plugin.version>3.4.1</maven.clean.plugin.version>
         <maven.compiler.plugin.version>3.14.0</maven.compiler.plugin.version>
@@ -132,6 +141,12 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
+            <groupId>org.osgi</groupId>
+            <artifactId>org.osgi.annotation.bundle</artifactId>
+            <version>2.0.0</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
             <groupId>org.jspecify</groupId>
             <artifactId>jspecify</artifactId>
             <version>1.0.0</version>
@@ -159,6 +174,16 @@
     <build>
         <pluginManagement>
             <plugins>
+                <plugin>
+                    <groupId>biz.aQute.bnd</groupId>
+                    <artifactId>bnd-baseline-maven-plugin</artifactId>
+                    <version>${bnd.maven.plugin.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>biz.aQute.bnd</groupId>
+                    <artifactId>bnd-maven-plugin</artifactId>
+                    <version>${bnd.maven.plugin.version}</version>
+                </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-clean-plugin</artifactId>
@@ -217,6 +242,25 @@
             </plugins>
         </pluginManagement>
         <plugins>
+            <!--
+              ~ Parses the version into components.
+              ~
+              ~ The parsed version is used to generate the `Specification-Version` manifest header.
+              -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <version>${builder.helper.maven.plugin.version}</version>
+                <executions>
+                    <execution>
+                        <id>parse-version</id>
+                        <goals>
+                            <goal>parse-version</goal>
+                        </goals>
+                        <phase>validate</phase>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-enforcer-plugin</artifactId>
@@ -343,6 +387,54 @@
                         <id>attach-javadocs</id>
                         <goals>
                             <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <!--
+              ~ Generates:
+              ~
+              ~ - An OSGi manifest.
+              ~ - A JPMS module descriptor.
+              ~ - The JAR artifact, by replacing `maven-jar-plugin`.
+              ~
+              ~ The advantage of the `jar` goal over `bnd-process`
+              ~ is that it does not leave `module-info.class` files in the output directory,
+              ~ which tend to confuse IDEs and need to be removed before a recompilation.
+              ~
+              ~ If `ServiceLoader` services were to be added `bnd-process` must be used to generate the appropriate
+              ~ `META-INF/services` files and equivalent OSGi and JPMS entries.
+              -->
+            <plugin>
+                <groupId>biz.aQute.bnd</groupId>
+                <artifactId>bnd-maven-plugin</artifactId>
+                <!-- Replaces the `default-jar` execution of the Maven Jar Plugin -->
+                <extensions>true</extensions>
+                <executions>
+                    <execution>
+                        <id>generate-jar-and-module-descriptors</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <!--
+              ~ Checks for binary compatibility with the previous revision.
+              ~ If this goal fails, the version of packages in `package-info.java` files must be incremented.
+              ~
+              ~ - If the difference type is `MICRO`, follow BND suggestions.
+              ~ - If the difference type is `MINOR`, bump the artifact version to the next minor version.
+              ~ - If the difference type is `MAJOR`, revert the breaking changes or make a major release.
+              -->
+            <plugin>
+                <groupId>biz.aQute.bnd</groupId>
+                <artifactId>bnd-baseline-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>check-api-compatibility</id>
+                        <goals>
+                            <goal>baseline</goal>
                         </goals>
                     </execution>
                 </executions>
