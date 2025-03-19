@@ -32,6 +32,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.function.IntPredicate;
 import java.util.stream.Collectors;
@@ -495,28 +496,33 @@ public final class PackageURL implements Serializable {
      */
     private String canonicalize(boolean coordinatesOnly) {
         final StringBuilder purl = new StringBuilder();
-        purl.append(SCHEME_PART).append(type).append("/");
+        purl.append(SCHEME_PART).append(type).append('/');
         if (namespace != null) {
             purl.append(encodePath(namespace));
-            purl.append("/");
+            purl.append('/');
         }
         purl.append(percentEncode(name));
         if (version != null) {
-            purl.append("@").append(percentEncode(version));
+            purl.append('@').append(percentEncode(version));
         }
+
         if (!coordinatesOnly) {
             if (qualifiers != null) {
-                purl.append("?");
-                qualifiers.forEach((key, value) -> {
-                    purl.append(toLowerCase(key));
-                    purl.append("=");
-                    purl.append(percentEncode(value));
-                    purl.append("&");
-                });
-                purl.setLength(purl.length() - 1);
+                purl.append('?');
+                Set<Map.Entry<String, String>> entries = qualifiers.entrySet();
+                boolean separator = false;
+                for (Map.Entry<String, String> entry : entries) {
+                    if (separator) {
+                        purl.append('&');
+                    }
+                    purl.append(entry.getKey());
+                    purl.append('=');
+                    purl.append(percentEncode(entry.getValue()));
+                    separator = true;
+                }
             }
             if (subpath != null) {
-                purl.append("#").append(encodePath(subpath));
+                purl.append('#').append(encodePath(subpath));
             }
         }
         return purl.toString();
