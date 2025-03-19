@@ -19,29 +19,3 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.github.packageurl.validator;
-
-import jakarta.validation.Constraint;
-import jakarta.validation.Payload;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-
-/**
- * Annotation that can be applied to a String field within a class. The PackageURL annotation instructs
- * the JSR-303 compliant validator to validate the field to ensure it meets the Package URL specification.
- * @since 1.3.0
- */
-@Target({ElementType.FIELD})
-@Retention(RetentionPolicy.RUNTIME)
-@Constraint(validatedBy = PackageURLConstraintValidator.class)
-public @interface PackageURL {
-
-    String message() default
-            "The Package URL (purl) must be a valid URI and conform to https://github.com/package-url/purl-spec";
-
-    Class<?>[] groups() default {};
-
-    Class<? extends Payload>[] payload() default {};
-}

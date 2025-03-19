@@ -1,3 +1,24 @@
+/*
+ * MIT License
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
 package com.github.packageurl;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -23,9 +44,11 @@ class PurlParameters {
             try (InputStream is = PackageURLTest.class.getResourceAsStream("/" + name)) {
                 assertNotNull(is);
                 JSONArray jsonArray = new JSONArray(new JSONTokener(is));
-                result = Stream.concat(result,
-                    IntStream.range(0,
-                        jsonArray.length()).mapToObj(jsonArray::getJSONObject).map(PurlParameters::createTestDefinition));
+                result = Stream.concat(
+                        result,
+                        IntStream.range(0, jsonArray.length())
+                                .mapToObj(jsonArray::getJSONObject)
+                                .map(PurlParameters::createTestDefinition));
             }
         }
         return result;
@@ -41,16 +64,18 @@ class PurlParameters {
      * </ol>
      */
     private static Arguments createTestDefinition(JSONObject testDefinition) {
-        return Arguments.of(testDefinition.getString("description"),
-            testDefinition.optString("purl"),
-            new PurlParameters(testDefinition.optString("type", null),
-                testDefinition.optString("namespace", null),
-                testDefinition.optString("name", null),
-                testDefinition.optString("version", null),
-                testDefinition.optJSONObject("qualifiers"),
-                testDefinition.optString("subpath", null)),
-            testDefinition.optString("canonical_purl"),
-            testDefinition.getBoolean("is_invalid"));
+        return Arguments.of(
+                testDefinition.getString("description"),
+                testDefinition.optString("purl"),
+                new PurlParameters(
+                        testDefinition.optString("type", null),
+                        testDefinition.optString("namespace", null),
+                        testDefinition.optString("name", null),
+                        testDefinition.optString("version", null),
+                        testDefinition.optJSONObject("qualifiers"),
+                        testDefinition.optString("subpath", null)),
+                testDefinition.optString("canonical_purl"),
+                testDefinition.getBoolean("is_invalid"));
     }
 
     private final @Nullable String type;
@@ -60,20 +85,23 @@ class PurlParameters {
     private final Map<String, String> qualifiers;
     private final @Nullable String subpath;
 
-    private PurlParameters(@Nullable String type,
-                           @Nullable String namespace,
-                           @Nullable String name,
-                           @Nullable String version,
-                           @Nullable JSONObject qualifiers,
-                           @Nullable String subpath) {
+    private PurlParameters(
+            @Nullable String type,
+            @Nullable String namespace,
+            @Nullable String name,
+            @Nullable String version,
+            @Nullable JSONObject qualifiers,
+            @Nullable String subpath) {
         this.type = type;
         this.namespace = namespace;
         this.name = name;
         this.version = version;
         if (qualifiers != null) {
-            this.qualifiers = qualifiers.toMap().entrySet().stream().collect(HashMap::new,
-                (m, e) -> m.put(e.getKey(), Objects.toString(e.getValue(), null)),
-                HashMap::putAll);
+            this.qualifiers = qualifiers.toMap().entrySet().stream()
+                    .collect(
+                            HashMap::new,
+                            (m, e) -> m.put(e.getKey(), Objects.toString(e.getValue(), null)),
+                            HashMap::putAll);
         } else {
             this.qualifiers = Collections.emptyMap();
         }

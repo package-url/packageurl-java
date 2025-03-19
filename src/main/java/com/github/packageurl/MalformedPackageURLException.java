@@ -37,8 +37,7 @@ public class MalformedPackageURLException extends Exception {
      *
      * @since 1.0.0
      */
-    public MalformedPackageURLException() {
-    }
+    public MalformedPackageURLException() {}
 
     /**
      * Constructs a {@code MalformedPackageURLException} with the

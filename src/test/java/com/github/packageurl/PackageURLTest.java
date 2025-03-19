@@ -64,16 +64,22 @@ class PackageURLTest {
     void validPercentEncoding() throws MalformedPackageURLException {
         PackageURL purl = new PackageURL("maven", "com.google.summit", "summit-ast", "2.2.0\n", null, null);
         assertEquals("pkg:maven/com.google.summit/summit-ast@2.2.0%0A", purl.toString());
-        PackageURL purl2 = new PackageURL("pkg:nuget/%D0%9Cicros%D0%BEft.%D0%95ntit%D1%83Fram%D0%B5work%D0%A1%D0%BEr%D0%B5");
+        PackageURL purl2 =
+                new PackageURL("pkg:nuget/%D0%9Cicros%D0%BEft.%D0%95ntit%D1%83Fram%D0%B5work%D0%A1%D0%BEr%D0%B5");
         assertEquals("Мicrosоft.ЕntitуFramеworkСоrе", purl2.getName());
-        assertEquals("pkg:nuget/%D0%9Cicros%D0%BEft.%D0%95ntit%D1%83Fram%D0%B5work%D0%A1%D0%BEr%D0%B5", purl2.toString());
+        assertEquals(
+                "pkg:nuget/%D0%9Cicros%D0%BEft.%D0%95ntit%D1%83Fram%D0%B5work%D0%A1%D0%BEr%D0%B5", purl2.toString());
     }
 
     @SuppressWarnings("deprecation")
     @Test
     void invalidPercentEncoding() throws MalformedPackageURLException {
-        assertThrowsExactly(MalformedPackageURLException.class, () -> new PackageURL("pkg:maven/com.google.summit/summit-ast@2.2.0%"));
-        assertThrowsExactly(MalformedPackageURLException.class, () -> new PackageURL("pkg:maven/com.google.summit/summit-ast@2.2.0%0"));
+        assertThrowsExactly(
+                MalformedPackageURLException.class,
+                () -> new PackageURL("pkg:maven/com.google.summit/summit-ast@2.2.0%"));
+        assertThrowsExactly(
+                MalformedPackageURLException.class,
+                () -> new PackageURL("pkg:maven/com.google.summit/summit-ast@2.2.0%0"));
         PackageURL purl = new PackageURL("pkg:maven/com.google.summit/summit-ast@2.2.0");
         Throwable t1 = assertThrowsExactly(ValidationException.class, () -> purl.uriDecode("%"));
         assertEquals("Incomplete percent encoding at offset 0 with value '%'", t1.getMessage());
@@ -86,19 +92,20 @@ class PackageURLTest {
     }
 
     static Stream<Arguments> constructorParsing() throws IOException {
-        return PurlParameters.getTestDataFromFiles("test-suite-data.json",
-            "custom-suite.json",
-            "string-constructor-only.json");
+        return PurlParameters.getTestDataFromFiles(
+                "test-suite-data.json", "custom-suite.json", "string-constructor-only.json");
     }
 
     @DisplayName("Test constructor parsing")
     @ParameterizedTest(name = "{0}: ''{1}''")
     @MethodSource
-    void constructorParsing(String description,
-                            @Nullable String purlString,
-                            PurlParameters parameters,
-                            @Nullable String canonicalPurl,
-                            boolean invalid) throws Exception {
+    void constructorParsing(
+            String description,
+            @Nullable String purlString,
+            PurlParameters parameters,
+            @Nullable String canonicalPurl,
+            boolean invalid)
+            throws Exception {
         if (invalid) {
             assertThrows(getExpectedException(purlString), () -> new PackageURL(purlString));
         } else {
@@ -109,32 +116,38 @@ class PackageURLTest {
     }
 
     static Stream<Arguments> constructorParameters() throws IOException {
-        return PurlParameters.getTestDataFromFiles("test-suite-data.json", "custom-suite.json", "components-constructor-only.json");
+        return PurlParameters.getTestDataFromFiles(
+                "test-suite-data.json", "custom-suite.json", "components-constructor-only.json");
     }
 
     @DisplayName("Test constructor parameters")
     @ParameterizedTest(name = "{0}: {2}")
     @MethodSource
-    void constructorParameters(String description,
-                               @Nullable String purlString,
-                               PurlParameters parameters,
-                               @Nullable String canonicalPurl,
-                               boolean invalid) throws Exception {
+    void constructorParameters(
+            String description,
+            @Nullable String purlString,
+            PurlParameters parameters,
+            @Nullable String canonicalPurl,
+            boolean invalid)
+            throws Exception {
         if (invalid) {
-            assertThrows(getExpectedException(parameters),
-                () -> new PackageURL(parameters.getType(),
+            assertThrows(
+                    getExpectedException(parameters),
+                    () -> new PackageURL(
+                            parameters.getType(),
+                            parameters.getNamespace(),
+                            parameters.getName(),
+                            parameters.getVersion(),
+                            parameters.getQualifiers(),
+                            parameters.getSubpath()));
+        } else {
+            PackageURL purl = new PackageURL(
+                    parameters.getType(),
                     parameters.getNamespace(),
                     parameters.getName(),
                     parameters.getVersion(),
                     parameters.getQualifiers(),
-                    parameters.getSubpath()));
-        } else {
-            PackageURL purl = new PackageURL(parameters.getType(),
-                parameters.getNamespace(),
-                parameters.getName(),
-                parameters.getVersion(),
-                parameters.getQualifiers(),
-                parameters.getSubpath());
+                    parameters.getSubpath());
             assertPurlEquals(parameters, purl);
             assertEquals(canonicalPurl, purl.canonicalize(), "canonical PURL");
         }
@@ -146,14 +159,16 @@ class PackageURLTest {
 
     @ParameterizedTest
     @MethodSource
-    void constructorTypeNameSpace(String description,
-                                  @Nullable String purlString,
-                                  PurlParameters parameters,
-                                  @Nullable String canonicalPurl,
-                                  boolean invalid) throws Exception {
+    void constructorTypeNameSpace(
+            String description,
+            @Nullable String purlString,
+            PurlParameters parameters,
+            @Nullable String canonicalPurl,
+            boolean invalid)
+            throws Exception {
         if (invalid) {
-            assertThrows(getExpectedException(parameters),
-                () -> new PackageURL(parameters.getType(), parameters.getName()));
+            assertThrows(
+                    getExpectedException(parameters), () -> new PackageURL(parameters.getType(), parameters.getName()));
         } else {
             PackageURL purl = new PackageURL(parameters.getType(), parameters.getName());
             assertPurlEquals(parameters, purl);
@@ -173,7 +188,9 @@ class PackageURLTest {
     }
 
     private static Class<? extends Exception> getExpectedException(PurlParameters json) {
-        return json.getType() == null || json.getName() == null ? NullPointerException.class : MalformedPackageURLException.class;
+        return json.getType() == null || json.getName() == null
+                ? NullPointerException.class
+                : MalformedPackageURLException.class;
     }
 
     private static Class<? extends Exception> getExpectedException(@Nullable String purl) {
