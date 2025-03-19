@@ -1,0 +1,29 @@
+[
+  {
+    "description": "empty fragment",
+    "purl": "pkg:generic/namespace/name@1.0.0#",
+    "type": "generic",
+    "namespace": "namespace",
+    "name": "name",
+    "version": "1.0.0",
+    "canonical_purl": "pkg:generic/namespace/name@1.0.0",
+    "is_invalid": false
+  },
+  {
+    "description": "value with `=`",
+    "purl": "pkg:generic/namespace/name@1.0.0?key=value==",
+    "type": "generic",
+    "namespace": "namespace",
+    "name": "name",
+    "version": "1.0.0",
+    "qualifiers": {
+      "key": "value=="
+    },
+    "canonical_purl": "pkg:generic/namespace/name@1.0.0?key=value%3D%3D",
+    "is_invalid": false
+  },
+  {
+    "description": "everything null",
+    "is_invalid": true
+  }
+]

@@ -23,23 +23,14 @@ package com.github.packageurl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.util.Collections;
 import java.util.Locale;
-import java.util.Map;
-import java.util.TreeMap;
-import java.util.stream.IntStream;
 import java.util.stream.Stream;
-
-import org.json.JSONArray;
-import org.json.JSONObject;
-import org.json.JSONTokener;
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
@@ -69,18 +60,6 @@ class PackageURLTest {
         Locale.setDefault(DEFAULT_LOCALE);
     }
 
-    private static Stream<Arguments> getTestData() throws IOException {
-        return getTestDataFromFile("test-suite-data.json");
-    }
-
-    private static Stream<Arguments> getTestDataFromFile(String name) throws IOException {
-        try (InputStream is = PackageURLTest.class.getResourceAsStream("/" + name)) {
-            assertNotNull(is);
-            JSONArray jsonArray = new JSONArray(new JSONTokener(is));
-            return IntStream.range(0, jsonArray.length()).mapToObj(jsonArray::getJSONObject).map(PackageURLTest::createTestDefinition);
-        }
-    }
-
     @Test
     void validPercentEncoding() throws MalformedPackageURLException {
         PackageURL purl = new PackageURL("maven", "com.google.summit", "summit-ast", "2.2.0\n", null, null);
@@ -106,171 +85,103 @@ class PackageURLTest {
         assertEquals("Invalid percent encoding char 2 at offset 2 with value 'G'", t4.getMessage());
     }
 
-    private static Arguments createTestDefinition(JSONObject testDefinition) {
-        JSONObject jsonQualifiers = testDefinition.optJSONObject("qualifiers");
-        Map<String, Object> qualifiers = (jsonQualifiers != null && !jsonQualifiers.isEmpty()) ? jsonQualifiers.toMap() : Collections.emptyMap();
-        return Arguments.of(
-                testDefinition.getString("description"),
-                testDefinition.getString("purl"),
-                testDefinition.optString("canonical_purl"),
-                testDefinition.optString("type"),
-                testDefinition.optString("namespace", null),
-                testDefinition.optString("name", null),
-                testDefinition.optString("version", null),
-                qualifiers,
-                testDefinition.optString("subpath", null),
-                testDefinition.getBoolean("is_invalid"));
+    static Stream<Arguments> constructorParsing() throws IOException {
+        return PurlParameters.getTestDataFromFiles("test-suite-data.json",
+            "custom-suite.json",
+            "string-constructor-only.json");
     }
 
     @DisplayName("Test constructor parsing")
     @ParameterizedTest(name = "{0}: ''{1}''")
-    @MethodSource("getTestData")
-    void constructorParsing(String description, String purlString, String cpurlString, String type, String namespace, String name, String version, Map<String, String> qualifiers, String subpath, boolean invalid) throws Exception {
+    @MethodSource
+    void constructorParsing(String description,
+                            @Nullable String purlString,
+                            PurlParameters parameters,
+                            @Nullable String canonicalPurl,
+                            boolean invalid) throws Exception {
         if (invalid) {
-            try {
-                PackageURL purl = new PackageURL(purlString);
-                fail("Invalid purl should have caused an exception: " + purl);
-            } catch (MalformedPackageURLException e) {
-                assertNotNull(e.getMessage());
-            }
-
-            return;
+            assertThrows(getExpectedException(purlString), () -> new PackageURL(purlString));
+        } else {
+            PackageURL purl = new PackageURL(purlString);
+            assertPurlEquals(parameters, purl);
+            assertEquals(canonicalPurl, purl.canonicalize(), "canonical PURL");
         }
+    }
 
-        PackageURL purl = new PackageURL(purlString);
-
-        assertEquals("pkg", purl.getScheme());
-        assertEquals(type, purl.getType());
-        assertEquals(namespace, purl.getNamespace());
-        assertEquals(name, purl.getName());
-        assertEquals(version, purl.getVersion());
-        assertEquals(qualifiers, purl.getQualifiers());
-        assertEquals(subpath, purl.getSubpath());
-        assertEquals(cpurlString, purl.canonicalize());
+    static Stream<Arguments> constructorParameters() throws IOException {
+        return PurlParameters.getTestDataFromFiles("test-suite-data.json", "custom-suite.json", "components-constructor-only.json");
     }
 
     @DisplayName("Test constructor parameters")
-    @ParameterizedTest(name = "{0}: ({3}, {4}, {5}, {6}, {7}, {8})")
-    @MethodSource("getTestData")
-    void constructorParameters(String description, String purlString, String cpurlString, String type, String namespace, String name, String version, Map<String, String> qualifiers, String subpath, boolean invalid) throws MalformedPackageURLException {
+    @ParameterizedTest(name = "{0}: {2}")
+    @MethodSource
+    void constructorParameters(String description,
+                               @Nullable String purlString,
+                               PurlParameters parameters,
+                               @Nullable String canonicalPurl,
+                               boolean invalid) throws Exception {
         if (invalid) {
-            try {
-                PackageURL purl = new PackageURL(type, namespace, name, version, qualifiers, subpath);
-                fail("Invalid package url components should have caused an exception: " + purl);
-            } catch (NullPointerException | MalformedPackageURLException e) {
-                assertNotNull(e.getMessage());
-            }
-
-            return;
+            assertThrows(getExpectedException(parameters),
+                () -> new PackageURL(parameters.getType(),
+                    parameters.getNamespace(),
+                    parameters.getName(),
+                    parameters.getVersion(),
+                    parameters.getQualifiers(),
+                    parameters.getSubpath()));
+        } else {
+            PackageURL purl = new PackageURL(parameters.getType(),
+                parameters.getNamespace(),
+                parameters.getName(),
+                parameters.getVersion(),
+                parameters.getQualifiers(),
+                parameters.getSubpath());
+            assertPurlEquals(parameters, purl);
+            assertEquals(canonicalPurl, purl.canonicalize(), "canonical PURL");
         }
-
-        PackageURL purl = new PackageURL(type, namespace, name, version, qualifiers, subpath);
-
-        assertEquals(cpurlString, purl.canonicalize());
-        assertEquals("pkg", purl.getScheme());
-        assertEquals(type, purl.getType());
-        assertEquals(namespace, purl.getNamespace());
-        assertEquals(name, purl.getName());
-        assertEquals(version, purl.getVersion());
-        assertEquals(qualifiers, purl.getQualifiers());
-        assertEquals(subpath, purl.getSubpath());
     }
 
-    @Test
-    void constructor() throws MalformedPackageURLException {
-        PackageURL purl = new PackageURL("pkg:generic/namespace/name@1.0.0#");
-        assertEquals("generic", purl.getType());
-        assertNull(purl.getSubpath());
-
-        purl = new PackageURL("pkg:generic/namespace/name@1.0.0?key=value==");
-        assertEquals("generic", purl.getType());
-        assertNotNull(purl.getQualifiers());
-        assertEquals(1, purl.getQualifiers().size());
-        assertTrue(purl.getQualifiers().containsValue("value=="));
-
-        purl = new PackageURL("validtype", "name");
-        assertNotNull(purl);
-
+    static Stream<Arguments> constructorTypeNameSpace() throws IOException {
+        return PurlParameters.getTestDataFromFiles("type-namespace-constructor-only.json");
     }
 
-    @Test
-    void constructorWithEmptyType() {
-        assertThrowsExactly(MalformedPackageURLException.class, () -> new PackageURL("", "name"), "constructor with an empty type should have thrown an error and this line should not be reached");
+    @ParameterizedTest
+    @MethodSource
+    void constructorTypeNameSpace(String description,
+                                  @Nullable String purlString,
+                                  PurlParameters parameters,
+                                  @Nullable String canonicalPurl,
+                                  boolean invalid) throws Exception {
+        if (invalid) {
+            assertThrows(getExpectedException(parameters),
+                () -> new PackageURL(parameters.getType(), parameters.getName()));
+        } else {
+            PackageURL purl = new PackageURL(parameters.getType(), parameters.getName());
+            assertPurlEquals(parameters, purl);
+            assertEquals(canonicalPurl, purl.canonicalize(), "canonical PURL");
+        }
     }
 
-    @Test
-    void constructorWithInvalidCharsType() {
-        assertThrowsExactly(MalformedPackageURLException.class, () -> new PackageURL("invalid^type", "name"), "constructor with `invalid^type` should have thrown an error and this line should not be reached");
+    private static void assertPurlEquals(PurlParameters expected, PackageURL actual) {
+        assertEquals("pkg", actual.getScheme(), "scheme");
+        assertEquals(expected.getType(), actual.getType(), "type");
+        assertEquals(emptyToNull(expected.getNamespace()), actual.getNamespace(), "namespace");
+        assertEquals(expected.getName(), actual.getName(), "name");
+        assertEquals(emptyToNull(expected.getVersion()), actual.getVersion(), "version");
+        assertEquals(emptyToNull(expected.getSubpath()), actual.getSubpath(), "subpath");
+        assertNotNull(actual.getQualifiers(), "qualifiers");
+        assertEquals(actual.getQualifiers(), expected.getQualifiers(), "qualifiers");
     }
 
-    @Test
-    void constructorWithInvalidNumberType() {
-        assertThrowsExactly(MalformedPackageURLException.class, () -> new PackageURL("0invalid", "name"), "constructor with `0invalid` should have thrown an error and this line should not be reached");
+    private static Class<? extends Exception> getExpectedException(PurlParameters json) {
+        return json.getType() == null || json.getName() == null ? NullPointerException.class : MalformedPackageURLException.class;
     }
 
-    @Test
-    void constructorWithInvalidSubpath() {
-        assertThrowsExactly(MalformedPackageURLException.class, () -> new PackageURL("pkg:GOLANG/google.golang.org/genproto@abcdedf#invalid/%2F/subpath"), "constructor with `invalid/%2F/subpath` should have thrown an error and this line should not be reached");
+    private static Class<? extends Exception> getExpectedException(@Nullable String purl) {
+        return purl == null ? NullPointerException.class : MalformedPackageURLException.class;
     }
 
-
-    @Test
-    void constructorWithNullPurl() {
-        assertThrowsExactly(NullPointerException.class, () -> new PackageURL(null), "constructor with null purl should have thrown an error and this line should not be reached");
-    }
-
-    @Test
-    void constructorWithEmptyPurl() {
-        assertThrowsExactly(MalformedPackageURLException.class, () -> new PackageURL(""), "constructor with empty purl should have thrown an error and this line should not be reached");
-    }
-
-    @Test
-    void constructorWithPortNumber() {
-        assertThrowsExactly(MalformedPackageURLException.class, () -> new PackageURL("pkg://generic:8080/name"), "constructor with port number should have thrown an error and this line should not be reached");
-    }
-
-    @Test
-    void constructorWithUsername() {
-        assertThrowsExactly(MalformedPackageURLException.class, () -> new PackageURL("pkg://user@generic/name"), "constructor with username should have thrown an error and this line should not be reached");
-    }
-
-    @Test
-    void constructorWithInvalidUrl() {
-        assertThrowsExactly(MalformedPackageURLException.class, () -> new PackageURL("invalid url"), "constructor with invalid url should have thrown an error and this line should not be reached");
-    }
-
-    @Test
-    void constructorWithDuplicateQualifiers() {
-        assertThrowsExactly(MalformedPackageURLException.class, () -> new PackageURL("pkg://generic/name?key=one&key=two"), "constructor with url with duplicate qualifiers should have thrown an error and this line should not be reached");
-    }
-
-    @Test
-    void constructorDuplicateQualifiersMixedCase() {
-        assertThrowsExactly(MalformedPackageURLException.class, () -> new PackageURL("pkg://generic/name?key=one&KEY=two"), "constructor with url with duplicate qualifiers should have thrown an error and this line should not be reached");
-    }
-
-    @Test
-    void constructorWithUppercaseKey() throws MalformedPackageURLException {
-        PackageURL purl = new PackageURL("pkg://generic/name?KEY=one");
-        assertEquals(1, purl.getQualifiers().size(), "qualifier count");
-        assertEquals("one", purl.getQualifiers().get("key"));
-        Map<String, String> qualifiers = new TreeMap<>();
-        qualifiers.put("key", "one");
-        PackageURL purl2 = new PackageURL("generic", null, "name", null, qualifiers, null);
-        assertEquals(purl, purl2);
-    }
-
-    @Test
-    void constructorWithEmptyKey() throws MalformedPackageURLException {
-        PackageURL purl = new PackageURL("pkg://generic/name?KEY");
-        assertEquals(0, purl.getQualifiers().size(), "qualifier count");
-        Map<String, String> qualifiers = new TreeMap<>();
-        qualifiers.put("KEY", null);
-        PackageURL purl2 = new PackageURL("generic", null, "name", null, qualifiers, null);
-        assertEquals(purl, purl2);
-        qualifiers.put("KEY", "");
-        PackageURL purl3 = new PackageURL("generic", null, "name", null, qualifiers, null);
-        assertEquals(purl2, purl3);
+    private static @Nullable String emptyToNull(@Nullable String value) {
+        return value == null || value.isEmpty() ? null : value;
     }
 
     @Test

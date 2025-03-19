@@ -1,0 +1,27 @@
+[
+  {
+    "description": "valid",
+    "type": "validtype",
+    "name": "name",
+    "canonical_purl": "pkg:validtype/name",
+    "is_invalid": false
+  },
+  {
+    "description": "constructor with an empty type should have thrown an error",
+    "type": "",
+    "name": "name",
+    "is_invalid": true
+  },
+  {
+    "description": "constructor with `invalid^type` should have thrown an error",
+    "type": "invalid^type",
+    "name": "name",
+    "is_invalid": true
+  },
+  {
+    "description": "constructor with `0invalid` should have thrown an error",
+    "type": "0invalid",
+    "name": "name",
+    "is_invalid": true
+  }
+]

@@ -1,0 +1,49 @@
+[
+  {
+    "description": "minimal valid PURL",
+    "type": "my.type-9+",
+    "name": "name",
+    "canonical_purl": "pkg:my.type-9+/name",
+    "is_invalid": false
+  },
+  {
+    "description": "PURL with all components",
+    "type": "type",
+    "namespace": "namespace",
+    "name": "name",
+    "version": "version",
+    "qualifiers": {
+      "key": "value"
+    },
+    "subpath": "subpath",
+    "canonical_purl": "pkg:type/namespace/name@version?key=value#subpath",
+    "is_invalid": false
+  },
+  {
+    "description": "Non alphanumeric key",
+    "type": "generic",
+    "namespace": "namespace",
+    "name": "name",
+    "version": "version",
+    "qualifiers": {
+      "key_1.1-": "value"
+    },
+    "subpath": "subpath",
+    "canonical_purl": "pkg:generic/namespace/name@version?key_1.1-=value#subpath",
+    "is_invalid": false
+  },
+  {
+    "description": "Two qualifiers",
+    "type": "generic",
+    "namespace": "",
+    "name": "name",
+    "version": "version",
+    "qualifiers": {
+      "key": "value",
+      "next": "value"
+    },
+    "subpath": "",
+    "canonical_purl": "pkg:generic/name@version?key=value&next=value",
+    "is_invalid": false
+  }
+]

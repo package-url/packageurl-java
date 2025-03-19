@@ -1,0 +1,69 @@
+[
+  {
+    "description": "constructor with `invalid/%2F/subpath` should have thrown an error",
+    "purl": "pkg:GOLANG/google.golang.org/genproto@abcdedf#invalid/%2F/subpath",
+    "is_invalid": true
+  },
+  {
+    "description": "constructor with null purl",
+    "purl": null,
+    "is_invalid": true
+  },
+  {
+    "description": "constructor with empty purl",
+    "purl": "",
+    "is_invalid": true
+  },
+  {
+    "description": "constructor with port number",
+    "purl": "pkg://generic:8080/name",
+    "is_invalid": true
+  },
+  {
+    "description": "constructor with username",
+    "purl": "pkg://user@generic/name",
+    "is_invalid": true
+  },
+  {
+    "description": "constructor with invalid url",
+    "purl": "invalid url",
+    "is_invalid": true
+  },
+  {
+    "description": "constructor with url with duplicate qualifiers",
+    "purl": "pkg://generic/name?key=one&key=two",
+    "is_invalid": true
+  },
+  {
+    "description": "constructor with url with duplicate qualifiers",
+    "purl": "pkg://generic/name?key=one&KEY=two",
+    "is_invalid": true
+  },
+  {
+    "description": "constructor with upper case key",
+    "purl": "pkg://generic/name?KEY=one",
+    "type": "generic",
+    "name": "name",
+    "qualifiers": {
+      "key": "one"
+    },
+    "canonical_purl": "pkg:generic/name?key=one",
+    "is_invalid": false
+  },
+  {
+    "description": "constructor with empty key",
+    "purl": "pkg://generic/name?KEY=",
+    "type": "generic",
+    "name": "name",
+    "canonical_purl": "pkg:generic/name",
+    "is_invalid": false
+  },
+  {
+    "description": "constructor with null key",
+    "purl": "pkg://generic/name?KEY",
+    "type": "generic",
+    "name": "name",
+    "canonical_purl": "pkg:generic/name",
+    "is_invalid": false
+  }
+]

@@ -492,14 +492,6 @@
                 </executions>
             </plugin>
         </plugins>
-        <testResources>
-            <testResource>
-                <directory>${project.basedir}/src/test/resources</directory>
-                <includes>
-                    <include>test-suite-data.json</include>
-                </includes>
-            </testResource>
-        </testResources>
     </build>
 
     <profiles>
