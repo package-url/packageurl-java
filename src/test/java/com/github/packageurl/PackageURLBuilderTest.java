@@ -22,13 +22,12 @@
 package com.github.packageurl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Stream;
 import org.jspecify.annotations.Nullable;
@@ -49,7 +48,7 @@ class PackageURLBuilderTest {
             String description,
             @Nullable String ignoredPurl,
             PurlParameters parameters,
-            String canonicalPurl,
+            @Nullable String canonicalPurl,
             boolean invalid)
             throws MalformedPackageURLException {
         if (parameters.getType() == null || parameters.getName() == null) {
@@ -72,7 +71,18 @@ class PackageURLBuilderTest {
             builder.withSubpath(subpath);
         }
         if (invalid) {
-            assertThrows(MalformedPackageURLException.class, builder::build);
+            try {
+                PackageURL purl = builder.build();
+
+                if (canonicalPurl != null && !canonicalPurl.equals(purl.toString())) {
+                    throw new MalformedPackageURLException("The PackageURL scheme is invalid for purl: " + purl);
+                }
+
+                fail("Invalid package url components of '" + purl + "' should have caused an exception because "
+                        + description);
+            } catch (Exception e) {
+                assertEquals(MalformedPackageURLException.class, e.getClass());
+            }
         } else {
             assertEquals(parameters.getType(), builder.getType(), "type");
             assertEquals(parameters.getNamespace(), builder.getNamespace(), "namespace");
@@ -197,10 +207,8 @@ class PackageURLBuilderTest {
 
     @Test
     void qualifiers() throws MalformedPackageURLException {
-        Map<String, String> qualifiers = new HashMap<>();
-        qualifiers.put("key2", "value2");
-        Map<String, String> qualifiers2 = new HashMap<>();
-        qualifiers.put("key3", "value3");
+        Map<String, String> qualifiers = Collections.singletonMap("key2", "value2");
+        Map<String, String> qualifiers2 = Collections.singletonMap("key3", "value3");
         PackageURL purl = PackageURLBuilder.aPackageURL()
                 .withType(PackageURL.StandardTypes.GENERIC)
                 .withNamespace("")

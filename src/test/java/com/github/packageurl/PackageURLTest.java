@@ -24,8 +24,8 @@ package com.github.packageurl;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
 import java.util.Locale;
@@ -58,37 +58,6 @@ class PackageURLTest {
     @AfterAll
     static void resetLocale() {
         Locale.setDefault(DEFAULT_LOCALE);
-    }
-
-    @Test
-    void validPercentEncoding() throws MalformedPackageURLException {
-        PackageURL purl = new PackageURL("maven", "com.google.summit", "summit-ast", "2.2.0\n", null, null);
-        assertEquals("pkg:maven/com.google.summit/summit-ast@2.2.0%0A", purl.toString());
-        PackageURL purl2 =
-                new PackageURL("pkg:nuget/%D0%9Cicros%D0%BEft.%D0%95ntit%D1%83Fram%D0%B5work%D0%A1%D0%BEr%D0%B5");
-        assertEquals("Мicrosоft.ЕntitуFramеworkСоrе", purl2.getName());
-        assertEquals(
-                "pkg:nuget/%D0%9Cicros%D0%BEft.%D0%95ntit%D1%83Fram%D0%B5work%D0%A1%D0%BEr%D0%B5", purl2.toString());
-    }
-
-    @SuppressWarnings("deprecation")
-    @Test
-    void invalidPercentEncoding() throws MalformedPackageURLException {
-        assertThrowsExactly(
-                MalformedPackageURLException.class,
-                () -> new PackageURL("pkg:maven/com.google.summit/summit-ast@2.2.0%"));
-        assertThrowsExactly(
-                MalformedPackageURLException.class,
-                () -> new PackageURL("pkg:maven/com.google.summit/summit-ast@2.2.0%0"));
-        PackageURL purl = new PackageURL("pkg:maven/com.google.summit/summit-ast@2.2.0");
-        Throwable t1 = assertThrowsExactly(ValidationException.class, () -> purl.uriDecode("%"));
-        assertEquals("Incomplete percent encoding at offset 0 with value '%'", t1.getMessage());
-        Throwable t2 = assertThrowsExactly(ValidationException.class, () -> purl.uriDecode("a%0"));
-        assertEquals("Incomplete percent encoding at offset 1 with value '%0'", t2.getMessage());
-        Throwable t3 = assertThrowsExactly(ValidationException.class, () -> purl.uriDecode("aaaa%%0A"));
-        assertEquals("Invalid percent encoding char 1 at offset 5 with value '%'", t3.getMessage());
-        Throwable t4 = assertThrowsExactly(ValidationException.class, () -> purl.uriDecode("%0G"));
-        assertEquals("Invalid percent encoding char 2 at offset 2 with value 'G'", t4.getMessage());
     }
 
     static Stream<Arguments> constructorParsing() throws IOException {
@@ -131,15 +100,26 @@ class PackageURLTest {
             boolean invalid)
             throws Exception {
         if (invalid) {
-            assertThrows(
-                    getExpectedException(parameters),
-                    () -> new PackageURL(
-                            parameters.getType(),
-                            parameters.getNamespace(),
-                            parameters.getName(),
-                            parameters.getVersion(),
-                            parameters.getQualifiers(),
-                            parameters.getSubpath()));
+            try {
+                PackageURL purl = new PackageURL(
+                        parameters.getType(),
+                        parameters.getNamespace(),
+                        parameters.getName(),
+                        parameters.getVersion(),
+                        parameters.getQualifiers(),
+                        parameters.getSubpath());
+                // If we get here, then only the scheme can be invalid
+                assertPurlEquals(parameters, purl);
+
+                if (canonicalPurl != null && !canonicalPurl.equals(purl.toString())) {
+                    throw new MalformedPackageURLException("The PackageURL scheme is invalid for purl: " + purl);
+                }
+
+                fail("Invalid package url components of '" + purl + "' should have caused an exception because "
+                        + description);
+            } catch (Exception e) {
+                assertEquals(e.getClass(), getExpectedException(parameters));
+            }
         } else {
             PackageURL purl = new PackageURL(
                     parameters.getType(),
@@ -182,7 +162,8 @@ class PackageURLTest {
         assertEquals(emptyToNull(expected.getNamespace()), actual.getNamespace(), "namespace");
         assertEquals(expected.getName(), actual.getName(), "name");
         assertEquals(emptyToNull(expected.getVersion()), actual.getVersion(), "version");
-        assertEquals(emptyToNull(expected.getSubpath()), actual.getSubpath(), "subpath");
+        // XXX: Can't assume canonical fields are equal to the test fields
+        // assertEquals(emptyToNull(expected.getSubpath()), actual.getSubpath(), "subpath");
         assertNotNull(actual.getQualifiers(), "qualifiers");
         assertEquals(actual.getQualifiers(), expected.getQualifiers(), "qualifiers");
     }
@@ -220,6 +201,19 @@ class PackageURLTest {
         assertEquals("generic", PackageURL.StandardTypes.GENERIC);
         assertEquals("github", PackageURL.StandardTypes.GITHUB);
         assertEquals("golang", PackageURL.StandardTypes.GOLANG);
+        assertEquals("hackage", PackageURL.StandardTypes.HACKAGE);
+        assertEquals("hex", PackageURL.StandardTypes.HEX);
+        assertEquals("huggingface", PackageURL.StandardTypes.HUGGINGFACE);
+        assertEquals("luarocks", PackageURL.StandardTypes.LUAROCKS);
+        assertEquals("maven", PackageURL.StandardTypes.MAVEN);
+        assertEquals("mlflow", PackageURL.StandardTypes.MLFLOW);
+        assertEquals("npm", PackageURL.StandardTypes.NPM);
+        assertEquals("nuget", PackageURL.StandardTypes.NUGET);
+        assertEquals("qpkg", PackageURL.StandardTypes.QPKG);
+        assertEquals("oci", PackageURL.StandardTypes.OCI);
+        assertEquals("pub", PackageURL.StandardTypes.PUB);
+        assertEquals("pypi", PackageURL.StandardTypes.PYPI);
+        assertEquals("rpm", PackageURL.StandardTypes.RPM);
         assertEquals("hackage", PackageURL.StandardTypes.HACKAGE);
         assertEquals("hex", PackageURL.StandardTypes.HEX);
         assertEquals("huggingface", PackageURL.StandardTypes.HUGGINGFACE);

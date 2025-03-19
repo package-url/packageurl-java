@@ -38,20 +38,53 @@ import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.params.provider.Arguments;
 
 class PurlParameters {
+    private final @Nullable String type;
+
+    private final @Nullable String namespace;
+
+    private final @Nullable String name;
+
+    private final @Nullable String version;
+
+    private final Map<String, String> qualifiers;
+
+    private final @Nullable String subpath;
+
+    private PurlParameters(
+            @Nullable String type,
+            @Nullable String namespace,
+            @Nullable String name,
+            @Nullable String version,
+            @Nullable JSONObject qualifiers,
+            @Nullable String subpath) {
+        this.type = type;
+        this.namespace = namespace;
+        this.name = name;
+        this.version = version;
+        if (qualifiers != null) {
+            this.qualifiers = qualifiers.toMap().entrySet().stream()
+                    .collect(
+                            HashMap::new,
+                            (m, e) -> m.put(e.getKey(), Objects.toString(e.getValue(), null)),
+                            HashMap::putAll);
+        } else {
+            this.qualifiers = Collections.emptyMap();
+        }
+        this.subpath = subpath;
+    }
+
     static Stream<Arguments> getTestDataFromFiles(String... names) throws IOException {
-        Stream<Arguments> result = Stream.empty();
+        JSONArray jsonArray = new JSONArray();
+
         for (String name : names) {
             try (InputStream is = PackageURLTest.class.getResourceAsStream("/" + name)) {
                 assertNotNull(is);
-                JSONArray jsonArray = new JSONArray(new JSONTokener(is));
-                result = Stream.concat(
-                        result,
-                        IntStream.range(0, jsonArray.length())
-                                .mapToObj(jsonArray::getJSONObject)
-                                .map(PurlParameters::createTestDefinition));
+                jsonArray.putAll(new JSONArray(new JSONTokener(is)));
             }
         }
-        return result;
+        return IntStream.range(0, jsonArray.length())
+                .mapToObj(jsonArray::getJSONObject)
+                .map(PurlParameters::createTestDefinition);
     }
 
     /**
@@ -76,36 +109,6 @@ class PurlParameters {
                         testDefinition.optString("subpath", null)),
                 testDefinition.optString("canonical_purl"),
                 testDefinition.getBoolean("is_invalid"));
-    }
-
-    private final @Nullable String type;
-    private final @Nullable String namespace;
-    private final @Nullable String name;
-    private final @Nullable String version;
-    private final Map<String, String> qualifiers;
-    private final @Nullable String subpath;
-
-    private PurlParameters(
-            @Nullable String type,
-            @Nullable String namespace,
-            @Nullable String name,
-            @Nullable String version,
-            @Nullable JSONObject qualifiers,
-            @Nullable String subpath) {
-        this.type = type;
-        this.namespace = namespace;
-        this.name = name;
-        this.version = version;
-        if (qualifiers != null) {
-            this.qualifiers = qualifiers.toMap().entrySet().stream()
-                    .collect(
-                            HashMap::new,
-                            (m, e) -> m.put(e.getKey(), Objects.toString(e.getValue(), null)),
-                            HashMap::putAll);
-        } else {
-            this.qualifiers = Collections.emptyMap();
-        }
-        this.subpath = subpath;
     }
 
     public @Nullable String getType() {
