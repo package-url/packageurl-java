@@ -569,7 +569,7 @@ public final class PackageURL implements Serializable {
     }
 
     private static int toLowerCase(int c) {
-        return (c ^ 0x20);
+        return isUpperCase(c) ? (c ^ 0x20) : c;
     }
 
     private static String toLowerCase(String s) {
@@ -583,9 +583,7 @@ public final class PackageURL implements Serializable {
         int length = chars.length;
 
         for (int i = pos; i < length; i++) {
-            if (isUpperCase(chars[i])) {
-                chars[i] = (char) toLowerCase(chars[i]);
-            }
+            chars[i] = (char) toLowerCase(chars[i]);
         }
 
         return new String(chars);
