@@ -66,7 +66,6 @@ public final class PackageURL implements Serializable {
      * @param purl a valid package URL string to parse
      * @throws MalformedPackageURLException if parsing fails
      * @throws NullPointerException if {@code purl} is {@code null}
-     * @since 1.0.0
      */
     public PackageURL(final String purl) throws MalformedPackageURLException {
         parse(requireNonNull(purl, "purl"));
@@ -79,7 +78,6 @@ public final class PackageURL implements Serializable {
      * @param type the type of package (i.e. maven, npm, gem, etc)
      * @param name the name of the package
      * @throws MalformedPackageURLException if parsing fails
-     * @since 1.0.0
      */
     public PackageURL(final String type, final String name) throws MalformedPackageURLException {
         this(type, null, name, null, (Map<String, String>) null, null);
@@ -96,7 +94,6 @@ public final class PackageURL implements Serializable {
      * @param subpath the subpath string
      * @throws MalformedPackageURLException if parsing fails
      * @throws NullPointerException if {@code type} or {@code name} are {@code null}
-     * @since 1.0.0
      * @deprecated use {@link #PackageURL(String, String, String, String, Map, String)} instead
      */
     @Deprecated
@@ -203,7 +200,6 @@ public final class PackageURL implements Serializable {
      * Returns the package url scheme.
      *
      * @return the scheme
-     * @since 1.0.0
      */
     public String getScheme() {
         return SCHEME;
@@ -213,7 +209,6 @@ public final class PackageURL implements Serializable {
      * Returns the package "type" or package "protocol" such as maven, npm, nuget, gem, pypi, etc.
      *
      * @return the type
-     * @since 1.0.0
      */
     public String getType() {
         return type;
@@ -223,7 +218,6 @@ public final class PackageURL implements Serializable {
      * Returns the name prefix such as a Maven groupid, a Docker image owner, a GitHub user or organization.
      *
      * @return the namespace
-     * @since 1.0.0
      */
     public @Nullable String getNamespace() {
         return namespace;
@@ -233,7 +227,6 @@ public final class PackageURL implements Serializable {
      * Returns the name of the package.
      *
      * @return the name of the package
-     * @since 1.0.0
      */
     public String getName() {
         return name;
@@ -243,7 +236,6 @@ public final class PackageURL implements Serializable {
      * Returns the version of the package.
      *
      * @return the version of the package
-     * @since 1.0.0
      */
     public @Nullable String getVersion() {
         return version;
@@ -254,7 +246,6 @@ public final class PackageURL implements Serializable {
      * This method returns an UnmodifiableMap.
      *
      * @return all the qualifiers, or an empty map if none are set
-     * @since 1.0.0
      */
     public Map<String, String> getQualifiers() {
         return qualifiers != null ? Collections.unmodifiableMap(qualifiers) : Collections.emptyMap();
@@ -264,7 +255,6 @@ public final class PackageURL implements Serializable {
      * Returns extra subpath within a package, relative to the package root.
      *
      * @return the subpath
-     * @since 1.0.0
      */
     public @Nullable String getSubpath() {
         return subpath;
@@ -478,7 +468,6 @@ public final class PackageURL implements Serializable {
      * Returns the canonicalized representation of the purl.
      *
      * @return the canonicalized representation of the purl
-     * @since 1.0.0
      */
     public String canonicalize() {
         return canonicalize(false);
@@ -942,8 +931,6 @@ public final class PackageURL implements Serializable {
 
     /**
      * Convenience constants that defines common Package-URL 'type's.
-     *
-     * @since 1.0.0
      */
     public static final class StandardTypes {
         /**
@@ -1058,8 +1045,6 @@ public final class PackageURL implements Serializable {
         public static final String LUAROCKS = "luarocks";
         /**
          * Maven JARs and related artifacts.
-         *
-         * @since 1.0.0
          */
         public static final String MAVEN = "maven";
         /**
@@ -1076,14 +1061,10 @@ public final class PackageURL implements Serializable {
         public static final String NIX = "nix";
         /**
          * Node NPM packages.
-         *
-         * @since 1.0.0
          */
         public static final String NPM = "npm";
         /**
          * NuGet .NET packages.
-         *
-         * @since 1.0.0
          */
         public static final String NUGET = "nuget";
         /**

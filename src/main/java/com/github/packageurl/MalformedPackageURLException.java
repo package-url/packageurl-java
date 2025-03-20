@@ -34,8 +34,6 @@ public class MalformedPackageURLException extends Exception {
 
     /**
      * Constructs a {@code MalformedPackageURLException} with no detail message.
-     *
-     * @since 1.0.0
      */
     public MalformedPackageURLException() {}
 
@@ -44,7 +42,6 @@ public class MalformedPackageURLException extends Exception {
      * specified detail message.
      *
      * @param msg the detail message
-     * @since 1.0.0
      */
     public MalformedPackageURLException(@Nullable String msg) {
         super(msg);
