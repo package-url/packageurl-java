@@ -596,13 +596,6 @@ public final class PackageURL implements Serializable {
                 .orElse(-1);
     }
 
-    private static int indexOfUnsafeChar(final byte[] bytes, final int start) {
-        return IntStream.range(start, bytes.length)
-                .filter(i -> shouldEncode(bytes[i]))
-                .findFirst()
-                .orElse(-1);
-    }
-
     private static byte percentDecode(final byte[] bytes, final int start) {
         if (start + 2 >= bytes.length) {
             throw new ValidationException("Incomplete percent encoding at offset " + start + " with value '"
