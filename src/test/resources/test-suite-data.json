@@ -86,7 +86,7 @@
   {
     "description": "docker uses qualifiers and hash image id as versions",
     "purl": "pkg:docker/customer/dockerimage@sha256:244fd47e07d1004f0aed9c?repository_url=gcr.io",
-    "canonical_purl": "pkg:docker/customer/dockerimage@sha256%3A244fd47e07d1004f0aed9c?repository_url=gcr.io",
+    "canonical_purl": "pkg:docker/customer/dockerimage@sha256:244fd47e07d1004f0aed9c?repository_url=gcr.io",
     "type": "docker",
     "namespace": "customer",
     "name": "dockerimage",
@@ -110,7 +110,7 @@
   {
     "description": "maven often uses qualifiers",
     "purl": "pkg:Maven/org.apache.xmlgraphics/batik-anim@1.9.1?repositorY_url=repo.spring.io/release&classifier=sources",
-    "canonical_purl": "pkg:maven/org.apache.xmlgraphics/batik-anim@1.9.1?classifier=sources&repository_url=repo.spring.io%2Frelease",
+    "canonical_purl": "pkg:maven/org.apache.xmlgraphics/batik-anim@1.9.1?classifier=sources&repository_url=repo.spring.io/release",
     "type": "maven",
     "namespace": "org.apache.xmlgraphics",
     "name": "batik-anim",
@@ -122,7 +122,7 @@
   {
     "description": "maven pom reference",
     "purl": "pkg:Maven/org.apache.xmlgraphics/batik-anim@1.9.1?repositorY_url=repo.spring.io/release&extension=pom",
-    "canonical_purl": "pkg:maven/org.apache.xmlgraphics/batik-anim@1.9.1?extension=pom&repository_url=repo.spring.io%2Frelease",
+    "canonical_purl": "pkg:maven/org.apache.xmlgraphics/batik-anim@1.9.1?extension=pom&repository_url=repo.spring.io/release",
     "type": "maven",
     "namespace": "org.apache.xmlgraphics",
     "name": "batik-anim",
@@ -314,7 +314,7 @@
   {
     "description": "valid debian purl containing a plus in the name and version",
     "purl": "pkg:deb/debian/g++-10@10.2.1+6",
-    "canonical_purl": "pkg:deb/debian/g%2B%2B-10@10.2.1%2B6",
+    "canonical_purl": "pkg:deb/debian/g++-10@10.2.1+6",
     "type": "deb",
     "namespace": "debian",
     "name": "g++-10",
