@@ -155,7 +155,7 @@ public final class PackageURL implements Serializable {
     private String type;
 
     /**
-     * The name prefix such as a Maven groupid, a Docker image owner, a GitHub user or organization.
+     * The name prefix such as a Maven groupId, a Docker image owner, a GitHub user or organization.
      * Optional and type-specific.
      */
     private @Nullable String namespace;
@@ -215,7 +215,7 @@ public final class PackageURL implements Serializable {
     }
 
     /**
-     * Returns the name prefix such as a Maven groupid, a Docker image owner, a GitHub user or organization.
+     * Returns the name prefix such as a Maven groupId, a Docker image owner, a GitHub user or organization.
      *
      * @return the namespace
      */
