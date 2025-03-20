@@ -630,43 +630,33 @@ public final class PackageURL implements Serializable {
         return ((byte) ((c1 << 4) + c2));
     }
 
-    public static String percentDecode(final String source) {
+    private static String percentDecode(final String source) {
         if (source.isEmpty()) {
             return source;
         }
 
         byte[] bytes = source.getBytes(StandardCharsets.UTF_8);
+        int i = indexOfPercentChar(bytes, 0);
 
-        int off = 0;
-        int idx = indexOfPercentChar(bytes, off);
-
-        if (idx == -1) {
+        if (i == -1) {
             return source;
         }
 
         ByteBuffer buffer = ByteBuffer.wrap(bytes);
+        buffer.position(i);
+        int length = buffer.capacity();
 
-        while (true) {
-            int len = idx - off;
+        while (i < length) {
+            byte b = bytes[i];
 
-            if (len > 0) {
-                buffer.put(bytes, off, len);
-                off += len;
+            if (isPercent(b)) {
+                buffer.put(percentDecode(bytes, i));
+                i += 2;
+            } else {
+                buffer.put(b);
             }
 
-            buffer.put(percentDecode(bytes, off));
-            off += 3;
-            idx = indexOfPercentChar(bytes, off);
-
-            if (idx == -1) {
-                int rem = bytes.length - off;
-
-                if (rem > 0) {
-                    buffer.put(bytes, off, rem);
-                }
-
-                break;
-            }
+            i++;
         }
 
         return new String(buffer.array(), 0, buffer.position(), StandardCharsets.UTF_8);
@@ -681,51 +671,30 @@ public final class PackageURL implements Serializable {
         return (c == PERCENT_CHAR);
     }
 
-    private static byte[] percentEncode(byte b) {
-        byte b1 = (byte) Character.toUpperCase(Character.forDigit((b >> 4) & 0xF, 16));
-        byte b2 = (byte) Character.toUpperCase(Character.forDigit(b & 0xF, 16));
-        return new byte[] {(byte) PERCENT_CHAR, b1, b2};
-    }
-
-    public static String percentEncode(final String source) {
+    private static String percentEncode(final String source) {
         if (source.isEmpty()) {
             return source;
         }
 
         byte[] bytes = source.getBytes(StandardCharsets.UTF_8);
+        int length = bytes.length;
+        ByteBuffer buffer = ByteBuffer.allocate(length * 3);
+        boolean changed = false;
 
-        int off = 0;
-        int idx = indexOfUnsafeChar(bytes, off);
-
-        if (idx == -1) {
-            return source;
-        }
-
-        ByteBuffer buffer = ByteBuffer.allocate(bytes.length * 3);
-
-        while (true) {
-            int len = idx - off;
-
-            if (len > 0) {
-                buffer.put(bytes, off, len);
-                off += len;
-            }
-
-            buffer.put(percentEncode(bytes[off++]));
-            idx = indexOfUnsafeChar(bytes, off);
-
-            if (idx == -1) {
-                int rem = bytes.length - off;
-
-                if (rem > 0) {
-                    buffer.put(bytes, off, rem);
-                }
-
-                break;
+        for (byte b : bytes) {
+            if (shouldEncode(b)) {
+                changed = true;
+                byte b1 = (byte) Character.toUpperCase(Character.forDigit((b >> 4) & 0xF, 16));
+                byte b2 = (byte) Character.toUpperCase(Character.forDigit(b & 0xF, 16));
+                buffer.put((byte) PERCENT_CHAR);
+                buffer.put(b1);
+                buffer.put(b2);
+            } else {
+                buffer.put(b);
             }
         }
 
-        return new String(buffer.array(), 0, buffer.position(), StandardCharsets.UTF_8);
+        return changed ? new String(buffer.array(), 0, buffer.position(), StandardCharsets.UTF_8) : source;
     }
 
     /**
