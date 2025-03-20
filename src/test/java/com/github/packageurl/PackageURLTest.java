@@ -23,7 +23,7 @@ package com.github.packageurl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -60,6 +60,37 @@ class PackageURLTest {
         Locale.setDefault(DEFAULT_LOCALE);
     }
 
+    @Test
+    void validPercentEncoding() throws MalformedPackageURLException {
+        PackageURL purl = new PackageURL("maven", "com.google.summit", "summit-ast", "2.2.0\n", null, null);
+        assertEquals("pkg:maven/com.google.summit/summit-ast@2.2.0%0A", purl.toString());
+        PackageURL purl2 =
+                new PackageURL("pkg:nuget/%D0%9Cicros%D0%BEft.%D0%95ntit%D1%83Fram%D0%B5work%D0%A1%D0%BEr%D0%B5");
+        assertEquals("Мicrosоft.ЕntitуFramеworkСоrе", purl2.getName());
+        assertEquals(
+                "pkg:nuget/%D0%9Cicros%D0%BEft.%D0%95ntit%D1%83Fram%D0%B5work%D0%A1%D0%BEr%D0%B5", purl2.toString());
+    }
+
+    @SuppressWarnings("deprecation")
+    @Test
+    void invalidPercentEncoding() throws MalformedPackageURLException {
+        assertThrowsExactly(
+                MalformedPackageURLException.class,
+                () -> new PackageURL("pkg:maven/com.google.summit/summit-ast@2.2.0%"));
+        assertThrowsExactly(
+                MalformedPackageURLException.class,
+                () -> new PackageURL("pkg:maven/com.google.summit/summit-ast@2.2.0%0"));
+        PackageURL purl = new PackageURL("pkg:maven/com.google.summit/summit-ast@2.2.0");
+        Throwable t1 = assertThrowsExactly(ValidationException.class, () -> purl.uriDecode("%"));
+        assertEquals("Incomplete percent encoding at offset 0 with value '%'", t1.getMessage());
+        Throwable t2 = assertThrowsExactly(ValidationException.class, () -> purl.uriDecode("a%0"));
+        assertEquals("Incomplete percent encoding at offset 1 with value '%0'", t2.getMessage());
+        Throwable t3 = assertThrowsExactly(ValidationException.class, () -> purl.uriDecode("aaaa%%0A"));
+        assertEquals("Invalid percent encoding char 1 at offset 5 with value '%'", t3.getMessage());
+        Throwable t4 = assertThrowsExactly(ValidationException.class, () -> purl.uriDecode("%0G"));
+        assertEquals("Invalid percent encoding char 2 at offset 2 with value 'G'", t4.getMessage());
+    }
+
     static Stream<Arguments> constructorParsing() throws IOException {
         return PurlParameters.getTestDataFromFiles(
                 "test-suite-data.json", "custom-suite.json", "string-constructor-only.json");
@@ -76,7 +107,7 @@ class PackageURLTest {
             boolean invalid)
             throws Exception {
         if (invalid) {
-            assertThrows(getExpectedException(purlString), () -> new PackageURL(purlString));
+            assertThrowsExactly(getExpectedException(purlString), () -> new PackageURL(purlString));
         } else {
             PackageURL purl = new PackageURL(purlString);
             assertPurlEquals(parameters, purl);
@@ -147,7 +178,7 @@ class PackageURLTest {
             boolean invalid)
             throws Exception {
         if (invalid) {
-            assertThrows(
+            assertThrowsExactly(
                     getExpectedException(parameters), () -> new PackageURL(parameters.getType(), parameters.getName()));
         } else {
             PackageURL purl = new PackageURL(parameters.getType(), parameters.getName());
