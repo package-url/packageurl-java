@@ -155,8 +155,8 @@ public final class PackageURL implements Serializable {
             final @Nullable String subpath)
             throws MalformedPackageURLException {
         this.type = toLowerCase(validateType(requireNonNull(type, "type")));
-        this.namespace = validateNamespace(namespace);
-        this.name = validateName(requireNonNull(name, "name"));
+        this.namespace = validateNamespace(this.type, namespace);
+        this.name = validateName(this.type, requireNonNull(name, "name"));
         this.version = validateVersion(type, version);
         this.qualifiers = parseQualifiers(qualifiers);
         this.subpath = validateSubpath(subpath);
@@ -274,7 +274,7 @@ public final class PackageURL implements Serializable {
         return subpath;
     }
 
-    private void validateScheme(final String value) throws MalformedPackageURLException {
+    private static void validateScheme(final String value) throws MalformedPackageURLException {
         if (!SCHEME.equals(value)) {
             throw new MalformedPackageURLException(
                     "The PackageURL scheme '" + value + "' is invalid. It should be '" + SCHEME + "'");
@@ -319,14 +319,16 @@ public final class PackageURL implements Serializable {
         }
     }
 
-    private @Nullable String validateNamespace(final @Nullable String value) throws MalformedPackageURLException {
+    private static @Nullable String validateNamespace(final String type, final @Nullable String value)
+            throws MalformedPackageURLException {
         if (isEmpty(value)) {
             return null;
         }
-        return validateNamespace(value.split("/"));
+        return validateNamespace(type, value.split("/"));
     }
 
-    private @Nullable String validateNamespace(final String[] values) throws MalformedPackageURLException {
+    private static @Nullable String validateNamespace(final String type, final String[] values)
+            throws MalformedPackageURLException {
         if (values.length == 0) {
             return null;
         }
@@ -360,7 +362,7 @@ public final class PackageURL implements Serializable {
         return retVal;
     }
 
-    private String validateName(final String value) throws MalformedPackageURLException {
+    private static String validateName(final String type, final String value) throws MalformedPackageURLException {
         if (value.isEmpty()) {
             throw new MalformedPackageURLException("The PackageURL name specified is invalid");
         }
@@ -391,7 +393,7 @@ public final class PackageURL implements Serializable {
         return temp;
     }
 
-    private @Nullable String validateVersion(final String type, final @Nullable String value) {
+    private static @Nullable String validateVersion(final String type, final @Nullable String value) {
         if (value == null) {
             return null;
         }
@@ -406,7 +408,7 @@ public final class PackageURL implements Serializable {
         }
     }
 
-    private @Nullable Map<String, String> validateQualifiers(final @Nullable Map<String, String> values)
+    private static @Nullable Map<String, String> validateQualifiers(final @Nullable Map<String, String> values)
             throws MalformedPackageURLException {
         if (values == null || values.isEmpty()) {
             return null;
@@ -436,7 +438,7 @@ public final class PackageURL implements Serializable {
         }
     }
 
-    private @Nullable String validateSubpath(final @Nullable String value) throws MalformedPackageURLException {
+    private static @Nullable String validateSubpath(final @Nullable String value) throws MalformedPackageURLException {
         if (isEmpty(value)) {
             return null;
         }
@@ -764,11 +766,11 @@ public final class PackageURL implements Serializable {
             // The 'remainder' should now consist of an optional namespace and the name
             index = remainder.lastIndexOf('/');
             if (index <= start) {
-                this.name = validateName(percentDecode(remainder.substring(start)));
+                this.name = validateName(this.type, percentDecode(remainder.substring(start)));
             } else {
-                this.name = validateName(percentDecode(remainder.substring(index + 1)));
+                this.name = validateName(this.type, percentDecode(remainder.substring(index + 1)));
                 remainder = remainder.substring(0, index);
-                this.namespace = validateNamespace(parsePath(remainder.substring(start), false));
+                this.namespace = validateNamespace(this.type, parsePath(remainder.substring(start), false));
             }
             verifyTypeConstraints(this.type, this.namespace, this.name);
         } catch (URISyntaxException e) {
@@ -782,7 +784,7 @@ public final class PackageURL implements Serializable {
      * @param namespace the purl namespace
      * @throws MalformedPackageURLException if constraints are not met
      */
-    private void verifyTypeConstraints(String type, @Nullable String namespace, @Nullable String name)
+    private static void verifyTypeConstraints(String type, @Nullable String namespace, @Nullable String name)
             throws MalformedPackageURLException {
         if (StandardTypes.MAVEN.equals(type)) {
             if (isEmpty(namespace) || isEmpty(name)) {
@@ -792,7 +794,7 @@ public final class PackageURL implements Serializable {
         }
     }
 
-    private @Nullable Map<String, String> parseQualifiers(final @Nullable Map<String, String> qualifiers)
+    private static @Nullable Map<String, String> parseQualifiers(final @Nullable Map<String, String> qualifiers)
             throws MalformedPackageURLException {
         if (qualifiers == null || qualifiers.isEmpty()) {
             return null;
@@ -812,7 +814,7 @@ public final class PackageURL implements Serializable {
     }
 
     @SuppressWarnings("StringSplitter") // reason: surprising behavior is okay in this case
-    private @Nullable Map<String, String> parseQualifiers(final String encodedString)
+    private static @Nullable Map<String, String> parseQualifiers(final String encodedString)
             throws MalformedPackageURLException {
         try {
             final TreeMap<String, String> results = Arrays.stream(encodedString.split("&"))
@@ -836,14 +838,14 @@ public final class PackageURL implements Serializable {
         }
     }
 
-    private String[] parsePath(final String path, final boolean isSubpath) {
+    private static String[] parsePath(final String path, final boolean isSubpath) {
         return Arrays.stream(path.split("/"))
                 .filter(segment -> !segment.isEmpty() && !(isSubpath && (".".equals(segment) || "..".equals(segment))))
                 .map(PackageURL::percentDecode)
                 .toArray(String[]::new);
     }
 
-    private String encodePath(final String path) {
+    private static String encodePath(final String path) {
         return Arrays.stream(path.split("/")).map(PackageURL::percentEncode).collect(Collectors.joining("/"));
     }
 
