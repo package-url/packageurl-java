@@ -31,6 +31,8 @@ import org.jspecify.annotations.Nullable;
 
 /**
  * A builder construct for Package-URL objects.
+ *
+ * @since 1.1.0
  */
 public final class PackageURLBuilder {
     private @Nullable String type = null;
@@ -53,14 +55,25 @@ public final class PackageURLBuilder {
         return new PackageURLBuilder();
     }
 
+    private static PackageURLBuilder toBuilder(PackageURL packageURL) {
+        return PackageURLBuilder.aPackageURL()
+                .withType(packageURL.getType())
+                .withNamespace(packageURL.getNamespace())
+                .withName(packageURL.getName())
+                .withVersion(packageURL.getVersion())
+                .withQualifiers(packageURL.getQualifiers())
+                .withSubpath(packageURL.getSubpath());
+    }
+
     /**
      * Obtains a reference to a new builder object initialized with the existing {@link PackageURL} object.
      *
      * @param packageURL the existing Package URL object
      * @return a new builder object
+     * @since 1.6.0
      */
     public static PackageURLBuilder aPackageURL(final PackageURL packageURL) {
-        return packageURL.toBuilder();
+        return toBuilder(packageURL);
     }
 
     /**
@@ -69,9 +82,10 @@ public final class PackageURLBuilder {
      * @param purl the existing Package URL string
      * @return a new builder object
      * @throws MalformedPackageURLException if an error occurs while parsing the input
+     * @since 1.6.0
      */
     public static PackageURLBuilder aPackageURL(final String purl) throws MalformedPackageURLException {
-        return new PackageURL(purl).toBuilder();
+        return toBuilder(new PackageURL(purl));
     }
 
     /**
@@ -143,7 +157,7 @@ public final class PackageURLBuilder {
      *     If {@code value} is empty or {@code null}, the given qualifier is removed instead.
      * </p>
      *
-     * @param key   the package qualifier key, not {@code null}
+     * @param key the package qualifier key, not {@code null}
      * @param value the package qualifier value or {@code null}
      * @return a reference to the builder
      * @throws NullPointerException if {@code key} is {@code null}
@@ -170,6 +184,7 @@ public final class PackageURLBuilder {
      * @param qualifiers the package qualifiers, or {@code null}
      * @return a reference to the builder
      * @see PackageURL#getQualifiers()
+     * @since 1.6.0
      */
     public PackageURLBuilder withQualifiers(final @Nullable Map<String, String> qualifiers) {
         if (qualifiers == null) {
@@ -190,6 +205,7 @@ public final class PackageURLBuilder {
      * @param key the package qualifier key to remove
      * @return a reference to the builder
      * @throws NullPointerException if {@code key} is {@code null}
+     * @since 1.5.0
      */
     public PackageURLBuilder withoutQualifier(final String key) {
         if (qualifiers != null) {
@@ -205,6 +221,7 @@ public final class PackageURLBuilder {
      * Removes a package qualifier. This is a no-op if the qualifier is not present.
      * @param keys the package qualifier keys to remove
      * @return a reference to the builder
+     * @since 1.6.0
      */
     public PackageURLBuilder withoutQualifiers(final Set<String> keys) {
         if (this.qualifiers != null) {
@@ -219,6 +236,7 @@ public final class PackageURLBuilder {
     /**
      * Removes all qualifiers, if any.
      * @return a reference to this builder.
+     * @since 1.6.0
      */
     public PackageURLBuilder withoutQualifiers() {
         qualifiers = null;
@@ -229,16 +247,19 @@ public final class PackageURLBuilder {
      * Removes all qualifiers, if any.
      *
      * @return a reference to this builder.
+     * @deprecated use {@link #withoutQualifiers()} instead
+     * @since 1.5.0
      */
+    @Deprecated
     public PackageURLBuilder withNoQualifiers() {
-        qualifiers = null;
-        return this;
+        return withoutQualifiers();
     }
 
     /**
      * Returns current type value set in the builder.
      *
      * @return type set in this builder
+     * @since 1.5.0
      */
     public @Nullable String getType() {
         return type;
@@ -248,6 +269,7 @@ public final class PackageURLBuilder {
      * Returns current namespace value set in the builder.
      *
      * @return namespace set in this builder
+     * @since 1.5.0
      */
     public @Nullable String getNamespace() {
         return namespace;
@@ -257,6 +279,7 @@ public final class PackageURLBuilder {
      * Returns current name value set in the builder.
      *
      * @return name set in this builder
+     * @since 1.5.0
      */
     public @Nullable String getName() {
         return name;
@@ -266,6 +289,7 @@ public final class PackageURLBuilder {
      * Returns current version value set in the builder.
      *
      * @return version set in this builder
+     * @since 1.5.0
      */
     public @Nullable String getVersion() {
         return version;
@@ -275,6 +299,7 @@ public final class PackageURLBuilder {
      * Returns current subpath value set in the builder.
      *
      * @return subpath set in this builder
+     * @since 1.5.0
      */
     public @Nullable String getSubpath() {
         return subpath;
@@ -285,6 +310,7 @@ public final class PackageURLBuilder {
      * An empty map is returned if no qualifiers are set
      *
      * @return all qualifiers set in this builder, or an empty map if none are set
+     * @since 1.5.0
      */
     public Map<String, String> getQualifiers() {
         return qualifiers != null ? Collections.unmodifiableMap(qualifiers) : Collections.emptyMap();
@@ -295,6 +321,7 @@ public final class PackageURLBuilder {
      *s
      * @param key qualifier key
      * @return qualifier value or {@code null} if one is not set
+     * @since 1.5.0
      */
     public @Nullable String getQualifier(String key) {
         return qualifiers == null ? null : qualifiers.get(requireNonNull(key));

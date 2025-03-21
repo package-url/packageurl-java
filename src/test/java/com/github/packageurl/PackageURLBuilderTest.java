@@ -176,12 +176,11 @@ class PackageURLBuilderTest {
 
     @Test
     void editBuilder1() throws MalformedPackageURLException {
-
         PackageURL p = new PackageURL("pkg:generic/namespace/name@1.0.0?k=v#s");
-        PackageURLBuilder b = p.toBuilder();
+        PackageURLBuilder b = PackageURLBuilder.aPackageURL(p);
         assertBuilderMatch(p, b);
 
-        assertBuilderMatch(new PackageURL("pkg:generic/namespace/name@1.0.0#s"), b.withNoQualifiers());
+        assertBuilderMatch(new PackageURL("pkg:generic/namespace/name@1.0.0#s"), b.withoutQualifiers());
         b.withType("maven")
                 .withNamespace("org.junit")
                 .withName("junit5")
