@@ -48,9 +48,9 @@ import org.jspecify.annotations.Nullable;
  * </pre>
  * <p>
  * Components are separated by a specific character for unambiguous parsing.
- * A purl must NOT contain a URL Authority i.e. there is no support for username,
+ * A purl must NOT contain a URL Authority, i.e., there is no support for username,
  * password, host and port components. A namespace segment may sometimes look
- * like a host but its interpretation is specific to a type.
+ * like a host, but its interpretation is specific to a type.
  * </p>
  * <p>SPEC: <a href="https://github.com/package-url/purl-spec">https://github.com/package-url/purl-spec</a></p>
  *
@@ -114,7 +114,6 @@ public final class PackageURL implements Serializable {
      * @param purl a valid package URL string to parse
      * @throws MalformedPackageURLException if parsing fails
      * @throws NullPointerException if {@code purl} is {@code null}
-     * @since 1.0.0
      */
     public PackageURL(final String purl) throws MalformedPackageURLException {
         parse(requireNonNull(purl, "purl"));
@@ -127,24 +126,22 @@ public final class PackageURL implements Serializable {
      * @param type the type of package (i.e. maven, npm, gem, etc)
      * @param name the name of the package
      * @throws MalformedPackageURLException if parsing fails
-     * @since 1.0.0
      */
     public PackageURL(final String type, final String name) throws MalformedPackageURLException {
-        this(type, null, name, null, null, null);
+        this(type, null, name, null, (Map<String, String>) null, null);
     }
 
     /**
      * Constructs a new PackageURL object.
      *
-     * @param type the type of package (i.e. maven, npm, gem, etc), not {@code null}
-     * @param namespace  the name prefix (i.e. group, owner, organization)
+     * @param type the type of package (i.e., maven, npm, gem, etc.), not {@code null}
+     * @param namespace  the name prefix (i.e., group, owner, organization)
      * @param name the name of the package, not {@code null}
      * @param version the version of the package
      * @param qualifiers an array of key/value pair qualifiers
      * @param subpath the subpath string
      * @throws MalformedPackageURLException if parsing fails
      * @throws NullPointerException if {@code type} or {@code name} are {@code null}
-     * @since 1.0.0
      * @deprecated use {@link #PackageURL(String, String, String, String, Map, String)} instead
      */
     @Deprecated
@@ -156,20 +153,14 @@ public final class PackageURL implements Serializable {
             final @Nullable TreeMap<String, String> qualifiers,
             final @Nullable String subpath)
             throws MalformedPackageURLException {
-        this.type = toLowerCase(validateType(requireNonNull(type, "type")));
-        this.namespace = validateNamespace(this.type, namespace);
-        this.name = validateName(this.type, requireNonNull(name, "name"));
-        this.version = validateVersion(type, version);
-        this.qualifiers = parseQualifiers(qualifiers);
-        this.subpath = validateSubpath(subpath);
-        verifyTypeConstraints(this.type, this.namespace, this.name, this.version, this.qualifiers);
+        this(type, namespace, name, version, qualifiers != null ? (Map<String, String>) qualifiers : null, subpath);
     }
 
     /**
      * Constructs a new PackageURL object.
      *
      * @param type the type of package (i.e. maven, npm, gem, etc)
-     * @param namespace the name prefix (i.e. group, owner, organization)
+     * @param namespace the name prefix (i.e., group, owner, organization)
      * @param name the name of the package
      * @param version the version of the package
      * @param qualifiers an array of key/value pair qualifiers
@@ -183,33 +174,34 @@ public final class PackageURL implements Serializable {
             final @Nullable String namespace,
             final String name,
             final @Nullable String version,
-            final @Nullable Map<String, @Nullable String> qualifiers,
+            final @Nullable Map<String, String> qualifiers,
             final @Nullable String subpath)
             throws MalformedPackageURLException {
-        this(type, namespace, name, version, (qualifiers != null) ? new TreeMap<>(qualifiers) : null, subpath);
+        this.type = toLowerCase(validateType(requireNonNull(type, "type")));
+        this.namespace = validateNamespace(this.type, namespace);
+        this.name = validateName(this.type, requireNonNull(name, "name"));
+        this.version = validateVersion(this.type, version);
+        this.qualifiers = parseQualifiers(qualifiers);
+        this.subpath = validateSubpath(subpath);
+        verifyTypeConstraints(this.type, this.namespace, this.name, this.version, this.qualifiers);
     }
 
     /**
      * Converts this {@link PackageURL} to a {@link PackageURLBuilder}.
      *
      * @return the builder
-     * @deprecated Use {@link PackageURLBuilder#aPackageURL(PackageURL)} or {@link PackageURLBuilder#aPackageURL(String)}
+     * @since 1.5.0
+     * @deprecated use {@link PackageURLBuilder#aPackageURL(PackageURL)} or {@link PackageURLBuilder#aPackageURL(String)}
      */
+    @Deprecated
     public PackageURLBuilder toBuilder() {
-        return PackageURLBuilder.aPackageURL()
-                .withType(getType())
-                .withNamespace(getNamespace())
-                .withName(getName())
-                .withVersion(getVersion())
-                .withQualifiers(getQualifiers())
-                .withSubpath(getSubpath());
+        return PackageURLBuilder.aPackageURL(this);
     }
 
     /**
      * Returns the package url scheme.
      *
      * @return the scheme
-     * @since 1.0.0
      */
     public String getScheme() {
         return SCHEME;
@@ -219,17 +211,15 @@ public final class PackageURL implements Serializable {
      * Returns the package "type" or package "protocol" such as maven, npm, nuget, gem, pypi, etc.
      *
      * @return the type
-     * @since 1.0.0
      */
     public String getType() {
         return type;
     }
 
     /**
-     * Returns the name prefix such as a Maven groupid, a Docker image owner, a GitHub user or organization.
+     * Returns the name prefix such as a Maven groupId, a Docker image owner, a GitHub user or organization.
      *
      * @return the namespace
-     * @since 1.0.0
      */
     public @Nullable String getNamespace() {
         return namespace;
@@ -239,7 +229,6 @@ public final class PackageURL implements Serializable {
      * Returns the name of the package.
      *
      * @return the name of the package
-     * @since 1.0.0
      */
     public String getName() {
         return name;
@@ -249,7 +238,6 @@ public final class PackageURL implements Serializable {
      * Returns the version of the package.
      *
      * @return the version of the package
-     * @since 1.0.0
      */
     public @Nullable String getVersion() {
         return version;
@@ -260,7 +248,6 @@ public final class PackageURL implements Serializable {
      * This method returns an UnmodifiableMap.
      *
      * @return all the qualifiers, or an empty map if none are set
-     * @since 1.0.0
      */
     public Map<String, String> getQualifiers() {
         return qualifiers != null ? Collections.unmodifiableMap(qualifiers) : Collections.emptyMap();
@@ -270,7 +257,6 @@ public final class PackageURL implements Serializable {
      * Returns extra subpath within a package, relative to the package root.
      *
      * @return the subpath
-     * @since 1.0.0
      */
     public @Nullable String getSubpath() {
         return subpath;
@@ -493,7 +479,6 @@ public final class PackageURL implements Serializable {
      * Returns the canonicalized representation of the purl.
      *
      * @return the canonicalized representation of the purl
-     * @since 1.0.0
      */
     public String canonicalize() {
         return canonicalize(false);
@@ -633,7 +618,7 @@ public final class PackageURL implements Serializable {
         return ((byte) ((c1 << 4) + c2));
     }
 
-    private static String percentDecode(final String source) {
+    static String percentDecode(final String source) {
         if (source.isEmpty()) {
             return source;
         }
@@ -665,8 +650,16 @@ public final class PackageURL implements Serializable {
         return new String(buffer.array(), 0, buffer.position(), StandardCharsets.UTF_8);
     }
 
+    /**
+     * URI decodes the given string.
+     *
+     * @param source the encoded string
+     * @return the decoded string
+     * @since 1.4.2
+     * @deprecated this method was made public in error in version 1.4.2 and will be removed without a replacement
+     */
     @Deprecated
-    public String uriDecode(final String source) {
+    public @Nullable String uriDecode(final @Nullable String source) {
         return source != null ? percentDecode(source) : null;
     }
 
@@ -674,7 +667,7 @@ public final class PackageURL implements Serializable {
         return (c == PERCENT_CHAR);
     }
 
-    private static String percentEncode(final String source) {
+    static String percentEncode(final String source) {
         if (source.isEmpty()) {
             return source;
         }
@@ -920,10 +913,11 @@ public final class PackageURL implements Serializable {
 
     /**
      * Evaluates if the specified Package URL has the same values up to, but excluding
-     * the qualifier (querystring). This includes equivalence of: scheme, type, namespace,
-     * name, and version, but excludes qualifier and subpath from evaluation.
-     * @deprecated
-     * This method is no longer recommended and will be removed from a future release.
+     * the qualifier (querystring).
+     * This includes equivalence of the scheme, type, namespace, name, and version, but excludes qualifier and subpath
+     * from evaluation.
+     *
+     * @deprecated This method is no longer recommended and will be removed from a future release.
      * <p> Use {@link PackageURL#isCoordinatesEquals} instead.</p>
      *
      * @param purl the Package URL to evaluate
@@ -938,8 +932,9 @@ public final class PackageURL implements Serializable {
 
     /**
      * Evaluates if the specified Package URL has the same values up to, but excluding
-     * the qualifier (querystring). This includes equivalence of: scheme, type, namespace,
-     * name, and version, but excludes qualifier and subpath from evaluation.
+     * the qualifier (querystring).
+     * This includes equivalence of the scheme, type, namespace, name, and version, but excludes qualifier and subpath
+     * from evaluation.
      *
      * @param purl the Package URL to evaluate, not {@code null}
      * @return true if equivalence passes, false if not
@@ -1000,47 +995,195 @@ public final class PackageURL implements Serializable {
 
     /**
      * Convenience constants that defines common Package-URL 'type's.
-     *
-     * @since 1.0.0
      */
     public static final class StandardTypes {
+        /**
+         * Arch Linux and other users of the libalpm/pacman package manager.
+         *
+         * @since 1.6.0
+         */
         public static final String ALPM = "alpm";
+        /**
+         * APK-based packages.
+         *
+         * @since 1.6.0
+         */
         public static final String APK = "apk";
+        /**
+         * Bitbucket-based packages.
+         */
         public static final String BITBUCKET = "bitbucket";
+        /**
+         * Bitnami-based packages.
+         *
+         * @since 1.6.0
+         */
         public static final String BITNAMI = "bitnami";
+        /**
+         * Rust.
+         *
+         * @since 1.2.0
+         */
         public static final String CARGO = "cargo";
+        /**
+         * CocoaPods.
+         *
+         * @since 1.6.0
+         */
         public static final String COCOAPODS = "cocoapods";
+        /**
+         * Composer PHP packages.
+         */
         public static final String COMPOSER = "composer";
+        /**
+         * Conan C/C++ packages.
+         *
+         * @since 1.6.0
+         */
         public static final String CONAN = "conan";
+        /**
+         * Conda packages.
+         *
+         * @since 1.6.0
+         */
         public static final String CONDA = "conda";
+        /**
+         * CPAN Perl packages.
+         *
+         * @since 1.6.0
+         */
         public static final String CPAN = "cpan";
+        /**
+         * CRAN R packages.
+         *
+         * @since 1.6.0
+         */
         public static final String CRAN = "cran";
+        /**
+         * Debian, Debian derivatives, and Ubuntu packages.
+         *
+         * @since 1.6.0
+         */
         public static final String DEB = "deb";
+        /**
+         * Docker images.
+         */
         public static final String DOCKER = "docker";
+        /**
+         *  RubyGems.
+         */
         public static final String GEM = "gem";
+        /**
+         * Plain, generic packages that do not fit anywhere else, such as for "upstream-from-distro" packages.
+         */
         public static final String GENERIC = "generic";
+        /**
+         * GitHub-based packages.
+         */
         public static final String GITHUB = "github";
+        /**
+         * Go packages.
+         */
         public static final String GOLANG = "golang";
+        /**
+         * Haskell packages.
+         */
         public static final String HACKAGE = "hackage";
+        /**
+         * Hex packages.
+         *
+         * @since 1.6.0
+         */
         public static final String HEX = "hex";
+        /**
+         * Hugging Face ML models.
+         *
+         * @since 1.6.0
+         */
         public static final String HUGGINGFACE = "huggingface";
+        /**
+         * Lua packages installed with LuaRocks.
+         *
+         * @since 1.6.0
+         */
         public static final String LUAROCKS = "luarocks";
+        /**
+         * Maven JARs and related artifacts.
+         */
         public static final String MAVEN = "maven";
+        /**
+         * MLflow ML models (Azure ML, Databricks, etc.).
+         *
+         * @since 1.6.0
+         */
         public static final String MLFLOW = "mlflow";
+        /**
+         *  Nixos packages
+         *
+         * @since 1.6.0
+         */
         public static final String NIX = "nix";
+        /**
+         * Node NPM packages.
+         */
         public static final String NPM = "npm";
+        /**
+         * NuGet .NET packages.
+         */
         public static final String NUGET = "nuget";
+        /**
+         * All artifacts stored in registries that conform to the
+         * <a href="https://github.com/opencontainers/distribution-spec">OCI Distribution Specification</a>, including
+         * container images built by Docker and others.
+         *
+         * @since 1.6.0
+         */
         public static final String OCI = "oci";
+        /**
+         * Dart and Flutter packages.
+         *
+         * @since 1.6.0
+         */
         public static final String PUB = "pub";
+        /**
+         * Python packages.
+         */
         public static final String PYPI = "pypi";
+        /**
+         * QNX packages.
+         *
+         * @since 1.6.0
+         */
         public static final String QPKG = "qpkg";
+        /**
+         * RPMs.
+         */
         public static final String RPM = "rpm";
+        /**
+         * ISO-IEC 19770-2 Software Identification (SWID) tags.
+         *
+         * @since 1.6.0
+         */
         public static final String SWID = "swid";
+        /**
+         * Swift packages.
+         *
+         * @since 1.6.0
+         */
         public static final String SWIFT = "swift";
-
+        /**
+         * Debian, Debian derivatives, and Ubuntu packages.
+         *
+         * @deprecated use {@link #DEB} instead
+         */
         @Deprecated
         public static final String DEBIAN = "deb";
-
+        /**
+         * Nixos packages.
+         *
+         * @since 1.1.0
+         * @deprecated use {@link #NIX} instead
+         */
         @Deprecated
         public static final String NIXPKGS = "nix";
 
