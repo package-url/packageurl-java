@@ -589,16 +589,9 @@ public final class PackageURL implements Serializable {
         return new String(chars);
     }
 
-    private static int indexOfPercentChar(final byte[] bytes, final int start) {
-        return IntStream.range(start, bytes.length)
+    private static int indexOfFirstPercentChar(final byte[] bytes) {
+        return IntStream.range(0, bytes.length)
                 .filter(i -> isPercent(bytes[i]))
-                .findFirst()
-                .orElse(-1);
-    }
-
-    private static int indexOfUnsafeChar(final byte[] bytes, final int start) {
-        return IntStream.range(start, bytes.length)
-                .filter(i -> shouldEncode(bytes[i]))
                 .findFirst()
                 .orElse(-1);
     }
@@ -636,7 +629,7 @@ public final class PackageURL implements Serializable {
         }
 
         byte[] bytes = source.getBytes(StandardCharsets.UTF_8);
-        int i = indexOfPercentChar(bytes, 0);
+        int i = indexOfFirstPercentChar(bytes);
 
         if (i == -1) {
             return source;
