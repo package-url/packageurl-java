@@ -61,6 +61,52 @@ public final class PackageURL implements Serializable {
     private static final char PERCENT_CHAR = '%';
 
     /**
+     * The PackageURL scheme constant
+     */
+    public static final String SCHEME = "pkg";
+
+    /**
+     * The PackageURL scheme ({@code "pkg"}) constant followed by a colon ({@code ':'}).
+     */
+    private static final String SCHEME_PART = SCHEME + ':';
+
+    /**
+     * The package "type" or package "protocol" such as maven, npm, nuget, gem, pypi, etc.
+     * Required.
+     */
+    private String type;
+
+    /**
+     * The name prefix such as a Maven groupid, a Docker image owner, a GitHub user or organization.
+     * Optional and type-specific.
+     */
+    private @Nullable String namespace;
+
+    /**
+     * The name of the package.
+     * Required.
+     */
+    private String name;
+
+    /**
+     * The version of the package.
+     * Optional.
+     */
+    private @Nullable String version;
+
+    /**
+     * Extra qualifying data for a package such as an OS, architecture, a distro, etc.
+     * Optional and type-specific.
+     */
+    private @Nullable Map<String, String> qualifiers;
+
+    /**
+     * Extra subpath within a package, relative to the package root.
+     * Optional.
+     */
+    private @Nullable String subpath;
+
+    /**
      * Constructs a new PackageURL object by parsing the specified string.
      *
      * @param purl a valid package URL string to parse
@@ -140,52 +186,6 @@ public final class PackageURL implements Serializable {
             throws MalformedPackageURLException {
         this(type, namespace, name, version, (qualifiers != null) ? new TreeMap<>(qualifiers) : null, subpath);
     }
-
-    /**
-     * The PackageURL scheme constant
-     */
-    public static final String SCHEME = "pkg";
-
-    /**
-     * The PackageURL scheme ({@code "pkg"}) constant followed by a colon ({@code ':'}).
-     */
-    private static final String SCHEME_PART = SCHEME + ':';
-
-    /**
-     * The package "type" or package "protocol" such as maven, npm, nuget, gem, pypi, etc.
-     * Required.
-     */
-    private String type;
-
-    /**
-     * The name prefix such as a Maven groupid, a Docker image owner, a GitHub user or organization.
-     * Optional and type-specific.
-     */
-    private @Nullable String namespace;
-
-    /**
-     * The name of the package.
-     * Required.
-     */
-    private String name;
-
-    /**
-     * The version of the package.
-     * Optional.
-     */
-    private @Nullable String version;
-
-    /**
-     * Extra qualifying data for a package such as an OS, architecture, a distro, etc.
-     * Optional and type-specific.
-     */
-    private @Nullable Map<String, String> qualifiers;
-
-    /**
-     * Extra subpath within a package, relative to the package root.
-     * Optional.
-     */
-    private @Nullable String subpath;
 
     /**
      * Converts this {@link PackageURL} to a {@link PackageURLBuilder}.
