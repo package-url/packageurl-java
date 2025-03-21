@@ -29,6 +29,7 @@ import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.BitSet;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
@@ -59,6 +60,110 @@ public final class PackageURL implements Serializable {
     private static final long serialVersionUID = 3243226021636427586L;
 
     private static final char PERCENT_CHAR = '%';
+
+    private static final int NBITS = 128;
+
+    private static final BitSet DIGIT = new BitSet(NBITS);
+
+    static {
+        IntStream.rangeClosed('0', '9').forEach(DIGIT::set);
+    }
+
+    private static final BitSet LOWER = new BitSet(NBITS);
+
+    static {
+        IntStream.rangeClosed('a', 'z').forEach(LOWER::set);
+    }
+
+    private static final BitSet UPPER = new BitSet(NBITS);
+
+    static {
+        IntStream.rangeClosed('A', 'Z').forEach(UPPER::set);
+    }
+
+    private static final BitSet ALPHA = new BitSet(NBITS);
+
+    static {
+        ALPHA.or(LOWER);
+        ALPHA.or(UPPER);
+    }
+
+    private static final BitSet ALPHA_DIGIT = new BitSet(NBITS);
+
+    static {
+        ALPHA_DIGIT.or(ALPHA);
+        ALPHA_DIGIT.or(DIGIT);
+    }
+
+    private static final BitSet UNRESERVED = new BitSet(NBITS);
+
+    static {
+        UNRESERVED.or(ALPHA_DIGIT);
+        UNRESERVED.set('-');
+        UNRESERVED.set('.');
+        UNRESERVED.set('_');
+        UNRESERVED.set('~');
+    }
+
+    private static final BitSet GEN_DELIMS = new BitSet(NBITS);
+
+    static {
+        GEN_DELIMS.set(':');
+        GEN_DELIMS.set('/');
+        GEN_DELIMS.set('?');
+        GEN_DELIMS.set('#');
+        GEN_DELIMS.set('[');
+        GEN_DELIMS.set(']');
+        GEN_DELIMS.set('@');
+    }
+
+    private static final BitSet SUB_DELIMS = new BitSet(NBITS);
+
+    static {
+        SUB_DELIMS.set('!');
+        SUB_DELIMS.set('$');
+        SUB_DELIMS.set('&');
+        SUB_DELIMS.set('\'');
+        SUB_DELIMS.set('(');
+        SUB_DELIMS.set(')');
+        SUB_DELIMS.set('*');
+        SUB_DELIMS.set('+');
+        SUB_DELIMS.set(',');
+        SUB_DELIMS.set(';');
+        SUB_DELIMS.set('=');
+    }
+
+    private static final BitSet PCHAR = new BitSet(NBITS);
+
+    static {
+        PCHAR.or(UNRESERVED);
+        PCHAR.or(SUB_DELIMS);
+        PCHAR.set(':');
+        PCHAR.clear('&'); // XXX: Why?
+    }
+
+    private static final BitSet QUERY = new BitSet(NBITS);
+
+    static {
+        QUERY.or(GEN_DELIMS);
+        QUERY.or(PCHAR);
+        QUERY.set('/');
+        QUERY.set('?');
+        QUERY.clear('#');
+        QUERY.clear('&');
+        QUERY.clear('=');
+    }
+
+    private static final BitSet FRAGMENT = new BitSet(NBITS);
+
+    static {
+        FRAGMENT.or(GEN_DELIMS);
+        FRAGMENT.or(PCHAR);
+        FRAGMENT.set('/');
+        FRAGMENT.set('?');
+        FRAGMENT.set('&');
+        FRAGMENT.clear('#');
+    }
 
     /**
      * The PackageURL scheme constant
@@ -405,6 +510,7 @@ public final class PackageURL implements Serializable {
             validateKey(key);
             validateValue(key, entry.getValue());
         }
+
         return values;
     }
 
@@ -485,12 +591,12 @@ public final class PackageURL implements Serializable {
         final StringBuilder purl = new StringBuilder();
         purl.append(SCHEME_PART).append(type).append('/');
         if (namespace != null) {
-            purl.append(encodePath(namespace));
+            purl.append(encodePath(namespace, PCHAR));
             purl.append('/');
         }
-        purl.append(percentEncode(name));
+        purl.append(percentEncode(name, PCHAR));
         if (version != null) {
-            purl.append('@').append(percentEncode(version));
+            purl.append('@').append(percentEncode(version, PCHAR));
         }
 
         if (!coordinatesOnly) {
@@ -504,23 +610,27 @@ public final class PackageURL implements Serializable {
                     }
                     purl.append(entry.getKey());
                     purl.append('=');
-                    purl.append(percentEncode(entry.getValue()));
+                    purl.append(percentEncode(entry.getValue(), QUERY));
                     separator = true;
                 }
             }
             if (subpath != null) {
-                purl.append('#').append(encodePath(subpath));
+                purl.append('#').append(encodePath(subpath, FRAGMENT));
             }
         }
         return purl.toString();
     }
 
-    private static boolean isUnreserved(int c) {
-        return (isValidCharForKey(c) || c == '~');
+    private static boolean isUnreserved(int c, BitSet safe) {
+        if (c < 0 || c >= NBITS) {
+            return false;
+        }
+
+        return safe.get(c);
     }
 
-    private static boolean shouldEncode(int c) {
-        return !isUnreserved(c);
+    private static boolean shouldEncode(int c, BitSet safe) {
+        return !isUnreserved(c, safe);
     }
 
     private static boolean isAlpha(int c) {
@@ -660,6 +770,10 @@ public final class PackageURL implements Serializable {
     }
 
     static String percentEncode(final String source) {
+        return percentEncode(source, UNRESERVED);
+    }
+
+    private static String percentEncode(final String source, final BitSet safe) {
         if (source.isEmpty()) {
             return source;
         }
@@ -670,7 +784,7 @@ public final class PackageURL implements Serializable {
         boolean changed = false;
 
         for (byte b : bytes) {
-            if (shouldEncode(b)) {
+            if (shouldEncode(b, safe)) {
                 changed = true;
                 byte b1 = (byte) Character.toUpperCase(Character.forDigit((b >> 4) & 0xF, 16));
                 byte b2 = (byte) Character.toUpperCase(Character.forDigit(b & 0xF, 16));
@@ -806,8 +920,7 @@ public final class PackageURL implements Serializable {
         }
     }
 
-    @SuppressWarnings("StringSplitter") // reason: surprising behavior is okay in this case
-    private static @Nullable Map<String, String> parseQualifiers(final String encodedString)
+    static @Nullable Map<String, String> parseQualifiers(final String encodedString)
             throws MalformedPackageURLException {
         try {
             final TreeMap<String, String> results = Arrays.stream(encodedString.split("&"))
@@ -838,8 +951,10 @@ public final class PackageURL implements Serializable {
                 .toArray(String[]::new);
     }
 
-    private static String encodePath(final String path) {
-        return Arrays.stream(path.split("/")).map(PackageURL::percentEncode).collect(Collectors.joining("/"));
+    private String encodePath(final String path, BitSet safe) {
+        return Arrays.stream(path.split("/"))
+                .map(source -> percentEncode(source, safe))
+                .collect(Collectors.joining("/"));
     }
 
     /**
