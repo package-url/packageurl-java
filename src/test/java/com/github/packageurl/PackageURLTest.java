@@ -76,11 +76,11 @@ class PackageURLTest {
     @Test
     void invalidPercentEncoding() throws MalformedPackageURLException {
         assertThrowsExactly(
-            MalformedPackageURLException.class,
-            () -> new PackageURL("pkg:maven/com.google.summit/summit-ast@2.2.0%"));
+                MalformedPackageURLException.class,
+                () -> new PackageURL("pkg:maven/com.google.summit/summit-ast@2.2.0%"));
         assertThrowsExactly(
-            MalformedPackageURLException.class,
-            () -> new PackageURL("pkg:maven/com.google.summit/summit-ast@2.2.0%0"));
+                MalformedPackageURLException.class,
+                () -> new PackageURL("pkg:maven/com.google.summit/summit-ast@2.2.0%0"));
     }
 
     static Stream<Arguments> constructorParsing() throws IOException {
