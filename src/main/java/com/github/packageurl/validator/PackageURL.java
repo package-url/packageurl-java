@@ -37,11 +37,25 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Constraint(validatedBy = PackageURLConstraintValidator.class)
 public @interface PackageURL {
-
+    /**
+     * Gets the error message.
+     *
+     * @return the error message
+     */
     String message() default
             "The Package URL (purl) must be a valid URI and conform to https://github.com/package-url/purl-spec";
 
+    /**
+     * Gets the validation groups.
+     *
+     * @return the validation groups
+     */
     Class<?>[] groups() default {};
 
+    /**
+     * Gets the payload for the constraint.
+     *
+     * @return the payload for the constraint
+     */
     Class<? extends Payload>[] payload() default {};
 }
