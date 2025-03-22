@@ -19,7 +19,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.github.packageurl;
+package com.github.packageurl.utils;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Random;
@@ -35,7 +35,7 @@ import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.infra.Blackhole;
 
 /**
- * Measures the performance of performance decoding and encoding.
+ * Measures the performance of performance StringUtil's decoding and encoding.
  * <p>
  *     Run the benchmark with:
  * </p>
@@ -52,7 +52,7 @@ import org.openjdk.jmh.infra.Blackhole;
 @BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(TimeUnit.MICROSECONDS)
 @State(Scope.Benchmark)
-public class PercentEncodingBenchmark {
+public class StringUtilBenchmark {
 
     private static final int DATA_COUNT = 1000;
     private static final int DECODED_LENGTH = 256;
@@ -91,7 +91,7 @@ public class PercentEncodingBenchmark {
     private static String[] encodeData(String[] decodedData) {
         String[] encodedData = new String[decodedData.length];
         for (int i = 0; i < decodedData.length; i++) {
-            encodedData[i] = PackageURL.percentEncode(decodedData[i]);
+            encodedData[i] = StringUtil.percentEncode(decodedData[i]);
         }
         return encodedData;
     }
@@ -114,14 +114,14 @@ public class PercentEncodingBenchmark {
     @Benchmark
     public void percentDecode(final Blackhole blackhole) {
         for (int i = 0; i < DATA_COUNT; i++) {
-            blackhole.consume(PackageURL.percentDecode(encodedData[i]));
+            blackhole.consume(StringUtil.percentDecode(encodedData[i]));
         }
     }
 
     @Benchmark
     public void percentEncode(final Blackhole blackhole) {
         for (int i = 0; i < DATA_COUNT; i++) {
-            blackhole.consume(PackageURL.percentEncode(decodedData[i]));
+            blackhole.consume(StringUtil.percentEncode(decodedData[i]));
         }
     }
 }
