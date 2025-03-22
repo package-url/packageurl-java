@@ -74,37 +74,37 @@ public final class PackageURL implements Serializable {
      * The package "type" or package "protocol" such as maven, npm, nuget, gem, pypi, etc.
      * Required.
      */
-    private String type;
+    private final String type;
 
     /**
      * The name prefix such as a Maven groupid, a Docker image owner, a GitHub user or organization.
      * Optional and type-specific.
      */
-    private @Nullable String namespace;
+    private final @Nullable String namespace;
 
     /**
      * The name of the package.
      * Required.
      */
-    private String name;
+    private final String name;
 
     /**
      * The version of the package.
      * Optional.
      */
-    private @Nullable String version;
+    private final @Nullable String version;
 
     /**
      * Extra qualifying data for a package such as an OS, architecture, a distro, etc.
      * Optional and type-specific.
      */
-    private @Nullable Map<String, String> qualifiers;
+    private final @Nullable Map<String, String> qualifiers;
 
     /**
      * Extra subpath within a package, relative to the package root.
      * Optional.
      */
-    private @Nullable String subpath;
+    private final @Nullable String subpath;
 
     /**
      * Constructs a new PackageURL object by parsing the specified string.
@@ -114,7 +114,90 @@ public final class PackageURL implements Serializable {
      * @throws NullPointerException if {@code purl} is {@code null}
      */
     public PackageURL(final String purl) throws MalformedPackageURLException {
-        parse(requireNonNull(purl, "purl"));
+        requireNonNull(purl, "purl");
+
+        if (purl.isEmpty()) {
+            throw new MalformedPackageURLException("Invalid purl: Is empty or null");
+        }
+
+        try {
+            if (!purl.startsWith(SCHEME_PART)) {
+                throw new MalformedPackageURLException(
+                        "Invalid purl: " + purl + ". It does not start with '" + SCHEME_PART + "'");
+            }
+
+            final int length = purl.length();
+            int start = SCHEME_PART.length();
+
+            while (start < length && '/' == purl.charAt(start)) {
+                start++;
+            }
+
+            final URI uri = new URI(String.join("/", SCHEME_PART, purl.substring(start)));
+
+            validateScheme(uri.getScheme());
+
+            // Check to ensure that none of these parts are parsed. If so, it's an invalid purl.
+            if (uri.getRawAuthority() != null) {
+                throw new MalformedPackageURLException("Invalid purl: A purl must NOT contain a URL Authority ");
+            }
+
+            // subpath is optional - check for existence
+            final String rawFragment = uri.getRawFragment();
+            if (rawFragment != null && !rawFragment.isEmpty()) {
+                this.subpath = validatePath(parsePath(rawFragment, true), true);
+            } else {
+                this.subpath = null;
+            }
+            // qualifiers are optional - check for existence
+            final String rawQuery = uri.getRawQuery();
+            if (rawQuery != null && !rawQuery.isEmpty()) {
+                this.qualifiers = parseQualifiers(rawQuery);
+            } else {
+                this.qualifiers = null;
+            }
+            // this is the rest of the purl that needs to be parsed
+            String remainder = uri.getRawPath();
+            // trim trailing '/'
+            int end = remainder.length() - 1;
+            while (end > 0 && '/' == remainder.charAt(end)) {
+                end--;
+            }
+            remainder = remainder.substring(0, end + 1);
+            // there is exactly one leading '/' at this point
+            start = 1;
+            // type
+            int index = remainder.indexOf('/', start);
+            if (index <= start) {
+                throw new MalformedPackageURLException("Invalid purl: does not contain both a type and name");
+            }
+            this.type = toLowerCase(validateType(remainder.substring(start, index)));
+
+            start = index + 1;
+
+            // version is optional - check for existence
+            index = remainder.lastIndexOf('@');
+            if (index >= start) {
+                this.version = validateVersion(this.type, percentDecode(remainder.substring(index + 1)));
+                remainder = remainder.substring(0, index);
+            } else {
+                this.version = null;
+            }
+
+            // The 'remainder' should now consist of an optional namespace and the name
+            index = remainder.lastIndexOf('/');
+            if (index <= start) {
+                this.name = validateName(this.type, percentDecode(remainder.substring(start)));
+                this.namespace = null;
+            } else {
+                this.name = validateName(this.type, percentDecode(remainder.substring(index + 1)));
+                remainder = remainder.substring(0, index);
+                this.namespace = validateNamespace(this.type, parsePath(remainder.substring(start), false));
+            }
+            verifyTypeConstraints(this.type, this.namespace, this.name);
+        } catch (URISyntaxException e) {
+            throw new MalformedPackageURLException("Invalid purl: " + e.getMessage(), e);
+        }
     }
 
     /**
@@ -683,92 +766,6 @@ public final class PackageURL implements Serializable {
         }
 
         return changed ? new String(buffer.array(), 0, buffer.position(), StandardCharsets.UTF_8) : source;
-    }
-
-    /**
-     * Given a specified PackageURL, this method will parse the purl and populate this classes
-     * instance fields so that the corresponding getters may be called to retrieve the individual
-     * pieces of the purl.
-     *
-     * @param purl the purl string to parse
-     * @throws MalformedPackageURLException if an exception occurs when parsing
-     */
-    private void parse(final String purl) throws MalformedPackageURLException {
-        if (purl.isEmpty()) {
-            throw new MalformedPackageURLException("Invalid purl: Is empty or null");
-        }
-
-        try {
-            if (!purl.startsWith(SCHEME_PART)) {
-                throw new MalformedPackageURLException(
-                        "Invalid purl: " + purl + ". It does not start with '" + SCHEME_PART + "'");
-            }
-
-            final int length = purl.length();
-            int start = SCHEME_PART.length();
-
-            while (start < length && '/' == purl.charAt(start)) {
-                start++;
-            }
-
-            final URI uri = new URI(String.join("/", SCHEME_PART, purl.substring(start)));
-
-            validateScheme(uri.getScheme());
-
-            // Check to ensure that none of these parts are parsed. If so, it's an invalid purl.
-            if (uri.getRawAuthority() != null) {
-                throw new MalformedPackageURLException("Invalid purl: A purl must NOT contain a URL Authority ");
-            }
-
-            // subpath is optional - check for existence
-            final String rawFragment = uri.getRawFragment();
-            if (rawFragment != null && !rawFragment.isEmpty()) {
-                this.subpath = validatePath(parsePath(rawFragment, true), true);
-            }
-            // qualifiers are optional - check for existence
-            final String rawQuery = uri.getRawQuery();
-            if (rawQuery != null && !rawQuery.isEmpty()) {
-                this.qualifiers = parseQualifiers(rawQuery);
-            }
-            // this is the rest of the purl that needs to be parsed
-            String remainder = uri.getRawPath();
-            // trim trailing '/'
-            int end = remainder.length() - 1;
-            while (end > 0 && '/' == remainder.charAt(end)) {
-                end--;
-            }
-            remainder = remainder.substring(0, end + 1);
-            // there is exactly one leading '/' at this point
-            start = 1;
-            // type
-            int index = remainder.indexOf('/', start);
-            if (index <= start) {
-                throw new MalformedPackageURLException("Invalid purl: does not contain both a type and name");
-            }
-            this.type = toLowerCase(validateType(remainder.substring(start, index)));
-
-            start = index + 1;
-
-            // version is optional - check for existence
-            index = remainder.lastIndexOf('@');
-            if (index >= start) {
-                this.version = validateVersion(this.type, percentDecode(remainder.substring(index + 1)));
-                remainder = remainder.substring(0, index);
-            }
-
-            // The 'remainder' should now consist of an optional namespace and the name
-            index = remainder.lastIndexOf('/');
-            if (index <= start) {
-                this.name = validateName(this.type, percentDecode(remainder.substring(start)));
-            } else {
-                this.name = validateName(this.type, percentDecode(remainder.substring(index + 1)));
-                remainder = remainder.substring(0, index);
-                this.namespace = validateNamespace(this.type, parsePath(remainder.substring(start), false));
-            }
-            verifyTypeConstraints(this.type, this.namespace, this.name);
-        } catch (URISyntaxException e) {
-            throw new MalformedPackageURLException("Invalid purl: " + e.getMessage(), e);
-        }
     }
 
     /**
