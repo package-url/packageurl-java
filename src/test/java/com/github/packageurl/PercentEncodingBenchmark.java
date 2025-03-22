@@ -42,6 +42,12 @@ import org.openjdk.jmh.infra.Blackhole;
  * <pre>
  *     mvn -Pbenchmark
  * </pre>
+ * <p>
+ *     To pass arguments to JMH use:
+ * </p>
+ * <pre>
+ *     mvn -Pbenchmark -Djmh.args="<arguments>"
+ * </pre>
  */
 @BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(TimeUnit.MICROSECONDS)
