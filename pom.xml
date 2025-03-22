@@ -325,7 +325,7 @@
             <!-- Error Prone plugin -->
             <arg>-XDcompilePolicy=simple</arg>
             <arg>--should-stop=ifError=FLOW</arg>
-            <arg>-Xplugin:ErrorProne</arg>
+            <arg>-Xplugin:ErrorProne -XepExcludedPaths:.*/generated-test-sources/.*</arg>
             <!--
               ~ Due to a bug in IntelliJ IDEA, annotation processing MUST be enabled.
               ~ Failing to do so will cause IDEA to ignore the annotation processor path
