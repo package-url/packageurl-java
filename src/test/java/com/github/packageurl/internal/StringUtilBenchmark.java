@@ -22,6 +22,7 @@
 package com.github.packageurl.internal;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Locale;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 import org.openjdk.jmh.annotations.Benchmark;
@@ -30,7 +31,6 @@ import org.openjdk.jmh.annotations.Mode;
 import org.openjdk.jmh.annotations.OutputTimeUnit;
 import org.openjdk.jmh.annotations.Param;
 import org.openjdk.jmh.annotations.Scope;
-import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.infra.Blackhole;
 
@@ -62,14 +62,8 @@ public class StringUtilBenchmark {
     @Param({"0", "0.1", "0.5"})
     private double nonAsciiProb;
 
-    private String[] decodedData = createDecodedData();
-    private String[] encodedData = encodeData(decodedData);
-
-    @Setup
-    public void setup() {
-        decodedData = createDecodedData();
-        encodedData = encodeData(encodedData);
-    }
+    private final String[] decodedData = createDecodedData();
+    private final String[] encodedData = encodeData(decodedData);
 
     private String[] createDecodedData() {
         Random random = new Random();
@@ -90,8 +84,11 @@ public class StringUtilBenchmark {
 
     private static String[] encodeData(String[] decodedData) {
         String[] encodedData = new String[decodedData.length];
-        for (int i = 0; i < decodedData.length; i++) {
+        for (int i = 0; i < encodedData.length; i++) {
             encodedData[i] = StringUtil.percentEncode(decodedData[i]);
+            if (!StringUtil.percentDecode(encodedData[i]).equals(decodedData[i])) {
+                throw new RuntimeException("Invalid implementation of `percentEncode` and `percentDecode`.");
+            }
         }
         return encodedData;
     }
@@ -100,14 +97,25 @@ public class StringUtilBenchmark {
     public void baseline(Blackhole blackhole) {
         for (int i = 0; i < DATA_COUNT; i++) {
             byte[] buffer = decodedData[i].getBytes(StandardCharsets.UTF_8);
-            // Change the String a little bit
+            // Prevent JIT compiler from assuming the buffer was not modified
             for (int idx = 0; idx < buffer.length; idx++) {
-                byte b = buffer[idx];
-                if ('a' <= b && b <= 'z') {
-                    buffer[idx] = (byte) (b & 0x20);
-                }
+                buffer[idx] ^= 0x20;
             }
             blackhole.consume(new String(buffer, StandardCharsets.UTF_8));
+        }
+    }
+
+    @Benchmark
+    public void toLowerCaseJre(Blackhole blackhole) {
+        for (int i = 0; i < DATA_COUNT; i++) {
+            blackhole.consume(decodedData[i].toLowerCase(Locale.ROOT));
+        }
+    }
+
+    @Benchmark
+    public void toLowerCase(Blackhole blackhole) {
+        for (int i = 0; i < DATA_COUNT; i++) {
+            blackhole.consume(StringUtil.toLowerCase(decodedData[i]));
         }
     }
 
