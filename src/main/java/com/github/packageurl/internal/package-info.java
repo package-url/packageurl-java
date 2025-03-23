@@ -24,4 +24,3 @@
  * This package contains utility classes used by the PackageURL library.
  */
 package com.github.packageurl.internal;
-
