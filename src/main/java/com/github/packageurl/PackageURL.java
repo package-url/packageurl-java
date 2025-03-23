@@ -23,7 +23,7 @@ package com.github.packageurl;
 
 import static java.util.Objects.requireNonNull;
 
-import com.github.packageurl.utils.StringUtil;
+import com.github.packageurl.internal.StringUtil;
 import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
