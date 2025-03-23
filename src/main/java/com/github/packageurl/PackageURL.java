@@ -642,7 +642,7 @@ public final class PackageURL implements Serializable {
         return isUpperCase(c) ? (c ^ 0x20) : c;
     }
 
-    private static String toLowerCase(String s) {
+    static String toLowerCase(String s) {
         int pos = indexOfFirstUpperCaseChar(s);
 
         if (pos == -1) {
