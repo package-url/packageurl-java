@@ -19,7 +19,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.github.packageurl.utils;
+package com.github.packageurl.internal;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Locale;
@@ -91,7 +91,7 @@ public class StringUtilBenchmark {
 
     private static String[] encodeData(String[] decodedData) {
         String[] encodedData = new String[decodedData.length];
-        for (int i = 0; i < decodedData.length; i++) {
+        for (int i = 0; i < encodedData.length; i++) {
             encodedData[i] = StringUtil.percentEncode(decodedData[i]);
             if (!StringUtil.percentDecode(encodedData[i]).equals(decodedData[i])) {
                 throw new RuntimeException(
