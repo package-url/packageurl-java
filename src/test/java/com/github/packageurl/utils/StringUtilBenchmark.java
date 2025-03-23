@@ -21,7 +21,6 @@
  */
 package com.github.packageurl.utils;
 
-import com.github.packageurl.PackageURL;
 import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 import java.util.Random;
@@ -32,6 +31,7 @@ import org.openjdk.jmh.annotations.Mode;
 import org.openjdk.jmh.annotations.OutputTimeUnit;
 import org.openjdk.jmh.annotations.Param;
 import org.openjdk.jmh.annotations.Scope;
+import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.infra.Blackhole;
 
@@ -63,8 +63,14 @@ public class StringUtilBenchmark {
     @Param({"0", "0.1", "0.5"})
     private double nonAsciiProb;
 
-    private final String[] decodedData = createDecodedData();
-    private final String[] encodedData = encodeData(decodedData);
+    private String[] decodedData;
+    private String[] encodedData;
+
+    @Setup
+    public void setup() {
+        decodedData = createDecodedData();
+        encodedData = encodeData(decodedData);
+    }
 
     private String[] createDecodedData() {
         Random random = new Random();
@@ -88,7 +94,10 @@ public class StringUtilBenchmark {
         for (int i = 0; i < decodedData.length; i++) {
             encodedData[i] = StringUtil.percentEncode(decodedData[i]);
             if (!StringUtil.percentDecode(encodedData[i]).equals(decodedData[i])) {
-                throw new RuntimeException("Invalid implementation of `percentEncode` and `percentDecode`.");
+                throw new RuntimeException(
+                        "Invalid implementation of `percentEncode` and `percentDecode`.\nOriginal data: "
+                                + encodedData[i] + "\nEncoded and decoded data: "
+                                + StringUtil.percentDecode(encodedData[i]));
             }
         }
         return encodedData;
