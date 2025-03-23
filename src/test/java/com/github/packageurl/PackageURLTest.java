@@ -21,6 +21,7 @@
  */
 package com.github.packageurl;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -39,6 +40,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 /**
  * Test cases for PackageURL parsing
@@ -109,7 +111,10 @@ class PackageURLTest {
             boolean invalid)
             throws Exception {
         if (invalid) {
-            assertThrows(getExpectedException(purlString), () -> new PackageURL(purlString));
+            assertThrows(
+                    getExpectedException(purlString),
+                    () -> new PackageURL(purlString),
+                    "Parsing '" + purlString + "' should have failed because " + description);
         } else {
             PackageURL purl = new PackageURL(purlString);
             assertPurlEquals(parameters, purl);
@@ -228,6 +233,7 @@ class PackageURLTest {
         assertEquals("luarocks", PackageURL.StandardTypes.LUAROCKS);
         assertEquals("maven", PackageURL.StandardTypes.MAVEN);
         assertEquals("mlflow", PackageURL.StandardTypes.MLFLOW);
+        assertEquals("nix", PackageURL.StandardTypes.NIX);
         assertEquals("npm", PackageURL.StandardTypes.NPM);
         assertEquals("nuget", PackageURL.StandardTypes.NUGET);
         assertEquals("qpkg", PackageURL.StandardTypes.QPKG);
@@ -279,5 +285,108 @@ class PackageURLTest {
         assertEquals("npm", base64Uppercase.getType());
         assertEquals("Base64", base64Uppercase.getName());
         assertEquals("1.0.0", base64Uppercase.getVersion());
+    }
+
+    @ParameterizedTest
+    @ValueSource(
+            strings = {
+                "pkg:alpm/arch/pacman@6.0.1-1?arch=x86_64",
+                "pkg:alpm/arch/python-pip@21.0-1?arch=any",
+                "pkg:alpm/arch/containers-common@1:0.47.4-4?arch=x86_64",
+                "pkg:apk/alpine/curl@7.83.0-r0?arch=x86",
+                "pkg:apk/alpine/apk@2.12.9-r3?arch=x86",
+                "pkg:bitbucket/birkenfeld/pygments-main@244fd47e07d1014f0aed9c",
+                "pkg:bitnami/wordpress?distro=debian-12",
+                "pkg:bitnami/wordpress@6.2.0?distro=debian-12",
+                "pkg:bitnami/wordpress@6.2.0?arch=arm64&distro=debian-12",
+                "pkg:bitnami/wordpress@6.2.0?arch=arm64&distro=photon-4",
+                "pkg:cocoapods/AFNetworking@4.0.1",
+                "pkg:cocoapods/MapsIndoors@3.24.0",
+                "pkg:cocoapods/ShareKit@2.0#Twitter",
+                "pkg:cocoapods/GoogleUtilities@7.5.2#NSData+zlib",
+                "pkg:cocoapods/GoogleUtilities@7.5.2#NSData+zlib",
+                "pkg:cargo/rand@0.7.2",
+                "pkg:cargo/clap@2.33.0",
+                "pkg:cargo/structopt@0.3.11",
+                "pkg:composer/laravel/laravel@5.5.0",
+                "pkg:conan/openssl@3.0.3",
+                "pkg:conan/openssl.org/openssl@3.0.3?user=bincrafters&channel=stable",
+                "pkg:conan/openssl.org/openssl@3.0.3?arch=x86_64&build_type=Debug&compiler=Visual%20Studio&compiler.runtime=MDd&compiler.version=16&os=Windows&shared=True&rrev=93a82349c31917d2d674d22065c7a9ef9f380c8e&prev=b429db8a0e324114c25ec387bfd8281f330d7c5c",
+                "pkg:conda/absl-py@0.4.1?build=py36h06a4308_0&channel=main&subdir=linux-64&type=tar.bz2",
+                "pkg:cpan/Perl::Version@1.013",
+                "pkg:cpan/DROLSKY/DateTime@1.55",
+                "pkg:cpan/DateTime@1.55",
+                "pkg:cpan/GDT/URI-PackageURL",
+                "pkg:cpan/LWP::UserAgent",
+                "pkg:cpan/OALDERS/libwww-perl@6.76",
+                "pkg:cpan/URI",
+                "pkg:cran/A3@1.0.0",
+                "pkg:cran/rJava@1.0-4",
+                "pkg:cran/caret@6.0-88",
+                "pkg:deb/debian/curl@7.50.3-1?arch=i386&distro=jessie",
+                "pkg:deb/debian/dpkg@1.19.0.4?arch=amd64&distro=stretch",
+                "pkg:deb/ubuntu/dpkg@1.19.0.4?arch=amd64",
+                "pkg:deb/debian/attr@1:2.4.47-2?arch=source",
+                "pkg:deb/debian/attr@1:2.4.47-2%2Bb1?arch=amd64",
+                "pkg:docker/cassandra@latest",
+                "pkg:docker/smartentry/debian@dc437cc87d10",
+                "pkg:docker/customer/dockerimage@sha256%3A244fd47e07d10?repository_url=gcr.io",
+                "pkg:gem/ruby-advisory-db-check@0.12.4",
+                "pkg:gem/jruby-launcher@1.1.2?platform=java",
+                "pkg:generic/openssl@1.1.10g",
+                "pkg:generic/openssl@1.1.10g?download_url=https://openssl.org/source/openssl-1.1.0g.tar.gz&checksum=sha256:de4d501267da",
+                "pkg:generic/bitwarderl?vcs_url=git%2Bhttps://git.fsfe.org/dxtr/bitwarderl%40cc55108da32",
+                "pkg:github/package-url/purl-spec@244fd47e07d1004",
+                "pkg:github/package-url/purl-spec@244fd47e07d1004#everybody/loves/dogs",
+                "pkg:golang/github.com/gorilla/context@234fd47e07d1004f0aed9c",
+                "pkg:golang/google.golang.org/genproto#googleapis/api/annotations",
+                "pkg:golang/github.com/gorilla/context@234fd47e07d1004f0aed9c#api",
+                "pkg:hackage/a50@0.5",
+                "pkg:hackage/AC-HalfInteger@1.2.1",
+                "pkg:hackage/3d-graphics-examples@0.0.0.2",
+                "pkg:hex/jason@1.1.2",
+                "pkg:hex/acme/foo@2.3.",
+                "pkg:hex/phoenix_html@2.13.3#priv/static/phoenix_html.js",
+                "pkg:hex/bar@1.2.3?repository_url=https://myrepo.example.com",
+                "pkg:huggingface/distilbert-base-uncased@043235d6088ecd3dd5fb5ca3592b6913fd516027",
+                "pkg:huggingface/microsoft/deberta-v3-base@559062ad13d311b87b2c455e67dcd5f1c8f65111?repository_url=https://hub-ci.huggingface.co",
+                "pkg:luarocks/luasocket@3.1.0-1",
+                "pkg:luarocks/hisham/luafilesystem@1.8.0-1",
+                "pkg:luarocks/username/packagename@0.1.0-1?repository_url=https://example.com/private_rocks_server/",
+                "pkg:maven/org.apache.xmlgraphics/batik-anim@1.9.1",
+                "pkg:maven/org.apache.xmlgraphics/batik-anim@1.9.1?type=pom",
+                "pkg:maven/org.apache.xmlgraphics/batik-anim@1.9.1?classifier=sources",
+                "pkg:maven/org.apache.xmlgraphics/batik-anim@1.9.1?type=zip&classifier=dist",
+                "pkg:maven/net.sf.jacob-projec/jacob@1.14.3?classifier=x86&type=dll",
+                "pkg:maven/net.sf.jacob-projec/jacob@1.14.3?classifier=x64&type=dll",
+                "pkg:maven/groovy/groovy@1.0?repository_url=https://maven.google.com",
+                "pkg:mlflow/creditfraud@3?repository_url=https://westus2.api.azureml.ms/mlflow/v1.0/subscriptions/a50f2011-fab8-4164-af23-c62881ef8c95/resourceGroups/TestResourceGroup/providers/Microsoft.MachineLearningServices/workspaces/TestWorkspace",
+                "pkg:mlflow/trafficsigns@10?model_uuid=36233173b22f4c89b451f1228d700d49&run_id=410a3121-2709-4f88-98dd-dba0ef056b0a&repository_url=https://adb-5245952564735461.0.azuredatabricks.net/api/2.0/mlflow",
+                "pkg:npm/foobar@12.3.1",
+                "pkg:npm/%40angular/animation@12.3.1",
+                "pkg:npm/mypackage@12.4.5?vcs_url=git://host.com/path/to/repo.git%404345abcd34343",
+                "pkg:nuget/EnterpriseLibrary.Common@6.0.1304",
+                "pkg:qpkg/blackberry/com.qnx.sdp@7.0.0.SGA201702151847",
+                "pkg:qpkg/blackberry/com.qnx.qnx710.foo.bar.qux@0.0.4.01449T202205040833L",
+                "pkg:oci/debian@sha256%3A244fd47e07d10?repository_url=docker.io/library/debian&arch=amd64&tag=latest",
+                "pkg:oci/debian@sha256%3A244fd47e07d10?repository_url=ghcr.io/debian&tag=bullseye",
+                "pkg:oci/static@sha256%3A244fd47e07d10?repository_url=gcr.io/distroless/static&tag=latest",
+                "pkg:oci/hello-wasm@sha256%3A244fd47e07d10?tag=v1",
+                "pkg:pub/characters@1.2.0",
+                "pkg:pub/flutter@0.0.0",
+                "pkg:pypi/django@1.11.1",
+                "pkg:pypi/django@1.11.1?filename=Django-1.11.1.tar.gz",
+                "pkg:pypi/django@1.11.1?filename=Django-1.11.1-py2.py3-none-any.whl",
+                "pkg:pypi/django-allauth@12.23",
+                "pkg:rpm/fedora/curl@7.50.3-1.fc25?arch=i386&distro=fedora-25",
+                "pkg:rpm/centerim@4.22.10-1.el6?arch=i686&epoch=1&distro=fedora-25",
+                "pkg:swid/Acme/example.com/Enterprise+Server@1.0.0?tag_id=75b8c285-fa7b-485b-b199-4745e3004d0d",
+                "pkg:swid/Fedora@29?tag_id=org.fedoraproject.Fedora-29",
+                "pkg:swid/Adobe+Systems+Incorporated/Adobe+InDesign@CC?tag_id=CreativeCloud-CS6-Win-GM-MUL",
+                "pkg:swift/github.com/Alamofire/Alamofire@5.4.3",
+                "pkg:swift/github.com/RxSwiftCommunity/RxFlow@2.12.4"
+            })
+    void parseValidTypes(String purl) {
+        assertDoesNotThrow(() -> new PackageURL(purl));
     }
 }

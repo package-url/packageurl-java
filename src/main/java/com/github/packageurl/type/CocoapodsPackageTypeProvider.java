@@ -19,27 +19,30 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.github.packageurl;
+package com.github.packageurl.type;
 
-/**
- * Internal exception class intended to be used within validation contained in lambda expressions.
- *
- * @author Jeremy Long
- * @since 1.1.0
- */
-class ValidationException extends RuntimeException {
+import com.github.packageurl.MalformedPackageURLException;
+import com.github.packageurl.PackageURL;
+import java.util.Map;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
-    private static final long serialVersionUID = 2045474478691037663L;
+public class CocoapodsPackageTypeProvider implements PackageTypeProvider {
+    @Override
+    public void validateComponents(
+            @NonNull String type,
+            @Nullable String namespace,
+            @NonNull String name,
+            @Nullable String version,
+            @Nullable Map<String, String> qualifiers,
+            @Nullable String subpath)
+            throws MalformedPackageURLException {
+        if (namespace != null && !namespace.isEmpty()) {
+            throw new MalformedPackageURLException("invalid cocoapods purl cannot have a namespace");
+        }
 
-    /**
-     * Constructs a {@code ValidationException}.
-     * @param msg the error message
-     */
-    ValidationException(String msg) {
-        super(msg);
-    }
-
-    ValidationException(String msg, Throwable cause) {
-        super(msg, cause);
+        if (name.chars().anyMatch(PackageURL::isWhitespace) || name.startsWith(".") || name.contains("+")) {
+            throw new MalformedPackageURLException("invalid cocoapods purl invalid name");
+        }
     }
 }
