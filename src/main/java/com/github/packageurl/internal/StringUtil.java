@@ -25,6 +25,7 @@ import static java.lang.Byte.toUnsignedInt;
 
 import com.github.packageurl.ValidationException;
 import java.nio.charset.StandardCharsets;
+import org.jspecify.annotations.NonNull;
 
 /**
  * String utility for validation and encoding.
@@ -65,7 +66,7 @@ public final class StringUtil {
      *
      * @since 2.0.0
      */
-    public static String toLowerCase(String s) {
+    public static @NonNull String toLowerCase(@NonNull String s) {
         int pos = indexOfFirstUpperCaseChar(s);
 
         if (pos == -1) {
@@ -89,7 +90,7 @@ public final class StringUtil {
      *
      * @since 2.0.0
      */
-    public static String percentDecode(final String source) {
+    public static @NonNull String percentDecode(@NonNull final String source) {
         if (source.indexOf(PERCENT_CHAR) == -1) {
             return source;
         }
@@ -120,7 +121,7 @@ public final class StringUtil {
      *
      * @since 2.0.0
      */
-    public static String percentEncode(final String source) {
+    public static @NonNull String percentEncode(@NonNull final String source) {
         if (!shouldEncode(source)) {
             return source;
         }
@@ -140,10 +141,6 @@ public final class StringUtil {
         }
 
         return new String(dest, 0, writePos, StandardCharsets.UTF_8);
-    }
-
-    private static byte toHexDigit(int b) {
-        return (byte) Character.toUpperCase(Character.forDigit(b & 0xF, 16));
     }
 
     /**
@@ -180,6 +177,10 @@ public final class StringUtil {
      */
     public static boolean isValidCharForKey(int c) {
         return (isAlphaNumeric(c) || c == '.' || c == '_' || c == '-');
+    }
+
+    private static byte toHexDigit(int b) {
+        return (byte) Character.toUpperCase(Character.forDigit(b & 0xF, 16));
     }
 
     /**

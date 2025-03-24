@@ -23,4 +23,7 @@
 /**
  * This package contains utility classes used by the PackageURL library.
  */
+@NullMarked
 package com.github.packageurl.internal;
+
+import org.jspecify.annotations.NullMarked;
