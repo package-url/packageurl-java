@@ -19,23 +19,24 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.github.packageurl;
+package com.github.packageurl.internal;
 
-/**
- * Internal exception class intended to be used within validation contained in lambda expressions.
- *
- * @author Jeremy Long
- * @since 1.1.0
- */
-public class ValidationException extends RuntimeException {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
 
-    private static final long serialVersionUID = 2045474478691037663L;
+import com.github.packageurl.MalformedPackageURLException;
+import com.github.packageurl.ValidationException;
+import org.junit.jupiter.api.Test;
 
-    /**
-     * Constructs a {@code ValidationException}.
-     * @param msg the error message
-     */
-    public ValidationException(String msg) {
-        super(msg);
+public class StringUtilTest {
+
+    @Test
+    void invalidPercentEncoding() throws MalformedPackageURLException {
+        Throwable t1 = assertThrowsExactly(ValidationException.class, () -> StringUtil.percentDecode("a%0"));
+        assertEquals("Incomplete percent encoding at offset 1 with value '%0'", t1.getMessage());
+        Throwable t2 = assertThrowsExactly(ValidationException.class, () -> StringUtil.percentDecode("aaaa%%0A"));
+        assertEquals("Invalid percent encoding char 1 at offset 5 with value '%'", t2.getMessage());
+        Throwable t3 = assertThrowsExactly(ValidationException.class, () -> StringUtil.percentDecode("%0G"));
+        assertEquals("Invalid percent encoding char 2 at offset 2 with value 'G'", t3.getMessage());
     }
 }

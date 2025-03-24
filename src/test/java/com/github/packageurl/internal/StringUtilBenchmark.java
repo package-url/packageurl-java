@@ -19,7 +19,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.github.packageurl;
+package com.github.packageurl.internal;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Locale;
@@ -31,11 +31,12 @@ import org.openjdk.jmh.annotations.Mode;
 import org.openjdk.jmh.annotations.OutputTimeUnit;
 import org.openjdk.jmh.annotations.Param;
 import org.openjdk.jmh.annotations.Scope;
+import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.infra.Blackhole;
 
 /**
- * Measures the performance of performance decoding and encoding.
+ * Measures the performance of performance StringUtil's decoding and encoding.
  * <p>
  *     Run the benchmark with:
  * </p>
@@ -52,7 +53,7 @@ import org.openjdk.jmh.infra.Blackhole;
 @BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(TimeUnit.MICROSECONDS)
 @State(Scope.Benchmark)
-public class PercentEncodingBenchmark {
+public class StringUtilBenchmark {
 
     private static final int DATA_COUNT = 1000;
     private static final int DECODED_LENGTH = 256;
@@ -62,8 +63,14 @@ public class PercentEncodingBenchmark {
     @Param({"0", "0.1", "0.5"})
     private double nonAsciiProb;
 
-    private final String[] decodedData = createDecodedData();
-    private final String[] encodedData = encodeData(decodedData);
+    private String[] decodedData;
+    private String[] encodedData;
+
+    @Setup
+    public void setup() {
+        decodedData = createDecodedData();
+        encodedData = encodeData(decodedData);
+    }
 
     private String[] createDecodedData() {
         Random random = new Random();
@@ -85,9 +92,12 @@ public class PercentEncodingBenchmark {
     private static String[] encodeData(String[] decodedData) {
         String[] encodedData = new String[decodedData.length];
         for (int i = 0; i < encodedData.length; i++) {
-            encodedData[i] = PackageURL.percentEncode(decodedData[i]);
-            if (!PackageURL.percentDecode(encodedData[i]).equals(decodedData[i])) {
-                throw new RuntimeException("Invalid implementation of `percentEncode` and `percentDecode`.");
+            encodedData[i] = StringUtil.percentEncode(decodedData[i]);
+            if (!StringUtil.percentDecode(encodedData[i]).equals(decodedData[i])) {
+                throw new RuntimeException(
+                        "Invalid implementation of `percentEncode` and `percentDecode`.\nOriginal data: "
+                                + encodedData[i] + "\nEncoded and decoded data: "
+                                + StringUtil.percentDecode(encodedData[i]));
             }
         }
         return encodedData;
@@ -115,21 +125,21 @@ public class PercentEncodingBenchmark {
     @Benchmark
     public void toLowerCase(Blackhole blackhole) {
         for (int i = 0; i < DATA_COUNT; i++) {
-            blackhole.consume(PackageURL.toLowerCase(decodedData[i]));
+            blackhole.consume(StringUtil.toLowerCase(decodedData[i]));
         }
     }
 
     @Benchmark
     public void percentDecode(final Blackhole blackhole) {
         for (int i = 0; i < DATA_COUNT; i++) {
-            blackhole.consume(PackageURL.percentDecode(encodedData[i]));
+            blackhole.consume(StringUtil.percentDecode(encodedData[i]));
         }
     }
 
     @Benchmark
     public void percentEncode(final Blackhole blackhole) {
         for (int i = 0; i < DATA_COUNT; i++) {
-            blackhole.consume(PackageURL.percentEncode(decodedData[i]));
+            blackhole.consume(StringUtil.percentEncode(decodedData[i]));
         }
     }
 }

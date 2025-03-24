@@ -70,7 +70,7 @@ public final class PackageURLBuilder {
      *
      * @param packageURL the existing Package URL object
      * @return a new builder object
-     * @since 1.6.0
+     * @since 2.0.0
      */
     public static PackageURLBuilder aPackageURL(final PackageURL packageURL) {
         return toBuilder(packageURL);
@@ -82,7 +82,7 @@ public final class PackageURLBuilder {
      * @param purl the existing Package URL string
      * @return a new builder object
      * @throws MalformedPackageURLException if an error occurs while parsing the input
-     * @since 1.6.0
+     * @since 2.0.0
      */
     public static PackageURLBuilder aPackageURL(final String purl) throws MalformedPackageURLException {
         return toBuilder(new PackageURL(purl));
@@ -184,7 +184,7 @@ public final class PackageURLBuilder {
      * @param qualifiers the package qualifiers, or {@code null}
      * @return a reference to the builder
      * @see PackageURL#getQualifiers()
-     * @since 1.6.0
+     * @since 2.0.0
      */
     public PackageURLBuilder withQualifiers(final @Nullable Map<String, String> qualifiers) {
         if (qualifiers == null) {
@@ -221,7 +221,7 @@ public final class PackageURLBuilder {
      * Removes a package qualifier. This is a no-op if the qualifier is not present.
      * @param keys the package qualifier keys to remove
      * @return a reference to the builder
-     * @since 1.6.0
+     * @since 2.0.0
      */
     public PackageURLBuilder withoutQualifiers(final Set<String> keys) {
         if (this.qualifiers != null) {
@@ -236,7 +236,7 @@ public final class PackageURLBuilder {
     /**
      * Removes all qualifiers, if any.
      * @return a reference to this builder.
-     * @since 1.6.0
+     * @since 2.0.0
      */
     public PackageURLBuilder withoutQualifiers() {
         qualifiers = null;
