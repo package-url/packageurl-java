@@ -25,8 +25,10 @@ import static java.util.Objects.requireNonNull;
 
 import com.github.packageurl.internal.StringUtil;
 import java.io.Serializable;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
@@ -82,7 +84,7 @@ public final class PackageURL implements Serializable {
      * The name of the package.
      * Required.
      */
-    private final String name;
+    private String name;
 
     /**
      * The version of the package.
@@ -190,7 +192,7 @@ public final class PackageURL implements Serializable {
                 remainder = remainder.substring(0, index);
                 this.namespace = validateNamespace(this.type, parsePath(remainder.substring(start), false));
             }
-            verifyTypeConstraints(this.type, this.namespace, this.name);
+            verifyTypeConstraints(this.type, this.namespace, this.name, this.version, this.qualifiers);
         } catch (URISyntaxException e) {
             throw new MalformedPackageURLException("Invalid purl: " + e.getMessage(), e);
         }
@@ -235,7 +237,7 @@ public final class PackageURL implements Serializable {
         this.version = validateVersion(this.type, version);
         this.qualifiers = parseQualifiers(qualifiers);
         this.subpath = validateSubpath(subpath);
-        verifyTypeConstraints(this.type, this.namespace, this.name);
+        verifyTypeConstraints(this.type, this.namespace, this.name, this.version, this.qualifiers);
     }
 
     /**
@@ -477,24 +479,31 @@ public final class PackageURL implements Serializable {
         return validatePath(value.split("/"), true);
     }
 
-    private static @Nullable String validatePath(final String[] segments, final boolean isSubPath)
+    private static boolean shouldKeepSegment(final String segment, final boolean isSubpath) {
+        return (!isSubpath || (!segment.isEmpty() && !".".equals(segment) && !"..".equals(segment)));
+    }
+
+    private static @Nullable String validatePath(final String[] segments, final boolean isSubpath)
             throws MalformedPackageURLException {
         if (segments.length == 0) {
             return null;
         }
+
         try {
             return Arrays.stream(segments)
-                    .peek(segment -> {
-                        if (isSubPath && ("..".equals(segment) || ".".equals(segment))) {
+                    .map(segment -> {
+                        if (!isSubpath && ("..".equals(segment) || ".".equals(segment))) {
                             throw new ValidationException(
-                                    "Segments in the subpath may not be a period ('.') or repeated period ('..')");
+                                    "Segments in the namespace may not be a period ('.') or repeated period ('..')");
                         } else if (segment.contains("/")) {
                             throw new ValidationException(
                                     "Segments in the namespace and subpath may not contain a forward slash ('/')");
                         } else if (segment.isEmpty()) {
                             throw new ValidationException("Segments in the namespace and subpath may not be empty");
                         }
+                        return segment;
                     })
+                    .filter(segment1 -> shouldKeepSegment(segment1, isSubpath))
                     .collect(Collectors.joining("/"));
         } catch (ValidationException e) {
             throw new MalformedPackageURLException(e);
@@ -538,7 +547,6 @@ public final class PackageURL implements Serializable {
         if (version != null) {
             purl.append('@').append(StringUtil.percentEncode(version));
         }
-
         if (!coordinatesOnly) {
             if (qualifiers != null) {
                 purl.append('?');
@@ -567,13 +575,74 @@ public final class PackageURL implements Serializable {
      * @param namespace the purl namespace
      * @throws MalformedPackageURLException if constraints are not met
      */
-    private static void verifyTypeConstraints(String type, @Nullable String namespace, @Nullable String name)
+    private void verifyTypeConstraints(
+            final String type,
+            final @Nullable String namespace,
+            final @Nullable String name,
+            final @Nullable String version,
+            final @Nullable Map<String, String> qualifiers)
             throws MalformedPackageURLException {
-        if (StandardTypes.MAVEN.equals(type)) {
-            if (isEmpty(namespace) || isEmpty(name)) {
-                throw new MalformedPackageURLException(
-                        "The PackageURL specified is invalid. Maven requires both a namespace and name.");
-            }
+        switch (type) {
+            case StandardTypes.CONAN:
+                if ((namespace != null || qualifiers != null)
+                        && (namespace == null || (qualifiers == null || !qualifiers.containsKey("channel")))) {
+                    throw new MalformedPackageURLException(
+                            "The PackageURL specified is invalid. Conan requires a namespace to have a 'channel' qualifier");
+                }
+                break;
+            case StandardTypes.CPAN:
+                if (name == null || name.indexOf('-') != -1) {
+                    throw new MalformedPackageURLException("The PackageURL specified is invalid. CPAN requires a name");
+                }
+                if (namespace != null && (name.contains("::") || name.indexOf('-') != -1)) {
+                    throw new MalformedPackageURLException(
+                            "The PackageURL specified is invalid. CPAN name may not contain '::' or '-'");
+                }
+                break;
+            case StandardTypes.CRAN:
+                if (version == null) {
+                    throw new MalformedPackageURLException(
+                            "The PackageURL specified is invalid. CRAN requires a version");
+                }
+                break;
+            case StandardTypes.HACKAGE:
+                if (name == null || version == null) {
+                    throw new MalformedPackageURLException(
+                            "The PackageURL specified is invalid. Hackage requires a name and version");
+                }
+                break;
+            case StandardTypes.MAVEN:
+                if (namespace == null || name == null) {
+                    throw new MalformedPackageURLException(
+                            "The PackageURL specified is invalid. Maven requires both a namespace and name");
+                }
+                break;
+            case StandardTypes.MLFLOW:
+                if (qualifiers != null) {
+                    String repositoryUrl = qualifiers.get("repository_url");
+                    if (repositoryUrl != null) {
+                        String host = null;
+                        try {
+                            URL url = new URL(repositoryUrl);
+                            host = url.getHost();
+                            if (host.matches(".*[.]?azuredatabricks.net$")) {
+                                // TODO: Move this eventually
+                                this.name = name.toLowerCase();
+                            }
+                        } catch (MalformedURLException e) {
+                            throw new MalformedPackageURLException(
+                                    "The PackageURL specified is invalid. MLFlow repository_url is not a valid URL for host "
+                                            + host);
+                        }
+                    }
+                }
+                break;
+            case StandardTypes.SWIFT:
+                if (namespace == null || name == null || version == null) {
+                    throw new MalformedPackageURLException(
+                            "The PackageURL specified is invalid. Swift requires a namespace, name, and version");
+                }
+                break;
         }
     }
 
