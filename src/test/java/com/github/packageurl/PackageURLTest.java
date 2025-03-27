@@ -376,7 +376,7 @@ class PackageURLTest {
                 "pkg:swift/github.com/Alamofire/Alamofire@5.4.3",
                 "pkg:swift/github.com/RxSwiftCommunity/RxFlow@2.12.4"
             })
-    void parseValidTypes(String purl) {
-        assertDoesNotThrow(() -> new PackageURL(purl));
+    void parseValidTypes(final String purl) {
+        assertDoesNotThrow(() -> new PackageURL(purl).normalize());
     }
 }
