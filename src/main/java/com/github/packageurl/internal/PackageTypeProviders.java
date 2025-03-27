@@ -16,16 +16,16 @@ public final class PackageTypeProviders {
     private PackageTypeProviders() {}
 
     @ServiceProvider(value = PackageTypeProvider.class, resolution = Requirement.Resolution.MANDATORY)
-    public static class ApkPackageTypeProvider extends LowercaseNamespaceAndNameTypeProvider {}
+    public static class Apk extends LowercaseNamespaceAndNameTypeProvider {}
 
     @ServiceProvider(value = PackageTypeProvider.class, resolution = Requirement.Resolution.MANDATORY)
-    public static class BitbucketPackageTypeProvider extends LowercaseNamespaceAndNameTypeProvider {}
+    public static class Bitbucket extends LowercaseNamespaceAndNameTypeProvider {}
 
     @ServiceProvider(value = PackageTypeProvider.class, resolution = Requirement.Resolution.MANDATORY)
-    public static class BitnamiPackageTypeProvider extends LowercaseNamespacePackageTypeProvider {}
+    public static class Bitnami extends LowercaseNamespacePackageTypeProvider {}
 
     @ServiceProvider(value = PackageTypeProvider.class, resolution = Requirement.Resolution.MANDATORY)
-    public static class CocoapodsPackageTypeProvider implements PackageTypeProvider {
+    public static class Cocoapods implements PackageTypeProvider {
         @Override
         public void validateComponents(
                 @NonNull String type,
@@ -46,10 +46,10 @@ public final class PackageTypeProviders {
     }
 
     @ServiceProvider(value = PackageTypeProvider.class, resolution = Requirement.Resolution.MANDATORY)
-    public static class ComposerPackageTypeProvider extends LowercaseNamespaceAndNameTypeProvider {}
+    public static class Composer extends LowercaseNamespaceAndNameTypeProvider {}
 
     @ServiceProvider(value = PackageTypeProvider.class, resolution = Requirement.Resolution.MANDATORY)
-    public static class ConanPackageTypeProvider implements PackageTypeProvider {
+    public static class Conan implements PackageTypeProvider {
         @Override
         public void validateComponents(
                 @NonNull String type,
@@ -70,7 +70,7 @@ public final class PackageTypeProviders {
     }
 
     @ServiceProvider(value = PackageTypeProvider.class, resolution = Requirement.Resolution.MANDATORY)
-    public static class CpanPackageTypeProvider implements PackageTypeProvider {
+    public static class Cpan implements PackageTypeProvider {
         @Override
         public void validateComponents(
                 @NonNull String type,
@@ -89,7 +89,7 @@ public final class PackageTypeProviders {
     }
 
     @ServiceProvider(value = PackageTypeProvider.class, resolution = Requirement.Resolution.MANDATORY)
-    public static class CranPackageTypeProvider implements PackageTypeProvider {
+    public static class Cran implements PackageTypeProvider {
         @Override
         public void validateComponents(
                 @NonNull String type,
@@ -106,19 +106,19 @@ public final class PackageTypeProviders {
     }
 
     @ServiceProvider(value = PackageTypeProvider.class, resolution = Requirement.Resolution.MANDATORY)
-    public static class DebPackageTypeProvider extends LowercaseNamespaceAndNameTypeProvider {}
+    public static class Deb extends LowercaseNamespaceAndNameTypeProvider {}
 
     @ServiceProvider(value = PackageTypeProvider.class, resolution = Requirement.Resolution.MANDATORY)
-    public static class GenericPackageTypeProvider implements PackageTypeProvider {}
+    public static class Generic implements PackageTypeProvider {}
 
     @ServiceProvider(value = PackageTypeProvider.class, resolution = Requirement.Resolution.MANDATORY)
-    public static class GithubPackageTypeProvider extends LowercaseNamespaceAndNameTypeProvider {}
+    public static class Github extends LowercaseNamespaceAndNameTypeProvider {}
 
     @ServiceProvider(value = PackageTypeProvider.class, resolution = Requirement.Resolution.MANDATORY)
-    public static class GolangPackageTypeProvider extends LowercaseNamespacePackageTypeProvider {}
+    public static class Golang extends LowercaseNamespacePackageTypeProvider {}
 
     @ServiceProvider(value = PackageTypeProvider.class, resolution = Requirement.Resolution.MANDATORY)
-    public static class HackagePackageTypeProvider implements PackageTypeProvider {
+    public static class Hackage implements PackageTypeProvider {
         @Override
         public void validateComponents(
                 @NonNull String type,
@@ -135,16 +135,16 @@ public final class PackageTypeProviders {
     }
 
     @ServiceProvider(value = PackageTypeProvider.class, resolution = Requirement.Resolution.MANDATORY)
-    public static class HexPackageTypeProvider extends LowercaseNamespaceAndNameTypeProvider {}
+    public static class Hex extends LowercaseNamespaceAndNameTypeProvider {}
 
     @ServiceProvider(value = PackageTypeProvider.class, resolution = Requirement.Resolution.MANDATORY)
-    public static class HuggingfacePackageTypeProvider extends LowercaseVersionPackageTypeProvider {}
+    public static class Huggingface extends LowercaseVersionPackageTypeProvider {}
 
     @ServiceProvider(value = PackageTypeProvider.class, resolution = Requirement.Resolution.MANDATORY)
-    public static class LuarocksPackageTypeProvider extends LowercaseVersionPackageTypeProvider {}
+    public static class Luarocks extends LowercaseVersionPackageTypeProvider {}
 
     @ServiceProvider(value = PackageTypeProvider.class, resolution = Requirement.Resolution.MANDATORY)
-    public static class MavenPackageTypeProvider implements PackageTypeProvider {
+    public static class Maven implements PackageTypeProvider {
         @Override
         public void validateComponents(
                 @NonNull String type,
@@ -161,7 +161,7 @@ public final class PackageTypeProviders {
     }
 
     @ServiceProvider(value = PackageTypeProvider.class, resolution = Requirement.Resolution.MANDATORY)
-    public static class MlflowPackageTypeProvider implements PackageTypeProvider {
+    public static class Mlflow implements PackageTypeProvider {
         private static @Nullable String normalizeName(@Nullable String name, @Nullable Map<String, String> qualifiers)
                 throws MalformedPackageURLException {
             if (qualifiers != null) {
@@ -215,7 +215,7 @@ public final class PackageTypeProviders {
     }
 
     @ServiceProvider(value = PackageTypeProvider.class, resolution = Requirement.Resolution.MANDATORY)
-    public static class OciPackageTypeProvider implements PackageTypeProvider {
+    public static class Oci extends LowercaseNameAndVersionPackageTypeProvider {
         @Override
         public void validateComponents(
                 @NonNull String type,
@@ -229,31 +229,13 @@ public final class PackageTypeProviders {
                 throw new MalformedPackageURLException("a namespace is not allowed for type '" + type + "'");
             }
         }
-
-        @Override
-        public @NonNull PackageURL normalizeComponents(
-                @NonNull String type,
-                @Nullable String namespace,
-                @NonNull String name,
-                @Nullable String version,
-                @Nullable Map<String, String> qualifiers,
-                @Nullable String subpath)
-                throws MalformedPackageURLException {
-            return new PackageURL(
-                    type,
-                    namespace,
-                    StringUtil.toLowerCase(name),
-                    version != null ? StringUtil.toLowerCase(version) : null,
-                    qualifiers,
-                    subpath);
-        }
     }
 
     @ServiceProvider(value = PackageTypeProvider.class, resolution = Requirement.Resolution.MANDATORY)
-    public static class PubPackageTypeProvider extends LowercaseNamePackageTypeProvider {}
+    public static class Pub extends LowercaseNamePackageTypeProvider {}
 
     @ServiceProvider(value = PackageTypeProvider.class, resolution = Requirement.Resolution.MANDATORY)
-    public static class PypiPackageTypeProvider implements PackageTypeProvider {
+    public static class Pypi implements PackageTypeProvider {
         @Override
         public @NonNull PackageURL normalizeComponents(
                 @NonNull String type,
@@ -269,13 +251,13 @@ public final class PackageTypeProviders {
     }
 
     @ServiceProvider(value = PackageTypeProvider.class, resolution = Requirement.Resolution.MANDATORY)
-    public static class QpkgPackageTypeProvider extends LowercaseNamespacePackageTypeProvider {}
+    public static class Qpkg extends LowercaseNamespacePackageTypeProvider {}
 
     @ServiceProvider(value = PackageTypeProvider.class, resolution = Requirement.Resolution.MANDATORY)
-    public static class RpmPackageTypeProvider extends LowercaseNamespacePackageTypeProvider {}
+    public static class Rpm extends LowercaseNamespacePackageTypeProvider {}
 
     @ServiceProvider(value = PackageTypeProvider.class, resolution = Requirement.Resolution.MANDATORY)
-    public static class SwiftPackageTypeProvider implements PackageTypeProvider {
+    public static class Swift implements PackageTypeProvider {
         @Override
         public void validateComponents(
                 @NonNull String type,
