@@ -51,15 +51,7 @@ public interface PackageTypeProvider {
     }
 
     default @NonNull String getPackageType() {
-        String simpleName = getClass().getSimpleName();
-        String suffix = PackageTypeProvider.class.getSimpleName();
-        int index = simpleName.lastIndexOf(suffix);
-
-        if (index <= 0 || index != (simpleName.length() - suffix.length())) {
-            throw new IllegalArgumentException("Invalid class name for package type provider '" + simpleName + "'");
-        }
-
-        String type = StringUtil.toLowerCase(simpleName.substring(0, index));
+        String type = StringUtil.toLowerCase(getClass().getSimpleName());
 
         try {
             PackageTypeFactory.validateType(type);
@@ -68,6 +60,6 @@ public interface PackageTypeProvider {
                     "Package type provider name '" + type + "' is not a valid package type", e);
         }
 
-        return StringUtil.toLowerCase(type);
+        return type;
     }
 }
