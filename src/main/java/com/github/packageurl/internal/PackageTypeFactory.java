@@ -19,11 +19,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.github.packageurl.type;
+package com.github.packageurl.internal;
 
+import aQute.bnd.annotation.spi.ServiceConsumer;
 import com.github.packageurl.MalformedPackageURLException;
 import com.github.packageurl.PackageURL;
-import com.github.packageurl.internal.StringUtil;
+
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
@@ -34,9 +35,13 @@ import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.TreeMap;
+
+import com.github.packageurl.spi.PackageTypeProvider;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
+import org.osgi.annotation.bundle.Requirement;
 
+@ServiceConsumer(value = PackageTypeProvider.class, resolution = Requirement.Resolution.MANDATORY, cardinality = Requirement.Cardinality.MULTIPLE)
 public final class PackageTypeFactory implements PackageTypeProvider {
     private static final @NonNull PackageTypeFactory INSTANCE = new PackageTypeFactory();
 
@@ -109,7 +114,7 @@ public final class PackageTypeFactory implements PackageTypeProvider {
         }
     }
 
-    static void validateType(@NonNull String type) throws MalformedPackageURLException {
+    public static void validateType(@NonNull String type) throws MalformedPackageURLException {
         if (type.isEmpty()) {
             throw new MalformedPackageURLException("a type is always required");
         }

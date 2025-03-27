@@ -19,17 +19,27 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.github.packageurl.type;
+package com.github.packageurl.spi;
 
 import com.github.packageurl.MalformedPackageURLException;
+import com.github.packageurl.PackageURL;
+import com.github.packageurl.internal.PackageTypeFactory;
 import com.github.packageurl.internal.StringUtil;
 import java.util.Map;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
-public class CocoapodsPackageTypeProvider implements PackageTypeProvider {
-    @Override
-    public void validateComponents(
+public interface PackageTypeProvider {
+    default void validateComponents(
+            @NonNull String type,
+            @Nullable String namespace,
+            @NonNull String name,
+            @Nullable String version,
+            @Nullable Map<String, String> qualifiers,
+            @Nullable String subpath)
+            throws MalformedPackageURLException {}
+
+    default @NonNull PackageURL normalizeComponents(
             @NonNull String type,
             @Nullable String namespace,
             @NonNull String name,
@@ -37,12 +47,27 @@ public class CocoapodsPackageTypeProvider implements PackageTypeProvider {
             @Nullable Map<String, String> qualifiers,
             @Nullable String subpath)
             throws MalformedPackageURLException {
-        if (namespace != null && !namespace.isEmpty()) {
-            throw new MalformedPackageURLException("invalid cocoapods purl cannot have a namespace");
+        return new PackageURL(type, namespace, name, version, qualifiers, subpath);
+    }
+
+    default @NonNull String getPackageType() {
+        String simpleName = getClass().getSimpleName();
+        String suffix = PackageTypeProvider.class.getSimpleName();
+        int index = simpleName.lastIndexOf(suffix);
+
+        if (index <= 0 || index != (simpleName.length() - suffix.length())) {
+            throw new IllegalArgumentException("Invalid class name for package type provider '" + simpleName + "'");
         }
 
-        if (name.chars().anyMatch(StringUtil::isWhitespace) || name.startsWith(".") || name.contains("+")) {
-            throw new MalformedPackageURLException("invalid cocoapods purl invalid name");
+        String type = StringUtil.toLowerCase(simpleName.substring(0, index));
+
+        try {
+            PackageTypeFactory.validateType(type);
+        } catch (MalformedPackageURLException e) {
+            throw new IllegalArgumentException(
+                    "Package type provider name '" + type + "' is not a valid package type", e);
         }
+
+        return StringUtil.toLowerCase(type);
     }
 }

@@ -19,6 +19,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.github.packageurl.type;
+/**
+ * <p>Java implementation of the Package-URL Specification SPI for PURL types.</p>
+ * <p><a href="https://raw.githubusercontent.com/package-url/purl-spec/refs/heads/main/PURL-TYPES.rst">https://raw.githubusercontent.com/package-url/purl-spec/refs/heads/main/PURL-TYPES.rst</a></p>
+ */
+@NullMarked
+package com.github.packageurl.spi;
 
-public class HuggingfacePackageTypeProvider extends LowercaseVersionPackageTypeProvider {}
+import org.jspecify.annotations.NullMarked;

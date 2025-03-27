@@ -142,6 +142,9 @@
     <json.version>20250107</json.version>
     <junit-bom.version>5.12.1</junit-bom.version>
     <maven-surefire-junit5-tree-reporter.version>1.4.0</maven-surefire-junit5-tree-reporter.version>
+    <biz.aQute.bnd.annotation.version>7.1.0</biz.aQute.bnd.annotation.version>
+    <jspecify.version>1.0.0</jspecify.version>
+    <org.osgi.annotation.bundle.version>2.0.0</org.osgi.annotation.bundle.version>
   </properties>
 
   <dependencyManagement>
@@ -159,6 +162,12 @@
 
   <dependencies>
     <dependency>
+      <groupId>biz.aQute.bnd</groupId>
+      <artifactId>biz.aQute.bnd.annotation</artifactId>
+      <version>${biz.aQute.bnd.annotation.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
       <groupId>jakarta.validation</groupId>
       <artifactId>jakarta.validation-api</artifactId>
       <version>${jakarta.validation-api.version}</version>
@@ -168,13 +177,13 @@
     <dependency>
       <groupId>org.osgi</groupId>
       <artifactId>org.osgi.annotation.bundle</artifactId>
-      <version>2.0.0</version>
+      <version>${org.osgi.annotation.bundle.version}</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.jspecify</groupId>
       <artifactId>jspecify</artifactId>
-      <version>1.0.0</version>
+      <version>${jspecify.version}</version>
       <scope>provided</scope>
       <optional>true</optional>
     </dependency>
