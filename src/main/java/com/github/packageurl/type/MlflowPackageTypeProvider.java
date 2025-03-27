@@ -23,6 +23,7 @@ package com.github.packageurl.type;
 
 import com.github.packageurl.MalformedPackageURLException;
 import com.github.packageurl.PackageURL;
+import com.github.packageurl.internal.StringUtil;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Map;
@@ -43,7 +44,7 @@ public class MlflowPackageTypeProvider implements PackageTypeProvider {
                     host = url.getHost();
 
                     if (name != null && host.matches(".*[.]?azuredatabricks.net$")) {
-                        return PackageURL.toLowerCase(name);
+                        return StringUtil.toLowerCase(name);
                     }
                 } catch (URISyntaxException e) {
                     throw new MalformedPackageURLException(

@@ -27,7 +27,7 @@ package com.github.packageurl;
  * @author Jeremy Long
  * @since 1.1.0
  */
-class ValidationException extends RuntimeException {
+public class ValidationException extends RuntimeException {
 
     private static final long serialVersionUID = 2045474478691037663L;
 
@@ -35,7 +35,7 @@ class ValidationException extends RuntimeException {
      * Constructs a {@code ValidationException}.
      * @param msg the error message
      */
-    ValidationException(String msg) {
+    public ValidationException(String msg) {
         super(msg);
     }
 

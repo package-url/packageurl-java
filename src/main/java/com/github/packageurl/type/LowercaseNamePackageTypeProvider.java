@@ -23,6 +23,7 @@ package com.github.packageurl.type;
 
 import com.github.packageurl.MalformedPackageURLException;
 import com.github.packageurl.PackageURL;
+import com.github.packageurl.internal.StringUtil;
 import java.util.Map;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -37,6 +38,6 @@ public class LowercaseNamePackageTypeProvider implements PackageTypeProvider {
             @Nullable Map<String, String> qualifiers,
             @Nullable String subpath)
             throws MalformedPackageURLException {
-        return new PackageURL(type, namespace, PackageURL.toLowerCase(name), version, qualifiers, subpath);
+        return new PackageURL(type, namespace, StringUtil.toLowerCase(name), version, qualifiers, subpath);
     }
 }

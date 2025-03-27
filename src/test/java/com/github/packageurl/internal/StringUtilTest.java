@@ -19,30 +19,24 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.github.packageurl.type;
+package com.github.packageurl.internal;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
 
 import com.github.packageurl.MalformedPackageURLException;
-import com.github.packageurl.internal.StringUtil;
-import java.util.Map;
-import org.jspecify.annotations.NonNull;
-import org.jspecify.annotations.Nullable;
+import com.github.packageurl.ValidationException;
+import org.junit.jupiter.api.Test;
 
-public class CocoapodsPackageTypeProvider implements PackageTypeProvider {
-    @Override
-    public void validateComponents(
-            @NonNull String type,
-            @Nullable String namespace,
-            @NonNull String name,
-            @Nullable String version,
-            @Nullable Map<String, String> qualifiers,
-            @Nullable String subpath)
-            throws MalformedPackageURLException {
-        if (namespace != null && !namespace.isEmpty()) {
-            throw new MalformedPackageURLException("invalid cocoapods purl cannot have a namespace");
-        }
+public class StringUtilTest {
 
-        if (name.chars().anyMatch(StringUtil::isWhitespace) || name.startsWith(".") || name.contains("+")) {
-            throw new MalformedPackageURLException("invalid cocoapods purl invalid name");
-        }
+    @Test
+    void invalidPercentEncoding() throws MalformedPackageURLException {
+        Throwable t1 = assertThrowsExactly(ValidationException.class, () -> StringUtil.percentDecode("a%0"));
+        assertEquals("Incomplete percent encoding at offset 1 with value '%0'", t1.getMessage());
+        Throwable t2 = assertThrowsExactly(ValidationException.class, () -> StringUtil.percentDecode("aaaa%%0A"));
+        assertEquals("Invalid percent encoding char 1 at offset 5 with value '%'", t2.getMessage());
+        Throwable t3 = assertThrowsExactly(ValidationException.class, () -> StringUtil.percentDecode("%0G"));
+        assertEquals("Invalid percent encoding char 2 at offset 2 with value 'G'", t3.getMessage());
     }
 }

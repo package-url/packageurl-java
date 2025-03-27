@@ -19,30 +19,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.github.packageurl.type;
 
-import com.github.packageurl.MalformedPackageURLException;
-import com.github.packageurl.internal.StringUtil;
-import java.util.Map;
-import org.jspecify.annotations.NonNull;
-import org.jspecify.annotations.Nullable;
+/**
+ * This package contains utility classes used by the PackageURL library.
+ */
+@NullMarked
+package com.github.packageurl.internal;
 
-public class CocoapodsPackageTypeProvider implements PackageTypeProvider {
-    @Override
-    public void validateComponents(
-            @NonNull String type,
-            @Nullable String namespace,
-            @NonNull String name,
-            @Nullable String version,
-            @Nullable Map<String, String> qualifiers,
-            @Nullable String subpath)
-            throws MalformedPackageURLException {
-        if (namespace != null && !namespace.isEmpty()) {
-            throw new MalformedPackageURLException("invalid cocoapods purl cannot have a namespace");
-        }
-
-        if (name.chars().anyMatch(StringUtil::isWhitespace) || name.startsWith(".") || name.contains("+")) {
-            throw new MalformedPackageURLException("invalid cocoapods purl invalid name");
-        }
-    }
-}
+import org.jspecify.annotations.NullMarked;

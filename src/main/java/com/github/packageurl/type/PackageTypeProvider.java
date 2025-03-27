@@ -23,6 +23,7 @@ package com.github.packageurl.type;
 
 import com.github.packageurl.MalformedPackageURLException;
 import com.github.packageurl.PackageURL;
+import com.github.packageurl.internal.StringUtil;
 import java.util.Map;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -57,7 +58,7 @@ public interface PackageTypeProvider {
             throw new IllegalArgumentException("Invalid class name for package type provider '" + simpleName + "'");
         }
 
-        String type = PackageURL.toLowerCase(simpleName.substring(0, index));
+        String type = StringUtil.toLowerCase(simpleName.substring(0, index));
 
         try {
             PackageTypeFactory.validateType(type);
@@ -66,6 +67,6 @@ public interface PackageTypeProvider {
                     "Package type provider name '" + type + "' is not a valid package type", e);
         }
 
-        return PackageURL.toLowerCase(type);
+        return StringUtil.toLowerCase(type);
     }
 }

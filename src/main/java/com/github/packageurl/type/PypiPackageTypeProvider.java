@@ -23,6 +23,7 @@ package com.github.packageurl.type;
 
 import com.github.packageurl.MalformedPackageURLException;
 import com.github.packageurl.PackageURL;
+import com.github.packageurl.internal.StringUtil;
 import java.util.Map;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -38,6 +39,6 @@ public class PypiPackageTypeProvider implements PackageTypeProvider {
             @Nullable String subpath)
             throws MalformedPackageURLException {
         return new PackageURL(
-                type, namespace, PackageURL.toLowerCase(name).replace('_', '-'), version, qualifiers, subpath);
+                type, namespace, StringUtil.toLowerCase(name).replace('_', '-'), version, qualifiers, subpath);
     }
 }

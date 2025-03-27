@@ -23,6 +23,7 @@ package com.github.packageurl.type;
 
 import com.github.packageurl.MalformedPackageURLException;
 import com.github.packageurl.PackageURL;
+import com.github.packageurl.internal.StringUtil;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
@@ -50,7 +51,7 @@ public final class PackageTypeFactory implements PackageTypeProvider {
     }
 
     private static @NonNull String normalizeType(@NonNull String type) {
-        return PackageURL.toLowerCase(type);
+        return StringUtil.toLowerCase(type);
     }
 
     private static @Nullable String normalizeSubpath(@Nullable String subpath) {
@@ -80,7 +81,7 @@ public final class PackageTypeFactory implements PackageTypeProvider {
         Map<String, String> map = new TreeMap<>();
 
         for (Map.Entry<String, String> entry : entries) {
-            String key = PackageURL.toLowerCase(entry.getKey());
+            String key = StringUtil.toLowerCase(entry.getKey());
 
             if (map.put(key, entry.getValue()) != null) {
                 throw new MalformedPackageURLException("duplicate qualifiers key '" + key + "'");
@@ -101,7 +102,7 @@ public final class PackageTypeFactory implements PackageTypeProvider {
         for (Map.Entry<String, String> entry : entries) {
             String key = entry.getKey();
 
-            if (!key.chars().allMatch(PackageURL::isValidCharForKey)) {
+            if (!key.chars().allMatch(StringUtil::isValidCharForKey)) {
                 throw new MalformedPackageURLException("checks for invalid qualifier keys. The qualifier key '" + key
                         + "' contains invalid characters");
             }
@@ -115,12 +116,12 @@ public final class PackageTypeFactory implements PackageTypeProvider {
 
         char first = type.charAt(0);
 
-        if (!PackageURL.isAlpha(first)) {
+        if (!StringUtil.isAlpha(first)) {
             throw new MalformedPackageURLException("check for type that starts with number: '" + first + "'");
         }
 
         Map<Integer, Character> map = new LinkedHashMap<>(type.length());
-        type.chars().filter(c -> !PackageURL.isValidCharForType(c)).forEach(c -> map.put(c, (char) c));
+        type.chars().filter(c -> !StringUtil.isValidCharForType(c)).forEach(c -> map.put(c, (char) c));
 
         if (!map.isEmpty()) {
             throw new MalformedPackageURLException("check for invalid characters in type: " + map);
