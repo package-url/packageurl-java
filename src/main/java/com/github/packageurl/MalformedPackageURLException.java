@@ -53,7 +53,7 @@ public class MalformedPackageURLException extends Exception {
      *
      * @param message the detail message
      * @param cause the cause
-     * @since 1.6.0
+     * @since 2.0.0
      */
     public MalformedPackageURLException(String message, Throwable cause) {
         super(message, cause);
@@ -64,7 +64,7 @@ public class MalformedPackageURLException extends Exception {
      * message of {@code (cause==null ? null : cause.toString())}.
      *
      * @param cause the cause
-     * @since 1.6.0
+     * @since 2.0.0
      */
     public MalformedPackageURLException(Throwable cause) {
         super(cause);

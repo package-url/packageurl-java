@@ -19,23 +19,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.github.packageurl;
 
 /**
- * Internal exception class intended to be used within validation contained in lambda expressions.
- *
- * @author Jeremy Long
- * @since 1.1.0
+ * This package contains utility classes used by the PackageURL library.
  */
-public class ValidationException extends RuntimeException {
+@NullMarked
+package com.github.packageurl.internal;
 
-    private static final long serialVersionUID = 2045474478691037663L;
-
-    /**
-     * Constructs a {@code ValidationException}.
-     * @param msg the error message
-     */
-    public ValidationException(String msg) {
-        super(msg);
-    }
-}
+import org.jspecify.annotations.NullMarked;

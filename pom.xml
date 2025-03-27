@@ -24,7 +24,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.github.package-url</groupId>
   <artifactId>packageurl-java</artifactId>
-  <version>1.6.0-SNAPSHOT</version>
+  <version>2.0.0-SNAPSHOT</version>
   <packaging>jar</packaging>
 
   <name>Package URL</name>
@@ -113,8 +113,10 @@
     <bnd.maven.plugin.version>7.1.0</bnd.maven.plugin.version>
     <builder.helper.maven.plugin.version>3.6.0</builder.helper.maven.plugin.version>
     <cyclonedx-maven-plugin.version>2.9.1</cyclonedx-maven-plugin.version>
+    <exec.maven.plugin.version>3.5.0</exec.maven.plugin.version>
     <maven.clean.plugin.version>3.4.1</maven.clean.plugin.version>
     <maven.compiler.plugin.version>3.14.0</maven.compiler.plugin.version>
+    <maven.dependency.plugin.version>3.8.1</maven.dependency.plugin.version>
     <maven.deploy.plugin.version>3.1.4</maven.deploy.plugin.version>
     <maven.enforcer.plugin.version>3.5.0</maven.enforcer.plugin.version>
     <maven.gpg.plugin.version>3.2.7</maven.gpg.plugin.version>
@@ -136,6 +138,7 @@
     <com.github.spotbugs.version>4.9.3</com.github.spotbugs.version>
     <!-- Dependency versions -->
     <jakarta.validation-api.version>3.1.1</jakarta.validation-api.version>
+    <jmh.version>1.37</jmh.version>
     <json.version>20250107</json.version>
     <junit-bom.version>5.12.1</junit-bom.version>
     <maven-surefire-junit5-tree-reporter.version>1.4.0</maven-surefire-junit5-tree-reporter.version>
@@ -174,6 +177,12 @@
       <version>1.0.0</version>
       <scope>provided</scope>
       <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>org.openjdk.jmh</groupId>
+      <artifactId>jmh-core</artifactId>
+      <version>${jmh.version}</version>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.json</groupId>
@@ -265,10 +274,10 @@
     </pluginManagement>
     <plugins>
       <!--
-              ~ Parses the version into components.
-              ~
-              ~ The parsed version is used to generate the `Specification-Version` manifest header.
-              -->
+        ~ Parses the version into components.
+        ~
+        ~ The parsed version is used to generate the `Specification-Version` manifest header.
+        -->
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>build-helper-maven-plugin</artifactId>
@@ -316,18 +325,18 @@
             <!-- Error Prone plugin -->
             <arg>-XDcompilePolicy=simple</arg>
             <arg>--should-stop=ifError=FLOW</arg>
-            <arg>-Xplugin:ErrorProne</arg>
+            <arg>-Xplugin:ErrorProne -XepExcludedPaths:.*/generated-test-sources/.*</arg>
             <!--
-                          ~ Due to a bug in IntelliJ IDEA, annotation processing MUST be enabled.
-                          ~ Failing to do so will cause IDEA to ignore the annotation processor path
-                          ~ and choke on the Error Prone compiler arguments.
-                          ~
-                          ~ On the other hand, we cannot pass an empty `annotationProcessors` list to Maven,
-                          ~ since the `-processor` compiler argument requires at least one processor class name.
-                          ~
-                          ~ If you add an annotation processor, please also add an `annotationProcessors` configuration
-                          ~ option.
-                          -->
+              ~ Due to a bug in IntelliJ IDEA, annotation processing MUST be enabled.
+              ~ Failing to do so will cause IDEA to ignore the annotation processor path
+              ~ and choke on the Error Prone compiler arguments.
+              ~
+              ~ On the other hand, we cannot pass an empty `annotationProcessors` list to Maven,
+              ~ since the `-processor` compiler argument requires at least one processor class name.
+              ~
+              ~ If you add an annotation processor, please also add an `annotationProcessors` configuration
+              ~ option.
+              -->
           </compilerArgs>
           <annotationProcessorPaths>
             <path>
@@ -337,6 +346,26 @@
             </path>
           </annotationProcessorPaths>
         </configuration>
+        <executions>
+          <execution>
+            <id>default-testCompile</id>
+            <configuration>
+              <compilerArgs combine.children="append">
+                <arg>-proc:full</arg>
+              </compilerArgs>
+              <annotationProcessors>
+                <processor>org.openjdk.jmh.generators.BenchmarkProcessor</processor>
+              </annotationProcessors>
+              <annotationProcessorPaths combine.children="append">
+                <path>
+                  <groupId>org.openjdk.jmh</groupId>
+                  <artifactId>jmh-generator-annprocess</artifactId>
+                  <version>${jmh.version}</version>
+                </path>
+              </annotationProcessorPaths>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
       <plugin>
         <groupId>com.diffplug.spotless</groupId>
@@ -596,6 +625,55 @@
                   <goal>sign</goal>
                 </goals>
                 <phase>verify</phase>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
+    <profile>
+      <id>benchmark</id>
+      <properties>
+        <jmh.args>.*</jmh.args>
+        <skipTests>true</skipTests>
+      </properties>
+      <build>
+        <defaultGoal>test-compile
+          dependency:build-classpath@build-classpath
+          exec:exec@run-benchmark</defaultGoal>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-dependency-plugin</artifactId>
+            <version>${maven.dependency.plugin.version}</version>
+            <executions>
+              <execution>
+                <id>build-classpath</id>
+                <goals>
+                  <goal>build-classpath</goal>
+                </goals>
+                <configuration>
+                  <includeScope>test</includeScope>
+                  <outputProperty>test.classpath</outputProperty>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>exec-maven-plugin</artifactId>
+            <version>${exec.maven.plugin.version}</version>
+            <executions>
+              <execution>
+                <id>run-benchmark</id>
+                <goals>
+                  <goal>exec</goal>
+                </goals>
+                <configuration>
+                  <executable>${java.home}/bin/java</executable>
+                  <commandlineArgs>-cp target/classes:target/test-classes:${test.classpath} org.openjdk.jmh.Main ${jmh.args}</commandlineArgs>
+                </configuration>
               </execution>
             </executions>
           </plugin>

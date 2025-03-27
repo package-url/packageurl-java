@@ -21,13 +21,15 @@
  */
 package com.github.packageurl;
 
+import static com.github.packageurl.internal.StringUtil.FRAGMENTCHAR;
+import static com.github.packageurl.internal.StringUtil.PCHAR;
+import static com.github.packageurl.internal.StringUtil.QUERYCHAR;
 import static java.util.Objects.requireNonNull;
 
+import com.github.packageurl.internal.StringUtil;
 import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Collections;
@@ -37,7 +39,6 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.function.IntPredicate;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -59,112 +60,6 @@ import org.jspecify.annotations.Nullable;
 public final class PackageURL implements Serializable {
     private static final long serialVersionUID = 3243226021636427586L;
 
-    private static final char PERCENT_CHAR = '%';
-
-    private static final int NBITS = 128;
-
-    private static final BitSet DIGIT = new BitSet(NBITS);
-
-    static {
-        IntStream.rangeClosed('0', '9').forEach(DIGIT::set);
-    }
-
-    private static final BitSet LOWER = new BitSet(NBITS);
-
-    static {
-        IntStream.rangeClosed('a', 'z').forEach(LOWER::set);
-    }
-
-    private static final BitSet UPPER = new BitSet(NBITS);
-
-    static {
-        IntStream.rangeClosed('A', 'Z').forEach(UPPER::set);
-    }
-
-    private static final BitSet ALPHA = new BitSet(NBITS);
-
-    static {
-        ALPHA.or(LOWER);
-        ALPHA.or(UPPER);
-    }
-
-    private static final BitSet ALPHA_DIGIT = new BitSet(NBITS);
-
-    static {
-        ALPHA_DIGIT.or(ALPHA);
-        ALPHA_DIGIT.or(DIGIT);
-    }
-
-    private static final BitSet UNRESERVED = new BitSet(NBITS);
-
-    static {
-        UNRESERVED.or(ALPHA_DIGIT);
-        UNRESERVED.set('-');
-        UNRESERVED.set('.');
-        UNRESERVED.set('_');
-        UNRESERVED.set('~');
-    }
-
-    private static final BitSet GEN_DELIMS = new BitSet(NBITS);
-
-    static {
-        GEN_DELIMS.set(':');
-        GEN_DELIMS.set('/');
-        GEN_DELIMS.set('?');
-        GEN_DELIMS.set('#');
-        GEN_DELIMS.set('[');
-        GEN_DELIMS.set(']');
-        GEN_DELIMS.set('@');
-    }
-
-    private static final BitSet SUB_DELIMS = new BitSet(NBITS);
-
-    static {
-        SUB_DELIMS.set('!');
-        SUB_DELIMS.set('$');
-        SUB_DELIMS.set('&');
-        SUB_DELIMS.set('\'');
-        SUB_DELIMS.set('(');
-        SUB_DELIMS.set(')');
-        SUB_DELIMS.set('*');
-        SUB_DELIMS.set('+');
-        SUB_DELIMS.set(',');
-        SUB_DELIMS.set(';');
-        SUB_DELIMS.set('=');
-    }
-
-    private static final BitSet PCHAR = new BitSet(NBITS);
-
-    static {
-        PCHAR.or(UNRESERVED);
-        PCHAR.or(SUB_DELIMS);
-        PCHAR.set(':');
-        PCHAR.clear('&'); // XXX: Why?
-    }
-
-    private static final BitSet QUERY = new BitSet(NBITS);
-
-    static {
-        QUERY.or(GEN_DELIMS);
-        QUERY.or(PCHAR);
-        QUERY.set('/');
-        QUERY.set('?');
-        QUERY.clear('#');
-        QUERY.clear('&');
-        QUERY.clear('=');
-    }
-
-    private static final BitSet FRAGMENT = new BitSet(NBITS);
-
-    static {
-        FRAGMENT.or(GEN_DELIMS);
-        FRAGMENT.or(PCHAR);
-        FRAGMENT.set('/');
-        FRAGMENT.set('?');
-        FRAGMENT.set('&');
-        FRAGMENT.clear('#');
-    }
-
     /**
      * The PackageURL scheme constant
      */
@@ -179,37 +74,37 @@ public final class PackageURL implements Serializable {
      * The package "type" or package "protocol" such as maven, npm, nuget, gem, pypi, etc.
      * Required.
      */
-    private String type;
+    private final String type;
 
     /**
      * The name prefix such as a Maven groupid, a Docker image owner, a GitHub user or organization.
      * Optional and type-specific.
      */
-    private @Nullable String namespace;
+    private final @Nullable String namespace;
 
     /**
      * The name of the package.
      * Required.
      */
-    private String name;
+    private final String name;
 
     /**
      * The version of the package.
      * Optional.
      */
-    private @Nullable String version;
+    private final @Nullable String version;
 
     /**
      * Extra qualifying data for a package such as an OS, architecture, a distro, etc.
      * Optional and type-specific.
      */
-    private @Nullable Map<String, String> qualifiers;
+    private final @Nullable Map<String, String> qualifiers;
 
     /**
      * Extra subpath within a package, relative to the package root.
      * Optional.
      */
-    private @Nullable String subpath;
+    private final @Nullable String subpath;
 
     /**
      * Constructs a new PackageURL object by parsing the specified string.
@@ -219,7 +114,90 @@ public final class PackageURL implements Serializable {
      * @throws NullPointerException if {@code purl} is {@code null}
      */
     public PackageURL(final String purl) throws MalformedPackageURLException {
-        parse(requireNonNull(purl, "purl"));
+        requireNonNull(purl, "purl");
+
+        if (purl.isEmpty()) {
+            throw new MalformedPackageURLException("Invalid purl: Is empty or null");
+        }
+
+        try {
+            if (!purl.startsWith(SCHEME_PART)) {
+                throw new MalformedPackageURLException(
+                        "Invalid purl: " + purl + ". It does not start with '" + SCHEME_PART + "'");
+            }
+
+            final int length = purl.length();
+            int start = SCHEME_PART.length();
+
+            while (start < length && '/' == purl.charAt(start)) {
+                start++;
+            }
+
+            final URI uri = new URI(String.join("/", SCHEME_PART, purl.substring(start)));
+
+            validateScheme(uri.getScheme());
+
+            // Check to ensure that none of these parts are parsed. If so, it's an invalid purl.
+            if (uri.getRawAuthority() != null) {
+                throw new MalformedPackageURLException("Invalid purl: A purl must NOT contain a URL Authority ");
+            }
+
+            // subpath is optional - check for existence
+            final String rawFragment = uri.getRawFragment();
+            if (rawFragment != null && !rawFragment.isEmpty()) {
+                this.subpath = validatePath(parsePath(rawFragment, true), true);
+            } else {
+                this.subpath = null;
+            }
+            // qualifiers are optional - check for existence
+            final String rawQuery = uri.getRawQuery();
+            if (rawQuery != null && !rawQuery.isEmpty()) {
+                this.qualifiers = parseQualifiers(rawQuery);
+            } else {
+                this.qualifiers = null;
+            }
+            // this is the rest of the purl that needs to be parsed
+            String remainder = uri.getRawPath();
+            // trim trailing '/'
+            int end = remainder.length() - 1;
+            while (end > 0 && '/' == remainder.charAt(end)) {
+                end--;
+            }
+            remainder = remainder.substring(0, end + 1);
+            // there is exactly one leading '/' at this point
+            start = 1;
+            // type
+            int index = remainder.indexOf('/', start);
+            if (index <= start) {
+                throw new MalformedPackageURLException("Invalid purl: does not contain both a type and name");
+            }
+            this.type = StringUtil.toLowerCase(validateType(remainder.substring(start, index)));
+
+            start = index + 1;
+
+            // version is optional - check for existence
+            index = remainder.lastIndexOf('@');
+            if (index >= start) {
+                this.version = validateVersion(this.type, StringUtil.percentDecode(remainder.substring(index + 1)));
+                remainder = remainder.substring(0, index);
+            } else {
+                this.version = null;
+            }
+
+            // The 'remainder' should now consist of an optional namespace and the name
+            index = remainder.lastIndexOf('/');
+            if (index <= start) {
+                this.name = validateName(this.type, StringUtil.percentDecode(remainder.substring(start)));
+                this.namespace = null;
+            } else {
+                this.name = validateName(this.type, StringUtil.percentDecode(remainder.substring(index + 1)));
+                remainder = remainder.substring(0, index);
+                this.namespace = validateNamespace(this.type, parsePath(remainder.substring(start), false));
+            }
+            verifyTypeConstraints(this.type, this.namespace, this.name);
+        } catch (URISyntaxException e) {
+            throw new MalformedPackageURLException("Invalid purl: " + e.getMessage(), e);
+        }
     }
 
     /**
@@ -237,31 +215,6 @@ public final class PackageURL implements Serializable {
     /**
      * Constructs a new PackageURL object.
      *
-     * @param type the type of package (i.e., maven, npm, gem, etc.), not {@code null}
-     * @param namespace  the name prefix (i.e., group, owner, organization)
-     * @param name the name of the package, not {@code null}
-     * @param version the version of the package
-     * @param qualifiers an array of key/value pair qualifiers
-     * @param subpath the subpath string
-     * @throws MalformedPackageURLException if parsing fails
-     * @throws NullPointerException if {@code type} or {@code name} are {@code null}
-     * @deprecated use {@link #PackageURL(String, String, String, String, Map, String)} instead
-     */
-    @Deprecated
-    public PackageURL(
-            final String type,
-            final @Nullable String namespace,
-            final String name,
-            final @Nullable String version,
-            final @Nullable TreeMap<String, String> qualifiers,
-            final @Nullable String subpath)
-            throws MalformedPackageURLException {
-        this(type, namespace, name, version, qualifiers != null ? (Map<String, String>) qualifiers : null, subpath);
-    }
-
-    /**
-     * Constructs a new PackageURL object.
-     *
      * @param type the type of package (i.e. maven, npm, gem, etc)
      * @param namespace the name prefix (i.e., group, owner, organization)
      * @param name the name of the package
@@ -270,7 +223,7 @@ public final class PackageURL implements Serializable {
      * @param subpath the subpath string
      * @throws MalformedPackageURLException if parsing fails
      * @throws NullPointerException if {@code type} or {@code name} are {@code null}
-     * @since 1.6.0
+     * @since 2.0.0
      */
     public PackageURL(
             final String type,
@@ -280,7 +233,7 @@ public final class PackageURL implements Serializable {
             final @Nullable Map<String, String> qualifiers,
             final @Nullable String subpath)
             throws MalformedPackageURLException {
-        this.type = toLowerCase(validateType(requireNonNull(type, "type")));
+        this.type = StringUtil.toLowerCase(validateType(requireNonNull(type, "type")));
         this.namespace = validateNamespace(this.type, namespace);
         this.name = validateName(this.type, requireNonNull(name, "name"));
         this.version = validateVersion(this.type, version);
@@ -377,24 +330,16 @@ public final class PackageURL implements Serializable {
             throw new MalformedPackageURLException("The PackageURL type cannot be empty");
         }
 
-        validateChars(value, PackageURL::isValidCharForType, "type");
+        validateChars(value, StringUtil::isValidCharForType, "type");
 
         return value;
-    }
-
-    private static boolean isValidCharForType(int c) {
-        return (isAlphaNumeric(c) || c == '.' || c == '+' || c == '-');
-    }
-
-    private static boolean isValidCharForKey(int c) {
-        return (isAlphaNumeric(c) || c == '.' || c == '_' || c == '-');
     }
 
     private static void validateChars(String value, IntPredicate predicate, String component)
             throws MalformedPackageURLException {
         char firstChar = value.charAt(0);
 
-        if (isDigit(firstChar)) {
+        if (StringUtil.isDigit(firstChar)) {
             throw new MalformedPackageURLException(
                     "The PackageURL " + component + " cannot start with a number: " + firstChar);
         }
@@ -436,7 +381,7 @@ public final class PackageURL implements Serializable {
             case StandardTypes.LUAROCKS:
             case StandardTypes.QPKG:
             case StandardTypes.RPM:
-                retVal = tempNamespace != null ? toLowerCase(tempNamespace) : null;
+                retVal = tempNamespace != null ? StringUtil.toLowerCase(tempNamespace) : null;
                 break;
             case StandardTypes.MLFLOW:
             case StandardTypes.OCI:
@@ -469,13 +414,13 @@ public final class PackageURL implements Serializable {
             case StandardTypes.HEX:
             case StandardTypes.LUAROCKS:
             case StandardTypes.OCI:
-                temp = toLowerCase(value);
+                temp = StringUtil.toLowerCase(value);
                 break;
             case StandardTypes.PUB:
-                temp = toLowerCase(value).replaceAll("[^a-z0-9_]", "_");
+                temp = StringUtil.toLowerCase(value).replaceAll("[^a-z0-9_]", "_");
                 break;
             case StandardTypes.PYPI:
-                temp = toLowerCase(value).replace('_', '-');
+                temp = StringUtil.toLowerCase(value).replace('_', '-');
                 break;
             default:
                 temp = value;
@@ -493,7 +438,7 @@ public final class PackageURL implements Serializable {
             case StandardTypes.HUGGINGFACE:
             case StandardTypes.LUAROCKS:
             case StandardTypes.OCI:
-                return toLowerCase(value);
+                return StringUtil.toLowerCase(value);
             default:
                 return value;
         }
@@ -519,7 +464,7 @@ public final class PackageURL implements Serializable {
             throw new MalformedPackageURLException("Qualifier key is invalid: " + value);
         }
 
-        validateChars(value, PackageURL::isValidCharForKey, "qualifier key");
+        validateChars(value, StringUtil::isValidCharForKey, "qualifier key");
     }
 
     private static void validateValue(final String key, final @Nullable String value)
@@ -594,9 +539,9 @@ public final class PackageURL implements Serializable {
             purl.append(encodePath(namespace, PCHAR));
             purl.append('/');
         }
-        purl.append(percentEncode(name, PCHAR));
+        purl.append(StringUtil.percentEncode(name, PCHAR));
         if (version != null) {
-            purl.append('@').append(percentEncode(version, PCHAR));
+            purl.append('@').append(StringUtil.percentEncode(version, PCHAR));
         }
 
         if (!coordinatesOnly) {
@@ -610,279 +555,15 @@ public final class PackageURL implements Serializable {
                     }
                     purl.append(entry.getKey());
                     purl.append('=');
-                    purl.append(percentEncode(entry.getValue(), QUERY));
+                    purl.append(StringUtil.percentEncode(entry.getValue(), QUERYCHAR));
                     separator = true;
                 }
             }
             if (subpath != null) {
-                purl.append('#').append(encodePath(subpath, FRAGMENT));
+                purl.append('#').append(encodePath(subpath, FRAGMENTCHAR));
             }
         }
         return purl.toString();
-    }
-
-    private static boolean isUnreserved(int c, BitSet safe) {
-        if (c < 0 || c >= NBITS) {
-            return false;
-        }
-
-        return safe.get(c);
-    }
-
-    private static boolean shouldEncode(int c, BitSet safe) {
-        return !isUnreserved(c, safe);
-    }
-
-    private static boolean isAlpha(int c) {
-        return (isLowerCase(c) || isUpperCase(c));
-    }
-
-    private static boolean isDigit(int c) {
-        return (c >= '0' && c <= '9');
-    }
-
-    private static boolean isAlphaNumeric(int c) {
-        return (isDigit(c) || isAlpha(c));
-    }
-
-    private static boolean isUpperCase(int c) {
-        return (c >= 'A' && c <= 'Z');
-    }
-
-    private static int indexOfFirstUpperCaseChar(String s) {
-        int length = s.length();
-
-        for (int i = 0; i < length; i++) {
-            if (isUpperCase(s.charAt(i))) {
-                return i;
-            }
-        }
-
-        return -1;
-    }
-
-    private static boolean isLowerCase(int c) {
-        return (c >= 'a' && c <= 'z');
-    }
-
-    private static int toLowerCase(int c) {
-        return isUpperCase(c) ? (c ^ 0x20) : c;
-    }
-
-    private static String toLowerCase(String s) {
-        int pos = indexOfFirstUpperCaseChar(s);
-
-        if (pos == -1) {
-            return s;
-        }
-
-        char[] chars = s.toCharArray();
-        int length = chars.length;
-
-        for (int i = pos; i < length; i++) {
-            chars[i] = (char) toLowerCase(chars[i]);
-        }
-
-        return new String(chars);
-    }
-
-    private static int indexOfFirstPercentChar(final byte[] bytes) {
-        return IntStream.range(0, bytes.length)
-                .filter(i -> isPercent(bytes[i]))
-                .findFirst()
-                .orElse(-1);
-    }
-
-    private static byte percentDecode(final byte[] bytes, final int start) {
-        if (start + 2 >= bytes.length) {
-            throw new ValidationException("Incomplete percent encoding at offset " + start + " with value '"
-                    + new String(bytes, start, bytes.length - start, StandardCharsets.UTF_8) + "'");
-        }
-
-        int pos1 = start + 1;
-        byte b1 = bytes[pos1];
-        int c1 = Character.digit(b1, 16);
-
-        if (c1 == -1) {
-            throw new ValidationException(
-                    "Invalid percent encoding char 1 at offset " + pos1 + " with value '" + ((char) b1) + "'");
-        }
-
-        int pos2 = pos1 + 1;
-        byte b2 = bytes[pos2];
-        int c2 = Character.digit(bytes[pos2], 16);
-
-        if (c2 == -1) {
-            throw new ValidationException(
-                    "Invalid percent encoding char 2 at offset " + pos2 + " with value '" + ((char) b2) + "'");
-        }
-
-        return ((byte) ((c1 << 4) + c2));
-    }
-
-    static String percentDecode(final String source) {
-        if (source.isEmpty()) {
-            return source;
-        }
-
-        byte[] bytes = source.getBytes(StandardCharsets.UTF_8);
-        int i = indexOfFirstPercentChar(bytes);
-
-        if (i == -1) {
-            return source;
-        }
-
-        ByteBuffer buffer = ByteBuffer.wrap(bytes);
-        buffer.position(i);
-        int length = buffer.capacity();
-
-        while (i < length) {
-            byte b = bytes[i];
-
-            if (isPercent(b)) {
-                buffer.put(percentDecode(bytes, i));
-                i += 2;
-            } else {
-                buffer.put(b);
-            }
-
-            i++;
-        }
-
-        return new String(buffer.array(), 0, buffer.position(), StandardCharsets.UTF_8);
-    }
-
-    /**
-     * URI decodes the given string.
-     *
-     * @param source the encoded string
-     * @return the decoded string
-     * @since 1.4.2
-     * @deprecated this method was made public in error in version 1.4.2 and will be removed without a replacement
-     */
-    @Deprecated
-    public @Nullable String uriDecode(final @Nullable String source) {
-        return source != null ? percentDecode(source) : null;
-    }
-
-    private static boolean isPercent(int c) {
-        return (c == PERCENT_CHAR);
-    }
-
-    static String percentEncode(final String source) {
-        return percentEncode(source, UNRESERVED);
-    }
-
-    private static String percentEncode(final String source, final BitSet safe) {
-        if (source.isEmpty()) {
-            return source;
-        }
-
-        byte[] bytes = source.getBytes(StandardCharsets.UTF_8);
-        int length = bytes.length;
-        ByteBuffer buffer = ByteBuffer.allocate(length * 3);
-        boolean changed = false;
-
-        for (byte b : bytes) {
-            if (shouldEncode(b, safe)) {
-                changed = true;
-                byte b1 = (byte) Character.toUpperCase(Character.forDigit((b >> 4) & 0xF, 16));
-                byte b2 = (byte) Character.toUpperCase(Character.forDigit(b & 0xF, 16));
-                buffer.put((byte) PERCENT_CHAR);
-                buffer.put(b1);
-                buffer.put(b2);
-            } else {
-                buffer.put(b);
-            }
-        }
-
-        return changed ? new String(buffer.array(), 0, buffer.position(), StandardCharsets.UTF_8) : source;
-    }
-
-    /**
-     * Given a specified PackageURL, this method will parse the purl and populate this classes
-     * instance fields so that the corresponding getters may be called to retrieve the individual
-     * pieces of the purl.
-     *
-     * @param purl the purl string to parse
-     * @throws MalformedPackageURLException if an exception occurs when parsing
-     */
-    private void parse(final String purl) throws MalformedPackageURLException {
-        if (purl.isEmpty()) {
-            throw new MalformedPackageURLException("Invalid purl: Is empty or null");
-        }
-
-        try {
-            if (!purl.startsWith(SCHEME_PART)) {
-                throw new MalformedPackageURLException(
-                        "Invalid purl: " + purl + ". It does not start with '" + SCHEME_PART + "'");
-            }
-
-            final int length = purl.length();
-            int start = SCHEME_PART.length();
-
-            while (start < length && '/' == purl.charAt(start)) {
-                start++;
-            }
-
-            final URI uri = new URI(String.join("/", SCHEME_PART, purl.substring(start)));
-
-            validateScheme(uri.getScheme());
-
-            // Check to ensure that none of these parts are parsed. If so, it's an invalid purl.
-            if (uri.getRawAuthority() != null) {
-                throw new MalformedPackageURLException("Invalid purl: A purl must NOT contain a URL Authority ");
-            }
-
-            // subpath is optional - check for existence
-            final String rawFragment = uri.getRawFragment();
-            if (rawFragment != null && !rawFragment.isEmpty()) {
-                this.subpath = validatePath(parsePath(rawFragment, true), true);
-            }
-            // qualifiers are optional - check for existence
-            final String rawQuery = uri.getRawQuery();
-            if (rawQuery != null && !rawQuery.isEmpty()) {
-                this.qualifiers = parseQualifiers(rawQuery);
-            }
-            // this is the rest of the purl that needs to be parsed
-            String remainder = uri.getRawPath();
-            // trim trailing '/'
-            int end = remainder.length() - 1;
-            while (end > 0 && '/' == remainder.charAt(end)) {
-                end--;
-            }
-            remainder = remainder.substring(0, end + 1);
-            // there is exactly one leading '/' at this point
-            start = 1;
-            // type
-            int index = remainder.indexOf('/', start);
-            if (index <= start) {
-                throw new MalformedPackageURLException("Invalid purl: does not contain both a type and name");
-            }
-            this.type = toLowerCase(validateType(remainder.substring(start, index)));
-
-            start = index + 1;
-
-            // version is optional - check for existence
-            index = remainder.lastIndexOf('@');
-            if (index >= start) {
-                this.version = validateVersion(this.type, percentDecode(remainder.substring(index + 1)));
-                remainder = remainder.substring(0, index);
-            }
-
-            // The 'remainder' should now consist of an optional namespace and the name
-            index = remainder.lastIndexOf('/');
-            if (index <= start) {
-                this.name = validateName(this.type, percentDecode(remainder.substring(start)));
-            } else {
-                this.name = validateName(this.type, percentDecode(remainder.substring(index + 1)));
-                remainder = remainder.substring(0, index);
-                this.namespace = validateNamespace(this.type, parsePath(remainder.substring(start), false));
-            }
-            verifyTypeConstraints(this.type, this.namespace, this.name);
-        } catch (URISyntaxException e) {
-            throw new MalformedPackageURLException("Invalid purl: " + e.getMessage(), e);
-        }
     }
 
     /**
@@ -908,11 +589,11 @@ public final class PackageURL implements Serializable {
         }
 
         try {
-            final TreeMap<String, String> results = qualifiers.entrySet().stream()
+            final Map<String, String> results = qualifiers.entrySet().stream()
                     .filter(entry -> !isEmpty(entry.getValue()))
                     .collect(
                             TreeMap::new,
-                            (map, value) -> map.put(toLowerCase(value.getKey()), value.getValue()),
+                            (map, value) -> map.put(StringUtil.toLowerCase(value.getKey()), value.getValue()),
                             TreeMap::putAll);
             return validateQualifiers(results);
         } catch (ValidationException ex) {
@@ -929,8 +610,8 @@ public final class PackageURL implements Serializable {
                             (map, value) -> {
                                 final String[] entry = value.split("=", 2);
                                 if (entry.length == 2 && !entry[1].isEmpty()) {
-                                    String key = toLowerCase(entry[0]);
-                                    if (map.put(key, percentDecode(entry[1])) != null) {
+                                    String key = StringUtil.toLowerCase(entry[0]);
+                                    if (map.put(key, StringUtil.percentDecode(entry[1])) != null) {
                                         throw new ValidationException(
                                                 "Duplicate package qualifier encountered. More then one value was specified for "
                                                         + key);
@@ -947,13 +628,13 @@ public final class PackageURL implements Serializable {
     private static String[] parsePath(final String path, final boolean isSubpath) {
         return Arrays.stream(path.split("/"))
                 .filter(segment -> !segment.isEmpty() && !(isSubpath && (".".equals(segment) || "..".equals(segment))))
-                .map(PackageURL::percentDecode)
+                .map(StringUtil::percentDecode)
                 .toArray(String[]::new);
     }
 
-    private String encodePath(final String path, BitSet safe) {
+    private static String encodePath(final String path, BitSet unreservedChars) {
         return Arrays.stream(path.split("/"))
-                .map(source -> percentEncode(source, safe))
+                .map(segment -> StringUtil.percentEncode(segment, unreservedChars))
                 .collect(Collectors.joining("/"));
     }
 
@@ -1046,13 +727,13 @@ public final class PackageURL implements Serializable {
         /**
          * Arch Linux and other users of the libalpm/pacman package manager.
          *
-         * @since 1.6.0
+         * @since 2.0.0
          */
         public static final String ALPM = "alpm";
         /**
          * APK-based packages.
          *
-         * @since 1.6.0
+         * @since 2.0.0
          */
         public static final String APK = "apk";
         /**
@@ -1062,7 +743,7 @@ public final class PackageURL implements Serializable {
         /**
          * Bitnami-based packages.
          *
-         * @since 1.6.0
+         * @since 2.0.0
          */
         public static final String BITNAMI = "bitnami";
         /**
@@ -1074,7 +755,7 @@ public final class PackageURL implements Serializable {
         /**
          * CocoaPods.
          *
-         * @since 1.6.0
+         * @since 2.0.0
          */
         public static final String COCOAPODS = "cocoapods";
         /**
@@ -1084,31 +765,31 @@ public final class PackageURL implements Serializable {
         /**
          * Conan C/C++ packages.
          *
-         * @since 1.6.0
+         * @since 2.0.0
          */
         public static final String CONAN = "conan";
         /**
          * Conda packages.
          *
-         * @since 1.6.0
+         * @since 2.0.0
          */
         public static final String CONDA = "conda";
         /**
          * CPAN Perl packages.
          *
-         * @since 1.6.0
+         * @since 2.0.0
          */
         public static final String CPAN = "cpan";
         /**
          * CRAN R packages.
          *
-         * @since 1.6.0
+         * @since 2.0.0
          */
         public static final String CRAN = "cran";
         /**
          * Debian, Debian derivatives, and Ubuntu packages.
          *
-         * @since 1.6.0
+         * @since 2.0.0
          */
         public static final String DEB = "deb";
         /**
@@ -1138,19 +819,19 @@ public final class PackageURL implements Serializable {
         /**
          * Hex packages.
          *
-         * @since 1.6.0
+         * @since 2.0.0
          */
         public static final String HEX = "hex";
         /**
          * Hugging Face ML models.
          *
-         * @since 1.6.0
+         * @since 2.0.0
          */
         public static final String HUGGINGFACE = "huggingface";
         /**
          * Lua packages installed with LuaRocks.
          *
-         * @since 1.6.0
+         * @since 2.0.0
          */
         public static final String LUAROCKS = "luarocks";
         /**
@@ -1160,13 +841,13 @@ public final class PackageURL implements Serializable {
         /**
          * MLflow ML models (Azure ML, Databricks, etc.).
          *
-         * @since 1.6.0
+         * @since 2.0.0
          */
         public static final String MLFLOW = "mlflow";
         /**
          *  Nixos packages
          *
-         * @since 1.6.0
+         * @since 2.0.0
          */
         public static final String NIX = "nix";
         /**
@@ -1182,13 +863,13 @@ public final class PackageURL implements Serializable {
          * <a href="https://github.com/opencontainers/distribution-spec">OCI Distribution Specification</a>, including
          * container images built by Docker and others.
          *
-         * @since 1.6.0
+         * @since 2.0.0
          */
         public static final String OCI = "oci";
         /**
          * Dart and Flutter packages.
          *
-         * @since 1.6.0
+         * @since 2.0.0
          */
         public static final String PUB = "pub";
         /**
@@ -1198,7 +879,7 @@ public final class PackageURL implements Serializable {
         /**
          * QNX packages.
          *
-         * @since 1.6.0
+         * @since 2.0.0
          */
         public static final String QPKG = "qpkg";
         /**
@@ -1208,13 +889,13 @@ public final class PackageURL implements Serializable {
         /**
          * ISO-IEC 19770-2 Software Identification (SWID) tags.
          *
-         * @since 1.6.0
+         * @since 2.0.0
          */
         public static final String SWID = "swid";
         /**
          * Swift packages.
          *
-         * @since 1.6.0
+         * @since 2.0.0
          */
         public static final String SWIFT = "swift";
         /**
