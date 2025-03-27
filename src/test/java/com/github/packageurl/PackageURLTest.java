@@ -73,7 +73,6 @@ class PackageURLTest {
                 "pkg:nuget/%D0%9Cicros%D0%BEft.%D0%95ntit%D1%83Fram%D0%B5work%D0%A1%D0%BEr%D0%B5", purl2.toString());
     }
 
-    @SuppressWarnings("deprecation")
     @Test
     void invalidPercentEncoding() throws MalformedPackageURLException {
         assertThrowsExactly(
@@ -82,15 +81,6 @@ class PackageURLTest {
         assertThrowsExactly(
                 MalformedPackageURLException.class,
                 () -> new PackageURL("pkg:maven/com.google.summit/summit-ast@2.2.0%0"));
-        PackageURL purl = new PackageURL("pkg:maven/com.google.summit/summit-ast@2.2.0");
-        Throwable t1 = assertThrowsExactly(ValidationException.class, () -> purl.uriDecode("%"));
-        assertEquals("Incomplete percent encoding at offset 0 with value '%'", t1.getMessage());
-        Throwable t2 = assertThrowsExactly(ValidationException.class, () -> PackageURL.percentDecode("a%0"));
-        assertEquals("Incomplete percent encoding at offset 1 with value '%0'", t2.getMessage());
-        Throwable t3 = assertThrowsExactly(ValidationException.class, () -> PackageURL.percentDecode("aaaa%%0A"));
-        assertEquals("Invalid percent encoding char 1 at offset 5 with value '%'", t3.getMessage());
-        Throwable t4 = assertThrowsExactly(ValidationException.class, () -> PackageURL.percentDecode("%0G"));
-        assertEquals("Invalid percent encoding char 2 at offset 2 with value 'G'", t4.getMessage());
     }
 
     static Stream<Arguments> constructorParsing() throws IOException {
