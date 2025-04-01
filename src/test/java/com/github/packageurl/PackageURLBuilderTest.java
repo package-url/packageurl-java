@@ -72,7 +72,7 @@ class PackageURLBuilderTest {
             builder.withSubpath(subpath);
         }
         if (invalid) {
-            assertThrows(MalformedPackageURLException.class, builder::build);
+            assertThrows(MalformedPackageURLException.class, builder::build, "Build should fail due to " + description);
         } else {
             assertEquals(parameters.getType(), builder.getType(), "type");
             assertEquals(parameters.getNamespace(), builder.getNamespace(), "namespace");
@@ -109,13 +109,11 @@ class PackageURLBuilderTest {
     void packageURLBuilderException2() {
         assertThrowsExactly(
                 MalformedPackageURLException.class,
-                () -> {
-                    PackageURLBuilder.aPackageURL()
-                            .withType("type")
-                            .withNamespace("invalid//namespace")
-                            .withName("name")
-                            .build();
-                },
+                () -> PackageURLBuilder.aPackageURL()
+                        .withType("type")
+                        .withNamespace("invalid//namespace")
+                        .withName("name")
+                        .build(),
                 "Build should fail due to invalid namespace");
     }
 
@@ -123,13 +121,11 @@ class PackageURLBuilderTest {
     void packageURLBuilderException3() {
         assertThrowsExactly(
                 MalformedPackageURLException.class,
-                () -> {
-                    PackageURLBuilder.aPackageURL()
-                            .withType("typ^e")
-                            .withSubpath("invalid/name%2Fspace")
-                            .withName("name")
-                            .build();
-                },
+                () -> PackageURLBuilder.aPackageURL()
+                        .withType("typ^e")
+                        .withSubpath("invalid/name%2Fspace")
+                        .withName("name")
+                        .build(),
                 "Build should fail due to invalid subpath");
     }
 
@@ -137,12 +133,10 @@ class PackageURLBuilderTest {
     void packageURLBuilderException4() {
         assertThrowsExactly(
                 MalformedPackageURLException.class,
-                () -> {
-                    PackageURLBuilder.aPackageURL()
-                            .withType("0_type")
-                            .withName("name")
-                            .build();
-                },
+                () -> PackageURLBuilder.aPackageURL()
+                        .withType("0_type")
+                        .withName("name")
+                        .build(),
                 "Build should fail due to invalid type");
     }
 
@@ -150,13 +144,11 @@ class PackageURLBuilderTest {
     void packageURLBuilderException5() {
         assertThrowsExactly(
                 MalformedPackageURLException.class,
-                () -> {
-                    PackageURLBuilder.aPackageURL()
-                            .withType("ype")
-                            .withName("name")
-                            .withQualifier("0_key", "value")
-                            .build();
-                },
+                () -> PackageURLBuilder.aPackageURL()
+                        .withType("ype")
+                        .withName("name")
+                        .withQualifier("0_key", "value")
+                        .build(),
                 "Build should fail due to invalid qualifier key");
     }
 
@@ -164,13 +156,11 @@ class PackageURLBuilderTest {
     void packageURLBuilderException6() {
         assertThrowsExactly(
                 MalformedPackageURLException.class,
-                () -> {
-                    PackageURLBuilder.aPackageURL()
-                            .withType("ype")
-                            .withName("name")
-                            .withQualifier("", "value")
-                            .build();
-                },
+                () -> PackageURLBuilder.aPackageURL()
+                        .withType("ype")
+                        .withName("name")
+                        .withQualifier("", "value")
+                        .build(),
                 "Build should fail due to invalid qualifier key");
     }
 
