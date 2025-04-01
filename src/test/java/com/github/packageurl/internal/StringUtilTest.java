@@ -24,14 +24,12 @@ package com.github.packageurl.internal;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
 
-import com.github.packageurl.MalformedPackageURLException;
 import com.github.packageurl.ValidationException;
 import org.junit.jupiter.api.Test;
 
-public class StringUtilTest {
-
+class StringUtilTest {
     @Test
-    void invalidPercentEncoding() throws MalformedPackageURLException {
+    void invalidPercentEncoding() {
         Throwable t1 = assertThrowsExactly(ValidationException.class, () -> StringUtil.percentDecode("a%0"));
         assertEquals("Incomplete percent encoding at offset 1 with value '%0'", t1.getMessage());
         Throwable t2 = assertThrowsExactly(ValidationException.class, () -> StringUtil.percentDecode("aaaa%%0A"));
