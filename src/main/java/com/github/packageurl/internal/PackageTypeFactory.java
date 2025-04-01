@@ -37,12 +37,13 @@ import java.util.Set;
 import java.util.TreeMap;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
-import org.osgi.annotation.bundle.Requirement;
+import org.osgi.annotation.bundle.Requirement.Cardinality;
+import org.osgi.annotation.bundle.Requirement.Resolution;
 
 @ServiceConsumer(
         value = PackageTypeProvider.class,
-        resolution = Requirement.Resolution.MANDATORY,
-        cardinality = Requirement.Cardinality.MULTIPLE)
+        resolution = Resolution.MANDATORY,
+        cardinality = Cardinality.MULTIPLE)
 public final class PackageTypeFactory implements PackageTypeProvider {
     private static final @NonNull PackageTypeFactory INSTANCE = new PackageTypeFactory();
 

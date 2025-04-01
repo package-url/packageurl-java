@@ -30,21 +30,21 @@ import java.net.URISyntaxException;
 import java.util.Map;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
-import org.osgi.annotation.bundle.Requirement;
+import org.osgi.annotation.bundle.Requirement.Resolution;
 
 public final class PackageTypeProviders {
     private PackageTypeProviders() {}
 
-    @ServiceProvider(value = PackageTypeProvider.class, resolution = Requirement.Resolution.MANDATORY)
+    @ServiceProvider(value = PackageTypeProvider.class, resolution = Resolution.MANDATORY)
     public static class Apk extends LowercaseNamespaceAndNameTypeProvider {}
 
-    @ServiceProvider(value = PackageTypeProvider.class, resolution = Requirement.Resolution.MANDATORY)
+    @ServiceProvider(value = PackageTypeProvider.class, resolution = Resolution.MANDATORY)
     public static class Bitbucket extends LowercaseNamespaceAndNameTypeProvider {}
 
-    @ServiceProvider(value = PackageTypeProvider.class, resolution = Requirement.Resolution.MANDATORY)
+    @ServiceProvider(value = PackageTypeProvider.class, resolution = Resolution.MANDATORY)
     public static class Bitnami extends LowercaseNamespacePackageTypeProvider {}
 
-    @ServiceProvider(value = PackageTypeProvider.class, resolution = Requirement.Resolution.MANDATORY)
+    @ServiceProvider(value = PackageTypeProvider.class, resolution = Resolution.MANDATORY)
     public static class Cocoapods implements PackageTypeProvider {
         @Override
         public void validateComponents(
@@ -65,10 +65,10 @@ public final class PackageTypeProviders {
         }
     }
 
-    @ServiceProvider(value = PackageTypeProvider.class, resolution = Requirement.Resolution.MANDATORY)
+    @ServiceProvider(value = PackageTypeProvider.class, resolution = Resolution.MANDATORY)
     public static class Composer extends LowercaseNamespaceAndNameTypeProvider {}
 
-    @ServiceProvider(value = PackageTypeProvider.class, resolution = Requirement.Resolution.MANDATORY)
+    @ServiceProvider(value = PackageTypeProvider.class, resolution = Resolution.MANDATORY)
     public static class Conan implements PackageTypeProvider {
         @Override
         public void validateComponents(
@@ -89,7 +89,7 @@ public final class PackageTypeProviders {
         }
     }
 
-    @ServiceProvider(value = PackageTypeProvider.class, resolution = Requirement.Resolution.MANDATORY)
+    @ServiceProvider(value = PackageTypeProvider.class, resolution = Resolution.MANDATORY)
     public static class Cpan implements PackageTypeProvider {
         @Override
         public void validateComponents(
@@ -108,7 +108,7 @@ public final class PackageTypeProviders {
         }
     }
 
-    @ServiceProvider(value = PackageTypeProvider.class, resolution = Requirement.Resolution.MANDATORY)
+    @ServiceProvider(value = PackageTypeProvider.class, resolution = Resolution.MANDATORY)
     public static class Cran implements PackageTypeProvider {
         @Override
         public void validateComponents(
@@ -125,19 +125,19 @@ public final class PackageTypeProviders {
         }
     }
 
-    @ServiceProvider(value = PackageTypeProvider.class, resolution = Requirement.Resolution.MANDATORY)
+    @ServiceProvider(value = PackageTypeProvider.class, resolution = Resolution.MANDATORY)
     public static class Deb extends LowercaseNamespaceAndNameTypeProvider {}
 
-    @ServiceProvider(value = PackageTypeProvider.class, resolution = Requirement.Resolution.MANDATORY)
+    @ServiceProvider(value = PackageTypeProvider.class, resolution = Resolution.MANDATORY)
     public static class Generic implements PackageTypeProvider {}
 
-    @ServiceProvider(value = PackageTypeProvider.class, resolution = Requirement.Resolution.MANDATORY)
+    @ServiceProvider(value = PackageTypeProvider.class, resolution = Resolution.MANDATORY)
     public static class Github extends LowercaseNamespaceAndNameTypeProvider {}
 
-    @ServiceProvider(value = PackageTypeProvider.class, resolution = Requirement.Resolution.MANDATORY)
+    @ServiceProvider(value = PackageTypeProvider.class, resolution = Resolution.MANDATORY)
     public static class Golang extends LowercaseNamespacePackageTypeProvider {}
 
-    @ServiceProvider(value = PackageTypeProvider.class, resolution = Requirement.Resolution.MANDATORY)
+    @ServiceProvider(value = PackageTypeProvider.class, resolution = Resolution.MANDATORY)
     public static class Hackage implements PackageTypeProvider {
         @Override
         public void validateComponents(
@@ -154,16 +154,16 @@ public final class PackageTypeProviders {
         }
     }
 
-    @ServiceProvider(value = PackageTypeProvider.class, resolution = Requirement.Resolution.MANDATORY)
+    @ServiceProvider(value = PackageTypeProvider.class, resolution = Resolution.MANDATORY)
     public static class Hex extends LowercaseNamespaceAndNameTypeProvider {}
 
-    @ServiceProvider(value = PackageTypeProvider.class, resolution = Requirement.Resolution.MANDATORY)
+    @ServiceProvider(value = PackageTypeProvider.class, resolution = Resolution.MANDATORY)
     public static class Huggingface extends LowercaseVersionPackageTypeProvider {}
 
-    @ServiceProvider(value = PackageTypeProvider.class, resolution = Requirement.Resolution.MANDATORY)
+    @ServiceProvider(value = PackageTypeProvider.class, resolution = Resolution.MANDATORY)
     public static class Luarocks extends LowercaseVersionPackageTypeProvider {}
 
-    @ServiceProvider(value = PackageTypeProvider.class, resolution = Requirement.Resolution.MANDATORY)
+    @ServiceProvider(value = PackageTypeProvider.class, resolution = Resolution.MANDATORY)
     public static class Maven implements PackageTypeProvider {
         @Override
         public void validateComponents(
@@ -180,7 +180,7 @@ public final class PackageTypeProviders {
         }
     }
 
-    @ServiceProvider(value = PackageTypeProvider.class, resolution = Requirement.Resolution.MANDATORY)
+    @ServiceProvider(value = PackageTypeProvider.class, resolution = Resolution.MANDATORY)
     public static class Mlflow implements PackageTypeProvider {
         private static @Nullable String normalizeName(@Nullable String name, @Nullable Map<String, String> qualifiers)
                 throws MalformedPackageURLException {
@@ -234,7 +234,7 @@ public final class PackageTypeProviders {
         }
     }
 
-    @ServiceProvider(value = PackageTypeProvider.class, resolution = Requirement.Resolution.MANDATORY)
+    @ServiceProvider(value = PackageTypeProvider.class, resolution = Resolution.MANDATORY)
     public static class Oci extends LowercaseNameAndVersionPackageTypeProvider {
         @Override
         public void validateComponents(
@@ -251,10 +251,10 @@ public final class PackageTypeProviders {
         }
     }
 
-    @ServiceProvider(value = PackageTypeProvider.class, resolution = Requirement.Resolution.MANDATORY)
+    @ServiceProvider(value = PackageTypeProvider.class, resolution = Resolution.MANDATORY)
     public static class Pub extends LowercaseNamePackageTypeProvider {}
 
-    @ServiceProvider(value = PackageTypeProvider.class, resolution = Requirement.Resolution.MANDATORY)
+    @ServiceProvider(value = PackageTypeProvider.class, resolution = Resolution.MANDATORY)
     public static class Pypi implements PackageTypeProvider {
         @Override
         public @NonNull PackageURL normalizeComponents(
@@ -270,13 +270,13 @@ public final class PackageTypeProviders {
         }
     }
 
-    @ServiceProvider(value = PackageTypeProvider.class, resolution = Requirement.Resolution.MANDATORY)
+    @ServiceProvider(value = PackageTypeProvider.class, resolution = Resolution.MANDATORY)
     public static class Qpkg extends LowercaseNamespacePackageTypeProvider {}
 
-    @ServiceProvider(value = PackageTypeProvider.class, resolution = Requirement.Resolution.MANDATORY)
+    @ServiceProvider(value = PackageTypeProvider.class, resolution = Resolution.MANDATORY)
     public static class Rpm extends LowercaseNamespacePackageTypeProvider {}
 
-    @ServiceProvider(value = PackageTypeProvider.class, resolution = Requirement.Resolution.MANDATORY)
+    @ServiceProvider(value = PackageTypeProvider.class, resolution = Resolution.MANDATORY)
     public static class Swift implements PackageTypeProvider {
         @Override
         public void validateComponents(
