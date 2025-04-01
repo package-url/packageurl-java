@@ -43,10 +43,11 @@
 
   <developers>
     <developer>
+      <id>steve.springett</id>
       <name>Steve Springett</name>
       <email>Steve.Springett@owasp.org</email>
       <organization>OWASP</organization>
-      <organizationUrl>http://www.owasp.org/</organizationUrl>
+      <organizationUrl>https://www.owasp.org/</organizationUrl>
       <roles>
         <role>Architect</role>
         <role>Developer</role>
