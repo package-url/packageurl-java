@@ -25,6 +25,8 @@ import static java.lang.Byte.toUnsignedInt;
 
 import com.github.packageurl.ValidationException;
 import java.nio.charset.StandardCharsets;
+import java.util.BitSet;
+import java.util.stream.IntStream;
 import org.jspecify.annotations.NonNull;
 
 /**
@@ -33,25 +35,110 @@ import org.jspecify.annotations.NonNull;
  * @since 2.0.0
  */
 public final class StringUtil {
-
     private static final byte PERCENT_CHAR = '%';
 
-    private static final boolean[] UNRESERVED_CHARS = new boolean[128];
+    private static final int NBITS = 128;
+
+    private static final BitSet DIGIT = new BitSet(NBITS);
 
     static {
-        for (char c = '0'; c <= '9'; c++) {
-            UNRESERVED_CHARS[c] = true;
-        }
-        for (char c = 'A'; c <= 'Z'; c++) {
-            UNRESERVED_CHARS[c] = true;
-        }
-        for (char c = 'a'; c <= 'z'; c++) {
-            UNRESERVED_CHARS[c] = true;
-        }
-        UNRESERVED_CHARS['-'] = true;
-        UNRESERVED_CHARS['.'] = true;
-        UNRESERVED_CHARS['_'] = true;
-        UNRESERVED_CHARS['~'] = true;
+        IntStream.rangeClosed('0', '9').forEach(DIGIT::set);
+    }
+
+    private static final BitSet LOWER = new BitSet(NBITS);
+
+    static {
+        IntStream.rangeClosed('a', 'z').forEach(LOWER::set);
+    }
+
+    private static final BitSet UPPER = new BitSet(NBITS);
+
+    static {
+        IntStream.rangeClosed('A', 'Z').forEach(UPPER::set);
+    }
+
+    private static final BitSet ALPHA = new BitSet(NBITS);
+
+    static {
+        ALPHA.or(LOWER);
+        ALPHA.or(UPPER);
+    }
+
+    private static final BitSet ALPHA_DIGIT = new BitSet(NBITS);
+
+    static {
+        ALPHA_DIGIT.or(ALPHA);
+        ALPHA_DIGIT.or(DIGIT);
+    }
+
+    private static final BitSet UNRESERVED = new BitSet(NBITS);
+
+    static {
+        UNRESERVED.or(ALPHA_DIGIT);
+        UNRESERVED.set('-');
+        UNRESERVED.set('.');
+        UNRESERVED.set('_');
+        UNRESERVED.set('~');
+    }
+
+    private static final BitSet GEN_DELIMS = new BitSet(NBITS);
+
+    static {
+        GEN_DELIMS.set(':');
+        GEN_DELIMS.set('/');
+        GEN_DELIMS.set('?');
+        GEN_DELIMS.set('#');
+        GEN_DELIMS.set('[');
+        GEN_DELIMS.set(']');
+        GEN_DELIMS.set('@');
+    }
+
+    private static final BitSet SUB_DELIMS = new BitSet(NBITS);
+
+    static {
+        SUB_DELIMS.set('!');
+        SUB_DELIMS.set('$');
+        SUB_DELIMS.set('&');
+        SUB_DELIMS.set('\'');
+        SUB_DELIMS.set('(');
+        SUB_DELIMS.set(')');
+        SUB_DELIMS.set('*');
+        SUB_DELIMS.set('+');
+        SUB_DELIMS.set(',');
+        SUB_DELIMS.set(';');
+        SUB_DELIMS.set('=');
+    }
+
+    public static final BitSet PCHAR = new BitSet(NBITS);
+
+    static {
+        PCHAR.or(UNRESERVED);
+        PCHAR.or(SUB_DELIMS);
+        PCHAR.set(':');
+        PCHAR.clear('&'); // XXX: Why?
+    }
+
+    public static final BitSet QUERYCHAR = new BitSet(NBITS);
+
+    static {
+        QUERYCHAR.or(GEN_DELIMS);
+        QUERYCHAR.or(PCHAR);
+        QUERYCHAR.set('/');
+        QUERYCHAR.set('?');
+        QUERYCHAR.clear('#');
+        QUERYCHAR.clear('&');
+        QUERYCHAR.clear('=');
+    }
+
+    public static final BitSet FRAGMENTCHAR = new BitSet(NBITS);
+
+    static {
+        FRAGMENTCHAR.or(GEN_DELIMS);
+        FRAGMENTCHAR.or(PCHAR);
+        FRAGMENTCHAR.set('/');
+        FRAGMENTCHAR.set('?');
+        FRAGMENTCHAR.set('&');
+        FRAGMENTCHAR.clear('#');
     }
 
     private StringUtil() {
@@ -121,8 +208,8 @@ public final class StringUtil {
      *
      * @since 2.0.0
      */
-    public static @NonNull String percentEncode(@NonNull final String source) {
-        if (!shouldEncode(source)) {
+    public static @NonNull String percentEncode(@NonNull final String source, BitSet unreservedChars) {
+        if (!shouldEncode(source, unreservedChars)) {
             return source;
         }
 
@@ -131,7 +218,7 @@ public final class StringUtil {
 
         int writePos = 0;
         for (byte b : src) {
-            if (shouldEncode(toUnsignedInt(b))) {
+            if (shouldEncode(toUnsignedInt(b), unreservedChars)) {
                 dest[writePos++] = PERCENT_CHAR;
                 dest[writePos++] = toHexDigit(b >> 4);
                 dest[writePos++] = toHexDigit(b);
@@ -191,20 +278,24 @@ public final class StringUtil {
      * </p>
      * @param c non-negative integer.
      */
-    private static boolean isUnreserved(int c) {
-        return c < 128 && UNRESERVED_CHARS[c];
+    private static boolean isUnreserved(int c, BitSet unreservedChars) {
+        if (c < 0 || c >= unreservedChars.length()) {
+            return false;
+        }
+
+        return unreservedChars.get(c);
     }
 
     /**
      * @param c non-negative integer
      */
-    private static boolean shouldEncode(int c) {
-        return !isUnreserved(c);
+    private static boolean shouldEncode(int c, BitSet unreservedChars) {
+        return !isUnreserved(c, unreservedChars);
     }
 
-    private static boolean shouldEncode(String s) {
+    private static boolean shouldEncode(String s, BitSet unreservedChars) {
         for (int i = 0, length = s.length(); i < length; i++) {
-            if (shouldEncode(s.charAt(i))) {
+            if (shouldEncode(s.charAt(i), unreservedChars)) {
                 return true;
             }
         }
