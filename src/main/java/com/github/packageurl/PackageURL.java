@@ -583,22 +583,6 @@ public final class PackageURL implements Serializable {
         return purl.toString();
     }
 
-    /**
-     * Some purl types may have specific constraints. This method attempts to verify them.
-     * @param type the purl type
-     * @param namespace the purl namespace
-     * @throws MalformedPackageURLException if constraints are not met
-     */
-    private static void verifyTypeConstraints(String type, @Nullable String namespace, @Nullable String name)
-            throws MalformedPackageURLException {
-        if (StandardTypes.MAVEN.equals(type)) {
-            if (isEmpty(namespace) || isEmpty(name)) {
-                throw new MalformedPackageURLException(
-                        "The PackageURL specified is invalid. Maven requires both a namespace and name.");
-            }
-        }
-    }
-
     private static @Nullable Map<String, String> parseQualifiers(final @Nullable Map<String, String> qualifiers)
             throws MalformedPackageURLException {
         if (qualifiers == null || qualifiers.isEmpty()) {
