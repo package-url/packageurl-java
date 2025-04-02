@@ -205,7 +205,7 @@ public final class PackageURL implements Serializable {
      * @throws MalformedPackageURLException if parsing fails
      */
     public PackageURL(final String type, final String name) throws MalformedPackageURLException {
-        this(type, null, name, null, (Map<String, String>) null, null);
+        this(type, null, name, null, null, null);
     }
 
     /**
