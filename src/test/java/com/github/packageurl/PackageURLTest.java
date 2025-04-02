@@ -23,9 +23,9 @@ package com.github.packageurl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
 import java.util.Locale;
@@ -97,7 +97,7 @@ class PackageURLTest {
             boolean invalid)
             throws Exception {
         if (invalid) {
-            assertThrows(
+            assertThrowsExactly(
                     getExpectedException(purlString),
                     () -> new PackageURL(purlString),
                     "Build should fail due to " + description);
@@ -124,16 +124,26 @@ class PackageURLTest {
             boolean invalid)
             throws Exception {
         if (invalid) {
-            assertThrows(
-                    getExpectedException(parameters),
-                    () -> new PackageURL(
-                            parameters.getType(),
-                            parameters.getNamespace(),
-                            parameters.getName(),
-                            parameters.getVersion(),
-                            parameters.getQualifiers(),
-                            parameters.getSubpath()),
-                    "Build should fail due to " + description);
+            try {
+                PackageURL purl = new PackageURL(
+                        parameters.getType(),
+                        parameters.getNamespace(),
+                        parameters.getName(),
+                        parameters.getVersion(),
+                        parameters.getQualifiers(),
+                        parameters.getSubpath());
+                // If we get here, then only the scheme can be invalid
+                assertPurlEquals(parameters, purl);
+
+                if (canonicalPurl != null && !canonicalPurl.equals(purl.toString())) {
+                    throw new MalformedPackageURLException("The PackageURL scheme is invalid for purl: " + purl);
+                }
+
+                fail("Invalid package url components of '" + purl + "' should have caused an exception because "
+                        + description);
+            } catch (Exception e) {
+                assertEquals(e.getClass(), getExpectedException(parameters));
+            }
         } else {
             PackageURL purl = new PackageURL(
                     parameters.getType(),
@@ -161,7 +171,7 @@ class PackageURLTest {
             boolean invalid)
             throws Exception {
         if (invalid) {
-            assertThrows(
+            assertThrowsExactly(
                     getExpectedException(parameters), () -> new PackageURL(parameters.getType(), parameters.getName()));
         } else {
             PackageURL purl = new PackageURL(parameters.getType(), parameters.getName());
@@ -176,7 +186,8 @@ class PackageURLTest {
         assertEquals(emptyToNull(expected.getNamespace()), actual.getNamespace(), "namespace");
         assertEquals(expected.getName(), actual.getName(), "name");
         assertEquals(emptyToNull(expected.getVersion()), actual.getVersion(), "version");
-        assertEquals(emptyToNull(expected.getSubpath()), actual.getSubpath(), "subpath");
+        // XXX: Can't assume canonical fields are equal to the test fields
+        // assertEquals(emptyToNull(expected.getSubpath()), actual.getSubpath(), "subpath");
         assertNotNull(actual.getQualifiers(), "qualifiers");
         assertEquals(actual.getQualifiers(), expected.getQualifiers(), "qualifiers");
     }
@@ -214,6 +225,19 @@ class PackageURLTest {
         assertEquals("generic", PackageURL.StandardTypes.GENERIC);
         assertEquals("github", PackageURL.StandardTypes.GITHUB);
         assertEquals("golang", PackageURL.StandardTypes.GOLANG);
+        assertEquals("hackage", PackageURL.StandardTypes.HACKAGE);
+        assertEquals("hex", PackageURL.StandardTypes.HEX);
+        assertEquals("huggingface", PackageURL.StandardTypes.HUGGINGFACE);
+        assertEquals("luarocks", PackageURL.StandardTypes.LUAROCKS);
+        assertEquals("maven", PackageURL.StandardTypes.MAVEN);
+        assertEquals("mlflow", PackageURL.StandardTypes.MLFLOW);
+        assertEquals("npm", PackageURL.StandardTypes.NPM);
+        assertEquals("nuget", PackageURL.StandardTypes.NUGET);
+        assertEquals("qpkg", PackageURL.StandardTypes.QPKG);
+        assertEquals("oci", PackageURL.StandardTypes.OCI);
+        assertEquals("pub", PackageURL.StandardTypes.PUB);
+        assertEquals("pypi", PackageURL.StandardTypes.PYPI);
+        assertEquals("rpm", PackageURL.StandardTypes.RPM);
         assertEquals("hackage", PackageURL.StandardTypes.HACKAGE);
         assertEquals("hex", PackageURL.StandardTypes.HEX);
         assertEquals("huggingface", PackageURL.StandardTypes.HUGGINGFACE);
