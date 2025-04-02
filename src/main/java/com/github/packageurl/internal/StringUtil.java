@@ -25,6 +25,7 @@ import static java.lang.Byte.toUnsignedInt;
 
 import com.github.packageurl.ValidationException;
 import java.nio.charset.StandardCharsets;
+import java.util.BitSet;
 import org.jspecify.annotations.NonNull;
 
 /**
@@ -52,6 +53,19 @@ public final class StringUtil {
         UNRESERVED_CHARS['.'] = true;
         UNRESERVED_CHARS['_'] = true;
         UNRESERVED_CHARS['~'] = true;
+    }
+
+    private static final int NBITS = 128;
+
+    private static final BitSet WHITESPACECHAR = new BitSet(NBITS);
+
+    static {
+        WHITESPACECHAR.set(0x09);
+        WHITESPACECHAR.set(0x0A);
+        WHITESPACECHAR.set(0x0B);
+        WHITESPACECHAR.set(0x0C);
+        WHITESPACECHAR.set(0x0D);
+        WHITESPACECHAR.set(' ');
     }
 
     private StringUtil() {
@@ -211,7 +225,7 @@ public final class StringUtil {
         return false;
     }
 
-    private static boolean isAlpha(int c) {
+    public static boolean isAlpha(int c) {
         return (isLowerCase(c) || isUpperCase(c));
     }
 
@@ -225,6 +239,14 @@ public final class StringUtil {
 
     private static boolean isLowerCase(int c) {
         return (c >= 'a' && c <= 'z');
+    }
+
+    public static boolean isWhitespace(int c) {
+        if (c < 0 || c >= NBITS) {
+            return false;
+        }
+
+        return WHITESPACECHAR.get(c);
     }
 
     private static int toLowerCase(int c) {
