@@ -671,8 +671,8 @@
                   <goal>exec</goal>
                 </goals>
                 <configuration>
-                  <executable>${java.home}/bin/java</executable>
-                  <commandlineArgs>-cp target/classes:target/test-classes:${test.classpath} org.openjdk.jmh.Main ${jmh.args}</commandlineArgs>
+                  <executable>${java.home}${file.separator}bin${file.separator}java</executable>
+                  <commandlineArgs>-cp target${file.separator}classes${path.separator}target${file.separator}test-classes${path.separator}${test.classpath} org.openjdk.jmh.Main ${jmh.args}</commandlineArgs>
                 </configuration>
               </execution>
             </executions>
