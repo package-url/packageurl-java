@@ -98,7 +98,7 @@ class PurlParameters {
         this.version = version;
         if (qualifiers != null) {
             this.qualifiers = qualifiers.toMap().entrySet().stream()
-                    .collect(Collectors.toMap(Map.Entry::getKey, entry -> Objects.toString(entry.getValue())));
+                    .collect(Collectors.toMap(Map.Entry::getKey, entry -> Objects.toString(entry.getValue(), null)));
         } else {
             this.qualifiers = Collections.emptyMap();
         }
