@@ -72,15 +72,14 @@ public class StringUtilBenchmark {
 
     @Setup
     public void setup() {
-        createDecodedData();
-        createEncodedData();
+        createData();
     }
 
-    private void createDecodedData() {
+    private void createData() {
         decodedData = new String[DATA_COUNT];
-        for (int i = 0; i < DATA_COUNT; i++) {
+        for (int i = 0; i < decodedData.length; i++) {
             char[] chars = new char[DECODED_LENGTH];
-            for (int j = 0; j < DECODED_LENGTH; j++) {
+            for (int j = 0; j < chars.length; j++) {
                 if (RANDOM.nextDouble() < nonAsciiProb) {
                     chars[j] = (char) (Byte.MAX_VALUE + 1 + RANDOM.nextInt(Short.MAX_VALUE - Byte.MAX_VALUE - 1));
                 } else {
@@ -89,9 +88,7 @@ public class StringUtilBenchmark {
             }
             decodedData[i] = new String(chars);
         }
-    }
 
-    private void createEncodedData() {
         encodedData = new String[decodedData.length];
         for (int i = 0; i < encodedData.length; i++) {
             encodedData[i] = StringUtil.percentEncode(decodedData[i]);
