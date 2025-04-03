@@ -672,7 +672,7 @@
                 </goals>
                 <configuration>
                   <executable>${java.home}${file.separator}bin${file.separator}java</executable>
-                  <commandlineArgs>-cp target${file.separator}classes${path.separator}target${file.separator}test-classes${path.separator}${test.classpath} org.openjdk.jmh.Main ${jmh.args}</commandlineArgs>
+                  <commandlineArgs>-cp "target${file.separator}classes${path.separator}target${file.separator}test-classes${path.separator}${test.classpath}" org.openjdk.jmh.Main ${jmh.args}</commandlineArgs>
                 </configuration>
               </execution>
             </executions>
