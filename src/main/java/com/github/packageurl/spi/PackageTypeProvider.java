@@ -29,7 +29,32 @@ import java.util.Map;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
+/**
+ * This interface defines a common interface for package type providers. Each package
+ * type provider must implement this interface to validate and normalize package URLs.
+ * <p>
+ * Implementations of this interface are registered as OSGi services.
+ * <p>
+ * The {@link PackageTypeFactory} class is responsible for loading and managing the available
+ * package type providers.
+ * These providers are used to validate and normalize package URLs based on their
+ * specific type.
+ * Classes must be added to {@code META-INF/services/com.github.packageurl.spi.PackageTypeProvider} in order for
+ * {@link java.util.ServiceLoader ServiceLoader} to find them.
+ *
+ */
 public interface PackageTypeProvider {
+    /**
+     * Validates the components of a package URL.
+     *
+     * @param type the type of the package
+     * @param namespace the namespace of the package
+     * @param name the name of the package
+     * @param version the version of the package
+     * @param qualifiers the qualifiers of the package
+     * @param subpath the subpath of the package
+     * @throws MalformedPackageURLException if the components are not valid
+     */
     default void validateComponents(
             @NonNull String type,
             @Nullable String namespace,
@@ -39,6 +64,18 @@ public interface PackageTypeProvider {
             @Nullable String subpath)
             throws MalformedPackageURLException {}
 
+    /**
+     * Normalizes the components of a package URL.
+     *
+     * @param type the type of the package
+     * @param namespace the namespace of the package
+     * @param name the name of the package
+     * @param version the version of the package
+     * @param qualifiers the qualifiers of the package
+     * @param subpath the subpath of the package
+     * @return a normalized PackageURL object
+     * @throws MalformedPackageURLException if the components are not valid
+     */
     default @NonNull PackageURL normalizeComponents(
             @NonNull String type,
             @Nullable String namespace,
@@ -50,6 +87,11 @@ public interface PackageTypeProvider {
         return new PackageURL(type, namespace, name, version, qualifiers, subpath);
     }
 
+    /**
+     * Returns the package type of this provider.
+     *
+     * @return the package type of this provider
+     */
     default @NonNull String getPackageType() {
         String type = StringUtil.toLowerCase(getClass().getSimpleName());
 

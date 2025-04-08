@@ -32,18 +32,35 @@ import java.util.Map;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
+/**
+ * This class provides a set of package type providers for different package types.
+ * Each provider implements the PackageTypeProvider interface and provides its own
+ * validation and normalization logic for the components of a package URL.
+ */
 public final class PackageTypeProviders {
     private PackageTypeProviders() {}
 
+    /**
+     * This class provides a package type provider for the "apk" package type.
+     */
     @ServiceProvider(value = PackageTypeProvider.class, resolution = Resolution.MANDATORY)
     public static class Apk extends LowercaseNamespaceAndNameTypeProvider {}
 
+    /**
+     * This class provides a package type provider for the "bitbucket" package type.
+     */
     @ServiceProvider(value = PackageTypeProvider.class, resolution = Resolution.MANDATORY)
     public static class Bitbucket extends LowercaseNamespaceAndNameTypeProvider {}
 
+    /**
+     * This class provides a package type provider for the "bitnami" package type.
+     */
     @ServiceProvider(value = PackageTypeProvider.class, resolution = Resolution.MANDATORY)
     public static class Bitnami extends LowercaseNamespacePackageTypeProvider {}
 
+    /**
+     * This class provides a package type provider for the "cocoapods" package type.
+     */
     @ServiceProvider(value = PackageTypeProvider.class, resolution = Resolution.MANDATORY)
     public static class Cocoapods implements PackageTypeProvider {
         @Override
@@ -65,9 +82,15 @@ public final class PackageTypeProviders {
         }
     }
 
+    /**
+     * This class provides a package type provider for the "composer" package type.
+     */
     @ServiceProvider(value = PackageTypeProvider.class, resolution = Resolution.MANDATORY)
     public static class Composer extends LowercaseNamespaceAndNameTypeProvider {}
 
+    /**
+     * This class provides a package type provider for the "conan" package type.
+     */
     @ServiceProvider(value = PackageTypeProvider.class, resolution = Resolution.MANDATORY)
     public static class Conan implements PackageTypeProvider {
         @Override
@@ -89,6 +112,9 @@ public final class PackageTypeProviders {
         }
     }
 
+    /**
+     * This class provides a package type provider for the "cpan" package type.
+     */
     @ServiceProvider(value = PackageTypeProvider.class, resolution = Resolution.MANDATORY)
     public static class Cpan implements PackageTypeProvider {
         @Override
@@ -108,6 +134,9 @@ public final class PackageTypeProviders {
         }
     }
 
+    /**
+     * This class provides a package type provider for the "cran" package type.
+     */
     @ServiceProvider(value = PackageTypeProvider.class, resolution = Resolution.MANDATORY)
     public static class Cran implements PackageTypeProvider {
         @Override
@@ -125,18 +154,33 @@ public final class PackageTypeProviders {
         }
     }
 
+    /**
+     * This class provides a package type provider for the "deb" package type.
+     */
     @ServiceProvider(value = PackageTypeProvider.class, resolution = Resolution.MANDATORY)
     public static class Deb extends LowercaseNamespaceAndNameTypeProvider {}
 
+    /**
+     * This class provides a package type provider for the "generic" package type.
+     */
     @ServiceProvider(value = PackageTypeProvider.class, resolution = Resolution.MANDATORY)
     public static class Generic implements PackageTypeProvider {}
 
+    /**
+     * This class provides a package type provider for the "github" package type.
+     */
     @ServiceProvider(value = PackageTypeProvider.class, resolution = Resolution.MANDATORY)
     public static class Github extends LowercaseNamespaceAndNameTypeProvider {}
 
+    /**
+     * This class provides a package type provider for the "golang" package type.
+     */
     @ServiceProvider(value = PackageTypeProvider.class, resolution = Resolution.MANDATORY)
     public static class Golang extends LowercaseNamespacePackageTypeProvider {}
 
+    /**
+     * This class provides a package type provider for the "hackage" package type.
+     */
     @ServiceProvider(value = PackageTypeProvider.class, resolution = Resolution.MANDATORY)
     public static class Hackage implements PackageTypeProvider {
         @Override
@@ -154,15 +198,27 @@ public final class PackageTypeProviders {
         }
     }
 
+    /**
+     * This class provides a package type provider for the "hex" package type.
+     */
     @ServiceProvider(value = PackageTypeProvider.class, resolution = Resolution.MANDATORY)
     public static class Hex extends LowercaseNamespaceAndNameTypeProvider {}
 
+    /**
+     * This class provides a package type provider for the "huggingface" package type.
+     */
     @ServiceProvider(value = PackageTypeProvider.class, resolution = Resolution.MANDATORY)
     public static class Huggingface extends LowercaseVersionPackageTypeProvider {}
 
+    /**
+     * This class provides a package type provider for the "luarocks" package type.
+     */
     @ServiceProvider(value = PackageTypeProvider.class, resolution = Resolution.MANDATORY)
     public static class Luarocks extends LowercaseVersionPackageTypeProvider {}
 
+    /**
+     * This class provides a package type provider for the "maven" package type.
+     */
     @ServiceProvider(value = PackageTypeProvider.class, resolution = Resolution.MANDATORY)
     public static class Maven implements PackageTypeProvider {
         @Override
@@ -180,9 +236,12 @@ public final class PackageTypeProviders {
         }
     }
 
+    /**
+     * This class provides a package type provider for the "mlflow" package type.
+     */
     @ServiceProvider(value = PackageTypeProvider.class, resolution = Resolution.MANDATORY)
     public static class Mlflow implements PackageTypeProvider {
-        private static @Nullable String normalizeName(@Nullable String name, @Nullable Map<String, String> qualifiers)
+        private static @NonNull String normalizeName(@NonNull String name, @Nullable Map<String, String> qualifiers)
                 throws MalformedPackageURLException {
             if (qualifiers != null) {
                 String repositoryUrl = qualifiers.get("repository_url");
@@ -194,7 +253,7 @@ public final class PackageTypeProviders {
                         URI url = new URI(repositoryUrl);
                         host = url.getHost();
 
-                        if (name != null && host.matches(".*[.]?azuredatabricks.net$")) {
+                        if (host.matches(".*[.]?azuredatabricks.net$")) {
                             return StringUtil.toLowerCase(name);
                         }
                     } catch (URISyntaxException e) {
@@ -234,6 +293,9 @@ public final class PackageTypeProviders {
         }
     }
 
+    /**
+     * This class provides a package type provider for the "oci" package type.
+     */
     @ServiceProvider(value = PackageTypeProvider.class, resolution = Resolution.MANDATORY)
     public static class Oci extends LowercaseNameAndVersionPackageTypeProvider {
         @Override
@@ -251,9 +313,15 @@ public final class PackageTypeProviders {
         }
     }
 
+    /**
+     * This class provides a package type provider for the "pub" package type.
+     */
     @ServiceProvider(value = PackageTypeProvider.class, resolution = Resolution.MANDATORY)
     public static class Pub extends LowercaseNamePackageTypeProvider {}
 
+    /**
+     * This class provides a package type provider for the "pypi" package type.
+     */
     @ServiceProvider(value = PackageTypeProvider.class, resolution = Resolution.MANDATORY)
     public static class Pypi implements PackageTypeProvider {
         @Override
@@ -270,12 +338,21 @@ public final class PackageTypeProviders {
         }
     }
 
+    /**
+     * This class provides a package type provider for the "qpkg" package type.
+     */
     @ServiceProvider(value = PackageTypeProvider.class, resolution = Resolution.MANDATORY)
     public static class Qpkg extends LowercaseNamespacePackageTypeProvider {}
 
+    /**
+     * This class provides a package type provider for the "rpm" package type.
+     */
     @ServiceProvider(value = PackageTypeProvider.class, resolution = Resolution.MANDATORY)
     public static class Rpm extends LowercaseNamespacePackageTypeProvider {}
 
+    /**
+     * This class provides a package type provider for the "swift" package type.
+     */
     @ServiceProvider(value = PackageTypeProvider.class, resolution = Resolution.MANDATORY)
     public static class Swift implements PackageTypeProvider {
         @Override
@@ -297,6 +374,9 @@ public final class PackageTypeProviders {
         }
     }
 
+    /**
+     * This class provides a common interface for the lowercase name and version package types.
+     */
     public static class LowercaseNameAndVersionPackageTypeProvider implements PackageTypeProvider {
         @Override
         public @NonNull PackageURL normalizeComponents(
@@ -317,6 +397,9 @@ public final class PackageTypeProviders {
         }
     }
 
+    /**
+     * This class provides a common interface for the lowercase name package types.
+     */
     public static class LowercaseNamePackageTypeProvider implements PackageTypeProvider {
         @Override
         public @NonNull PackageURL normalizeComponents(
@@ -331,6 +414,9 @@ public final class PackageTypeProviders {
         }
     }
 
+    /**
+     * This class provides a common interface for the lowercase namespace and name package types.
+     */
     public static class LowercaseNamespaceAndNameTypeProvider implements PackageTypeProvider {
         @Override
         public @NonNull PackageURL normalizeComponents(
@@ -351,6 +437,9 @@ public final class PackageTypeProviders {
         }
     }
 
+    /**
+     * This class provides a common interface for the lowercase namespace package types.
+     */
     public static class LowercaseNamespacePackageTypeProvider implements PackageTypeProvider {
         @Override
         public @NonNull PackageURL normalizeComponents(
@@ -371,6 +460,9 @@ public final class PackageTypeProviders {
         }
     }
 
+    /**
+     * This class provides a common interface for the lowercase version package types.
+     */
     public static class LowercaseVersionPackageTypeProvider implements PackageTypeProvider {
         @Override
         public @NonNull PackageURL normalizeComponents(

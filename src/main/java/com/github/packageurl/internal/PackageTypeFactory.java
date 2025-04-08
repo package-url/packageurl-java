@@ -40,6 +40,11 @@ import java.util.TreeMap;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
+/**
+ * The PackageTypeFactory is a singleton that provides a way to normalize and validate package URLs.
+ * It uses the ServiceLoader mechanism to load available PackageTypeProvider implementations.
+ * This class is not intended to be instantiated directly.
+ */
 @ServiceConsumer(
         value = PackageTypeProvider.class,
         resolution = Resolution.MANDATORY,
@@ -47,12 +52,17 @@ import org.jspecify.annotations.Nullable;
 public final class PackageTypeFactory implements PackageTypeProvider {
     private static final @NonNull PackageTypeFactory INSTANCE = new PackageTypeFactory();
 
-    public static final @NonNull String TYPE = "__packagetypefactory__";
+    private static final @NonNull String TYPE = "__packagetypefactory__";
 
     private @Nullable Map<@NonNull String, @NonNull PackageTypeProvider> packageTypeProviders;
 
     private PackageTypeFactory() {}
 
+    /**
+     * Returns the singleton instance of PackageTypeFactory.
+     *
+     * @return the singleton instance of PackageTypeFactory
+     */
     public static @NonNull PackageTypeFactory getInstance() {
         return INSTANCE;
     }
@@ -116,6 +126,13 @@ public final class PackageTypeFactory implements PackageTypeProvider {
         }
     }
 
+    /**
+     * Validates the type of the package URL. The type must start with an alphabetic character and
+     * can only contain alphanumeric characters, underscores, and hyphens.
+     *
+     * @param type the type of the package URL
+     * @throws MalformedPackageURLException if the type is invalid
+     */
     public static void validateType(@NonNull String type) throws MalformedPackageURLException {
         if (type.isEmpty()) {
             throw new MalformedPackageURLException("a type is always required");
@@ -207,6 +224,12 @@ public final class PackageTypeFactory implements PackageTypeProvider {
         });
     }
 
+    /**
+     * Returns a map of available package type providers. The map is unmodifiable and contains the
+     * package type as the key and the corresponding PackageTypeProvider as the value.
+     *
+     * @return a map of available package type providers
+     */
     public @NonNull Map<String, PackageTypeProvider> getPackageTypeProviders() {
         if (packageTypeProviders == null) {
             packageTypeProviders = findAvailablePackageTypeProviders();
