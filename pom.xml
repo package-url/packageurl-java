@@ -131,7 +131,7 @@
     <versions-maven-plugin.version>2.18.0</versions-maven-plugin.version>
     <!-- Maven build plugins for quality checks -->
     <error.prone.core.version>2.37.0</error.prone.core.version>
-    <jacoco.maven.plugin.version>0.8.12</jacoco.maven.plugin.version>
+    <jacoco.maven.plugin.version>0.8.13</jacoco.maven.plugin.version>
     <palantir.java.format.version>2.58.0</palantir.java.format.version>
     <spotbugs.maven.plugin.version>4.9.3.0</spotbugs.maven.plugin.version>
     <spotless.maven.plugin.version>2.44.4</spotless.maven.plugin.version>
