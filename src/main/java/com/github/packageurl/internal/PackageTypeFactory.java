@@ -21,6 +21,8 @@
  */
 package com.github.packageurl.internal;
 
+import aQute.bnd.annotation.Cardinality;
+import aQute.bnd.annotation.Resolution;
 import aQute.bnd.annotation.spi.ServiceConsumer;
 import com.github.packageurl.MalformedPackageURLException;
 import com.github.packageurl.PackageURL;
@@ -37,8 +39,6 @@ import java.util.Set;
 import java.util.TreeMap;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
-import org.osgi.annotation.bundle.Requirement.Cardinality;
-import org.osgi.annotation.bundle.Requirement.Resolution;
 
 @ServiceConsumer(
         value = PackageTypeProvider.class,

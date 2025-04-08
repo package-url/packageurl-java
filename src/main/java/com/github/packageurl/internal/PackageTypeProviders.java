@@ -21,6 +21,7 @@
  */
 package com.github.packageurl.internal;
 
+import aQute.bnd.annotation.Resolution;
 import aQute.bnd.annotation.spi.ServiceProvider;
 import com.github.packageurl.MalformedPackageURLException;
 import com.github.packageurl.PackageURL;
@@ -30,7 +31,6 @@ import java.net.URISyntaxException;
 import java.util.Map;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
-import org.osgi.annotation.bundle.Requirement.Resolution;
 
 public final class PackageTypeProviders {
     private PackageTypeProviders() {}
