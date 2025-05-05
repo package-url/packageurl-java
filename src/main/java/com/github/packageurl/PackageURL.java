@@ -27,8 +27,10 @@ import com.github.packageurl.internal.StringUtil;
 import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -477,30 +479,34 @@ public final class PackageURL implements Serializable {
         return validatePath(value.split("/"), true);
     }
 
-    private static @Nullable String validatePath(final String[] segments, final boolean isSubPath)
+    private static @Nullable String validatePath(final String[] segments, final boolean isSubpath)
             throws MalformedPackageURLException {
-        if (segments.length == 0) {
+        int length = segments.length;
+
+        if (length == 0) {
             return null;
         }
-        try {
-            return Arrays.stream(segments)
-                    .peek(segment -> {
-                        if (isSubPath && ("..".equals(segment) || ".".equals(segment))) {
-                            throw new ValidationException(
-                                    "Segments in the subpath may not be a period ('.') or repeated period ('..')");
-                        } else if (segment.contains("/")) {
-                            throw new ValidationException(
-                                    "Segments in the namespace and subpath may not contain a forward slash ('/')");
-                        } else if (segment.isEmpty()) {
-                            throw new ValidationException("Segments in the namespace and subpath may not be empty");
-                        }
-                    })
-                    .collect(Collectors.joining("/"));
-        } catch (ValidationException e) {
-            throw new MalformedPackageURLException(e);
-        }
-    }
 
+        List<String> newSegments = new ArrayList<>(length);
+
+        for (String segment : segments) {
+            if (".".equals(segment) || "..".equals(segment)) {
+                if (!isSubpath) {
+                    throw new MalformedPackageURLException(
+                            "Segments in the namespace must not be a period ('.') or repeated period ('..'): '"
+                                    + segment + "'");
+                }
+            } else if (segment.isEmpty() || segment.contains("/")) {
+                throw new MalformedPackageURLException(
+                        "Segments in the namespace and subpath must not contain a '/' and must not be empty: '"
+                                + segment + "'");
+            } else {
+                newSegments.add(segment);
+            }
+        }
+
+        return String.join("/", newSegments);
+    }
     /**
      * Returns the canonicalized representation of the purl.
      *
@@ -621,8 +627,8 @@ public final class PackageURL implements Serializable {
         }
     }
 
-    private static String[] parsePath(final String path, final boolean isSubpath) {
-        return Arrays.stream(path.split("/"))
+    private static String[] parsePath(final String encodedPath, final boolean isSubpath) {
+        return Arrays.stream(encodedPath.split("/"))
                 .filter(segment -> !segment.isEmpty() && !(isSubpath && (".".equals(segment) || "..".equals(segment))))
                 .map(StringUtil::percentDecode)
                 .toArray(String[]::new);
