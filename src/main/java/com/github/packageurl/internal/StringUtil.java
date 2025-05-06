@@ -25,6 +25,7 @@ import static java.lang.Byte.toUnsignedInt;
 
 import com.github.packageurl.ValidationException;
 import java.nio.charset.StandardCharsets;
+import java.util.BitSet;
 import org.jspecify.annotations.NonNull;
 
 /**
@@ -54,6 +55,19 @@ public final class StringUtil {
         UNRESERVED_CHARS['~'] = true;
     }
 
+    private static final int NBITS = 128;
+
+    private static final BitSet WHITESPACECHAR = new BitSet(NBITS);
+
+    static {
+        WHITESPACECHAR.set(0x09);
+        WHITESPACECHAR.set(0x0A);
+        WHITESPACECHAR.set(0x0B);
+        WHITESPACECHAR.set(0x0C);
+        WHITESPACECHAR.set(0x0D);
+        WHITESPACECHAR.set(' ');
+    }
+
     private StringUtil() {
         throw new AssertionError("Cannot instantiate StringUtil");
     }
@@ -63,8 +77,6 @@ public final class StringUtil {
      *
      * @param s the string to convert to lower case
      * @return the lower case version of the string
-     *
-     * @since 2.0.0
      */
     public static @NonNull String toLowerCase(@NonNull String s) {
         int pos = indexOfFirstUpperCaseChar(s);
@@ -87,8 +99,6 @@ public final class StringUtil {
      *
      * @param source the string to decode
      * @return the percent decoded string
-     *
-     * @since 2.0.0
      */
     public static @NonNull String percentDecode(@NonNull final String source) {
         if (source.indexOf(PERCENT_CHAR) == -1) {
@@ -118,8 +128,6 @@ public final class StringUtil {
      *
      * @param source the string to encode
      * @return the percent encoded string
-     *
-     * @since 2.0.0
      */
     public static @NonNull String percentEncode(@NonNull final String source) {
         if (!shouldEncode(source)) {
@@ -148,8 +156,6 @@ public final class StringUtil {
      *
      * @param c the character to check
      * @return true if the character is a digit; otherwise, false
-     *
-     * @since 2.0.0
      */
     public static boolean isDigit(int c) {
         return (c >= '0' && c <= '9');
@@ -160,8 +166,6 @@ public final class StringUtil {
      *
      * @param c the character to check
      * @return true if the character is valid for the package-url type; otherwise, false
-     *
-     * @since 2.0.0
      */
     public static boolean isValidCharForType(int c) {
         return (isAlphaNumeric(c) || c == '.' || c == '+' || c == '-');
@@ -172,8 +176,6 @@ public final class StringUtil {
      *
      * @param c the character to check
      * @return true if the character is valid for the package-url qualifier key; otherwise, false
-     *
-     * @since 2.0.0
      */
     public static boolean isValidCharForKey(int c) {
         return (isAlphaNumeric(c) || c == '.' || c == '_' || c == '-');
@@ -211,7 +213,13 @@ public final class StringUtil {
         return false;
     }
 
-    private static boolean isAlpha(int c) {
+    /**
+     * Determines if the character is an ASCII alphabetic character, i.e., a lowercase or uppercase ASCII character.
+     *
+     * @param c the character to check
+     * @return whether the character is an ASCII alphabetic character
+     */
+    public static boolean isAlpha(int c) {
         return (isLowerCase(c) || isUpperCase(c));
     }
 
@@ -225,6 +233,21 @@ public final class StringUtil {
 
     private static boolean isLowerCase(int c) {
         return (c >= 'a' && c <= 'z');
+    }
+
+    /**
+     * Determines if the character is an ASCII whitespace character, i.e.,
+     * one of {@code ['\f', '\t', '\n', '\r', '\v', ' ']}.
+     *
+     * @param c the character to check
+     * @return whether the character is an ASCII whitespace character
+     */
+    public static boolean isWhitespace(int c) {
+        if (c < 0 || c >= NBITS) {
+            return false;
+        }
+
+        return WHITESPACECHAR.get(c);
     }
 
     private static int toLowerCase(int c) {
