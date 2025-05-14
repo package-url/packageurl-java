@@ -86,6 +86,7 @@ class PackageURLTest {
                 "test-suite-data.json", "custom-suite.json", "string-constructor-only.json");
     }
 
+    @SuppressWarnings({"ConstantConditions", "unused"})
     @DisplayName("Test constructor parsing")
     @ParameterizedTest(name = "{0}: ''{1}''")
     @MethodSource
@@ -113,6 +114,7 @@ class PackageURLTest {
                 "test-suite-data.json", "custom-suite.json", "components-constructor-only.json");
     }
 
+    @SuppressWarnings({"ConstantConditions", "unused"})
     @DisplayName("Test constructor parameters")
     @ParameterizedTest(name = "{0}: {2}")
     @MethodSource
@@ -151,6 +153,7 @@ class PackageURLTest {
         return PurlParameters.getTestDataFromFiles("type-namespace-constructor-only.json");
     }
 
+    @SuppressWarnings({"ConstantConditions", "unused"})
     @ParameterizedTest
     @MethodSource
     void constructorTypeNameSpace(
@@ -195,6 +198,7 @@ class PackageURLTest {
         return value == null || value.isEmpty() ? null : value;
     }
 
+    @SuppressWarnings("java:S5961")
     @Test
     void standardTypes() {
         assertEquals("alpm", PackageURL.StandardTypes.ALPM);
