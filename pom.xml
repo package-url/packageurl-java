@@ -139,7 +139,7 @@
     <!-- Dependency versions -->
     <jakarta.validation-api.version>3.1.1</jakarta.validation-api.version>
     <jmh.version>1.37</jmh.version>
-    <json.version>20250107</json.version>
+    <json.version>20250517</json.version>
     <junit-bom.version>5.12.2</junit-bom.version>
     <maven-surefire-junit5-tree-reporter.version>1.4.0</maven-surefire-junit5-tree-reporter.version>
   </properties>
