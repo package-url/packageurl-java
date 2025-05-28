@@ -134,7 +134,7 @@
     <jacoco.maven.plugin.version>0.8.13</jacoco.maven.plugin.version>
     <palantir.java.format.version>2.58.0</palantir.java.format.version>
     <spotbugs.maven.plugin.version>4.9.3.0</spotbugs.maven.plugin.version>
-    <spotless.maven.plugin.version>2.44.4</spotless.maven.plugin.version>
+    <spotless.maven.plugin.version>2.44.5</spotless.maven.plugin.version>
     <com.github.spotbugs.version>4.9.3</com.github.spotbugs.version>
     <!-- Dependency versions -->
     <jakarta.validation-api.version>3.1.1</jakarta.validation-api.version>
