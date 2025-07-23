@@ -23,6 +23,7 @@ package com.github.packageurl;
 
 import static java.util.Objects.requireNonNull;
 
+import com.github.packageurl.internal.PackageTypeFactory;
 import com.github.packageurl.internal.StringUtil;
 import java.io.Serializable;
 import java.net.URI;
@@ -73,34 +74,34 @@ public final class PackageURL implements Serializable {
     private final String type;
 
     /**
-     * The name prefix such as a Maven groupid, a Docker image owner, a GitHub user or organization.
+     * The name prefix such as a Maven groupId, a Docker image owner, a GitHub user or organization.
      * Optional and type-specific.
      */
-    private final @Nullable String namespace;
+    private @Nullable String namespace;
 
     /**
      * The name of the package.
      * Required.
      */
-    private final String name;
+    private String name;
 
     /**
      * The version of the package.
      * Optional.
      */
-    private final @Nullable String version;
+    private @Nullable String version;
 
     /**
      * Extra qualifying data for a package such as an OS, architecture, a distro, etc.
      * Optional and type-specific.
      */
-    private final @Nullable Map<String, String> qualifiers;
+    private @Nullable Map<String, String> qualifiers;
 
     /**
      * Extra subpath within a package, relative to the package root.
      * Optional.
      */
-    private final @Nullable String subpath;
+    private @Nullable String subpath;
 
     /**
      * Constructs a new PackageURL object by parsing the specified string.
@@ -190,7 +191,6 @@ public final class PackageURL implements Serializable {
                 remainder = remainder.substring(0, index);
                 this.namespace = validateNamespace(this.type, parsePath(remainder.substring(start), false));
             }
-            verifyTypeConstraints(this.type, this.namespace, this.name);
         } catch (URISyntaxException e) {
             throw new MalformedPackageURLException("Invalid purl: " + e.getMessage(), e);
         }
@@ -235,7 +235,6 @@ public final class PackageURL implements Serializable {
         this.version = validateVersion(this.type, version);
         this.qualifiers = parseQualifiers(qualifiers);
         this.subpath = validateSubpath(subpath);
-        verifyTypeConstraints(this.type, this.namespace, this.name);
     }
 
     /**
@@ -502,6 +501,18 @@ public final class PackageURL implements Serializable {
     }
 
     /**
+     * Returns a new Package URL which is normalized.
+     *
+     * @return the normalized package URL
+     * @throws MalformedPackageURLException if an error occurs while normalizing this package URL
+     */
+    public PackageURL normalize() throws MalformedPackageURLException {
+        PackageTypeFactory.getInstance().validateComponents(type, namespace, name, version, qualifiers, subpath);
+        return PackageTypeFactory.getInstance()
+                .normalizeComponents(type, namespace, name, version, qualifiers, subpath);
+    }
+
+    /**
      * Returns the canonicalized representation of the purl.
      *
      * @return the canonicalized representation of the purl
@@ -528,6 +539,17 @@ public final class PackageURL implements Serializable {
      * @since 1.3.2
      */
     private String canonicalize(boolean coordinatesOnly) {
+        try {
+            PackageURL packageURL = normalize();
+            namespace = packageURL.getNamespace();
+            name = packageURL.getName();
+            version = packageURL.getVersion();
+            qualifiers = packageURL.getQualifiers();
+            subpath = packageURL.getSubpath();
+        } catch (MalformedPackageURLException e) {
+            throw new ValidationException("Normalization failed", e);
+        }
+
         final StringBuilder purl = new StringBuilder();
         purl.append(SCHEME_PART).append(type).append('/');
         if (namespace != null) {
@@ -540,7 +562,7 @@ public final class PackageURL implements Serializable {
         }
 
         if (!coordinatesOnly) {
-            if (qualifiers != null) {
+            if (!qualifiers.isEmpty()) {
                 purl.append('?');
                 Set<Map.Entry<String, String>> entries = qualifiers.entrySet();
                 boolean separator = false;
@@ -559,22 +581,6 @@ public final class PackageURL implements Serializable {
             }
         }
         return purl.toString();
-    }
-
-    /**
-     * Some purl types may have specific constraints. This method attempts to verify them.
-     * @param type the purl type
-     * @param namespace the purl namespace
-     * @throws MalformedPackageURLException if constraints are not met
-     */
-    private static void verifyTypeConstraints(String type, @Nullable String namespace, @Nullable String name)
-            throws MalformedPackageURLException {
-        if (StandardTypes.MAVEN.equals(type)) {
-            if (isEmpty(namespace) || isEmpty(name)) {
-                throw new MalformedPackageURLException(
-                        "The PackageURL specified is invalid. Maven requires both a namespace and name.");
-            }
-        }
     }
 
     private static @Nullable Map<String, String> parseQualifiers(final @Nullable Map<String, String> qualifiers)
@@ -898,7 +904,7 @@ public final class PackageURL implements Serializable {
          * @deprecated use {@link #DEB} instead
          */
         @Deprecated
-        public static final String DEBIAN = "deb";
+        public static final String DEBIAN = DEB;
         /**
          * Nixos packages.
          *
@@ -906,7 +912,7 @@ public final class PackageURL implements Serializable {
          * @deprecated use {@link #NIX} instead
          */
         @Deprecated
-        public static final String NIXPKGS = "nix";
+        public static final String NIXPKGS = NIX;
 
         private StandardTypes() {}
     }

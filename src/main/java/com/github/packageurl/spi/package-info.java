@@ -19,27 +19,13 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.github.packageurl;
-
 /**
- * Internal exception class intended to be used within validation contained in lambda expressions.
- *
- * @author Jeremy Long
- * @since 1.1.0
+ * <p>Java implementation of the Package-URL Specification SPI for PURL types.</p>
+ * <p><a href="https://raw.githubusercontent.com/package-url/purl-spec/refs/heads/main/PURL-TYPES.rst">https://raw.githubusercontent.com/package-url/purl-spec/refs/heads/main/PURL-TYPES.rst</a></p>
  */
-public class ValidationException extends RuntimeException {
+@Export
+@NullMarked
+package com.github.packageurl.spi;
 
-    private static final long serialVersionUID = 2045474478691037663L;
-
-    /**
-     * Constructs a {@code ValidationException}.
-     * @param msg the error message
-     */
-    public ValidationException(String msg) {
-        super(msg);
-    }
-
-    ValidationException(String msg, Throwable cause) {
-        super(msg, cause);
-    }
-}
+import org.jspecify.annotations.NullMarked;
+import org.osgi.annotation.bundle.Export;
