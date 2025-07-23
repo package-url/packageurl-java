@@ -52,6 +52,8 @@ public final class StringUtil {
         UNRESERVED_CHARS['.'] = true;
         UNRESERVED_CHARS['_'] = true;
         UNRESERVED_CHARS['~'] = true;
+        UNRESERVED_CHARS[':'] = true;
+        UNRESERVED_CHARS['/'] = true;
     }
 
     private StringUtil() {
