@@ -17,6 +17,8 @@ jobs:
 
     - name: Checkout repository
       uses: actions/checkout@v4.2.2
+      with:
+        submodules: true
 
     - name: Set up JDK 8 and ${{ matrix.java-version }}
       uses: actions/setup-java@v4

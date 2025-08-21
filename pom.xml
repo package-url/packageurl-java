@@ -141,6 +141,7 @@
     <jmh.version>1.37</jmh.version>
     <json.version>20250107</json.version>
     <junit-bom.version>5.13.3</junit-bom.version>
+    <lib.jackson-databind.version>2.19.2</lib.jackson-databind.version>
     <maven-surefire-junit5-tree-reporter.version>1.4.0</maven-surefire-junit5-tree-reporter.version>
   </properties>
 
@@ -199,6 +200,11 @@
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-params</artifactId>
       <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+      <version>${lib.jackson-databind.version}</version>
     </dependency>
   </dependencies>
 
