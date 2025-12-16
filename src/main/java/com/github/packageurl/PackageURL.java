@@ -908,6 +908,10 @@ public final class PackageURL implements Serializable {
         @Deprecated
         public static final String NIXPKGS = "nix";
 
+        public static final String BAZEL = "bazel";
+
+        public static final String JULIA = "julia";
+
         private StandardTypes() {}
     }
 }
