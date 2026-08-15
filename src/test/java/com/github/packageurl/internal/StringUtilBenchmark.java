@@ -21,6 +21,8 @@
  */
 package com.github.packageurl.internal;
 
+import static com.github.packageurl.internal.StringUtil.PCHAR;
+
 import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 import java.util.Random;
@@ -92,7 +94,7 @@ public class StringUtilBenchmark {
     private static String[] encodeData(String[] decodedData) {
         String[] encodedData = new String[decodedData.length];
         for (int i = 0; i < encodedData.length; i++) {
-            encodedData[i] = StringUtil.percentEncode(decodedData[i]);
+            encodedData[i] = StringUtil.percentEncode(decodedData[i], PCHAR);
             if (!StringUtil.percentDecode(encodedData[i]).equals(decodedData[i])) {
                 throw new RuntimeException(
                         "Invalid implementation of `percentEncode` and `percentDecode`.\nOriginal data: "
@@ -139,7 +141,7 @@ public class StringUtilBenchmark {
     @Benchmark
     public void percentEncode(final Blackhole blackhole) {
         for (int i = 0; i < DATA_COUNT; i++) {
-            blackhole.consume(StringUtil.percentEncode(decodedData[i]));
+            blackhole.consume(StringUtil.percentEncode(decodedData[i], PCHAR));
         }
     }
 }

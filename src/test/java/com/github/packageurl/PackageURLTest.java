@@ -28,7 +28,12 @@ import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.Arrays;
 import java.util.Locale;
+import java.util.Map;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.AfterAll;
@@ -275,5 +280,40 @@ class PackageURLTest {
         assertEquals("npm", base64Uppercase.getType());
         assertEquals("Base64", base64Uppercase.getName());
         assertEquals("1.0.0", base64Uppercase.getVersion());
+    }
+
+    @Test
+    void uriEncode() throws URISyntaxException, MalformedPackageURLException {
+        String genDelims = "?#[]@"; // /
+        String subDelims = "!$&'()*+,;=";
+        String pchar = "/" + genDelims + subDelims + ":";
+        String query = "key=" + pchar.replace("=", "%3D").replace("&", "%26") + "/?";
+        String fragment = pchar + "/?";
+        String scheme = "pkg";
+        String type = "generic";
+        String subpath = fragment.replaceFirst("^/+", "");
+        URI uri = new URI(scheme, type, pchar, query, subpath);
+        PackageURL purl = new PackageURL(uri.toASCIIString());
+        Map<String, String> qualifiers = Arrays.stream(query.split("&"))
+                .map(kv -> kv.split("="))
+                .filter(kvArray -> kvArray.length == 2)
+                .collect(Collectors.toMap(kv -> kv[0], kv -> kv[1]));
+        PackageURL purl2 = PackageURLBuilder.aPackageURL()
+                .withType(type)
+                .withNamespace("")
+                .withName(genDelims.replace("@", ""))
+                .withVersion(subDelims + ":")
+                .withQualifiers(qualifiers)
+                .withSubpath(subpath)
+                .build();
+        assertEquals(purl, purl2);
+        assertEquals(
+                uri.getQuery(),
+                purl.getQualifiers().entrySet().stream()
+                        .map(Map.Entry::toString)
+                        .collect(Collectors.joining("&")));
+        assertEquals(uri.getFragment(), purl.getSubpath());
+        assertEquals(uri.getPath(), "/" + purl.getName() + '@' + purl.getVersion());
+        assertEquals(uri.toASCIIString().replace("pkg://", "pkg:").replaceFirst("&", "%26"), purl.toString());
     }
 }

@@ -21,6 +21,9 @@
  */
 package com.github.packageurl;
 
+import static com.github.packageurl.internal.StringUtil.FRAGMENTCHAR;
+import static com.github.packageurl.internal.StringUtil.PCHAR;
+import static com.github.packageurl.internal.StringUtil.QUERYCHAR;
 import static java.util.Objects.requireNonNull;
 
 import com.github.packageurl.internal.StringUtil;
@@ -28,6 +31,7 @@ import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Arrays;
+import java.util.BitSet;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
@@ -451,6 +455,7 @@ public final class PackageURL implements Serializable {
             validateKey(key);
             validateValue(key, entry.getValue());
         }
+
         return values;
     }
 
@@ -531,12 +536,12 @@ public final class PackageURL implements Serializable {
         final StringBuilder purl = new StringBuilder();
         purl.append(SCHEME_PART).append(type).append('/');
         if (namespace != null) {
-            purl.append(encodePath(namespace));
+            purl.append(encodePath(namespace, PCHAR));
             purl.append('/');
         }
-        purl.append(StringUtil.percentEncode(name));
+        purl.append(StringUtil.percentEncode(name, PCHAR));
         if (version != null) {
-            purl.append('@').append(StringUtil.percentEncode(version));
+            purl.append('@').append(StringUtil.percentEncode(version, PCHAR));
         }
 
         if (!coordinatesOnly) {
@@ -550,12 +555,12 @@ public final class PackageURL implements Serializable {
                     }
                     purl.append(entry.getKey());
                     purl.append('=');
-                    purl.append(StringUtil.percentEncode(entry.getValue()));
+                    purl.append(StringUtil.percentEncode(entry.getValue(), QUERYCHAR));
                     separator = true;
                 }
             }
             if (subpath != null) {
-                purl.append('#').append(encodePath(subpath));
+                purl.append('#').append(encodePath(subpath, FRAGMENTCHAR));
             }
         }
         return purl.toString();
@@ -584,7 +589,7 @@ public final class PackageURL implements Serializable {
         }
 
         try {
-            final TreeMap<String, String> results = qualifiers.entrySet().stream()
+            final Map<String, String> results = qualifiers.entrySet().stream()
                     .filter(entry -> !isEmpty(entry.getValue()))
                     .collect(
                             TreeMap::new,
@@ -596,8 +601,7 @@ public final class PackageURL implements Serializable {
         }
     }
 
-    @SuppressWarnings("StringSplitter") // reason: surprising behavior is okay in this case
-    private static @Nullable Map<String, String> parseQualifiers(final String encodedString)
+    static @Nullable Map<String, String> parseQualifiers(final String encodedString)
             throws MalformedPackageURLException {
         try {
             final TreeMap<String, String> results = Arrays.stream(encodedString.split("&"))
@@ -628,8 +632,10 @@ public final class PackageURL implements Serializable {
                 .toArray(String[]::new);
     }
 
-    private static String encodePath(final String path) {
-        return Arrays.stream(path.split("/")).map(StringUtil::percentEncode).collect(Collectors.joining("/"));
+    private static String encodePath(final String path, BitSet unreservedChars) {
+        return Arrays.stream(path.split("/"))
+                .map(segment -> StringUtil.percentEncode(segment, unreservedChars))
+                .collect(Collectors.joining("/"));
     }
 
     /**
