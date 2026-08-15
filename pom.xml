@@ -133,7 +133,7 @@
     <error.prone.core.version>2.38.0</error.prone.core.version>
     <jacoco.maven.plugin.version>0.8.13</jacoco.maven.plugin.version>
     <palantir.java.format.version>2.58.0</palantir.java.format.version>
-    <spotbugs.maven.plugin.version>4.9.3.0</spotbugs.maven.plugin.version>
+    <spotbugs.maven.plugin.version>4.9.8.1</spotbugs.maven.plugin.version>
     <spotless.maven.plugin.version>2.45.0</spotless.maven.plugin.version>
     <com.github.spotbugs.version>4.9.3</com.github.spotbugs.version>
     <!-- Dependency versions -->
