@@ -54,43 +54,42 @@ import org.openjdk.jmh.infra.Blackhole;
 @OutputTimeUnit(TimeUnit.MICROSECONDS)
 @State(Scope.Benchmark)
 public class StringUtilBenchmark {
+    private static final Random RANDOM = new Random();
 
     private static final int DATA_COUNT = 1000;
+
     private static final int DECODED_LENGTH = 256;
+
     private static final byte[] UNRESERVED =
             "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~".getBytes(StandardCharsets.US_ASCII);
 
     @Param({"0", "0.1", "0.5"})
     private double nonAsciiProb;
 
-    private String[] decodedData;
-    private String[] encodedData;
+    private String[] decodedData = {};
+
+    private String[] encodedData = {};
 
     @Setup
     public void setup() {
-        decodedData = createDecodedData();
-        encodedData = encodeData(decodedData);
+        createData();
     }
 
-    private String[] createDecodedData() {
-        Random random = new Random();
-        String[] decodedData = new String[DATA_COUNT];
-        for (int i = 0; i < DATA_COUNT; i++) {
+    private void createData() {
+        decodedData = new String[DATA_COUNT];
+        for (int i = 0; i < decodedData.length; i++) {
             char[] chars = new char[DECODED_LENGTH];
-            for (int j = 0; j < DECODED_LENGTH; j++) {
-                if (random.nextDouble() < nonAsciiProb) {
-                    chars[j] = (char) (Byte.MAX_VALUE + 1 + random.nextInt(Short.MAX_VALUE - Byte.MAX_VALUE - 1));
+            for (int j = 0; j < chars.length; j++) {
+                if (RANDOM.nextDouble() < nonAsciiProb) {
+                    chars[j] = (char) (Byte.MAX_VALUE + 1 + RANDOM.nextInt(Short.MAX_VALUE - Byte.MAX_VALUE - 1));
                 } else {
-                    chars[j] = (char) UNRESERVED[random.nextInt(UNRESERVED.length)];
+                    chars[j] = (char) UNRESERVED[RANDOM.nextInt(UNRESERVED.length)];
                 }
             }
             decodedData[i] = new String(chars);
         }
-        return decodedData;
-    }
 
-    private static String[] encodeData(String[] decodedData) {
-        String[] encodedData = new String[decodedData.length];
+        encodedData = new String[decodedData.length];
         for (int i = 0; i < encodedData.length; i++) {
             encodedData[i] = StringUtil.percentEncode(decodedData[i]);
             if (!StringUtil.percentDecode(encodedData[i]).equals(decodedData[i])) {
@@ -100,13 +99,12 @@ public class StringUtilBenchmark {
                                 + StringUtil.percentDecode(encodedData[i]));
             }
         }
-        return encodedData;
     }
 
     @Benchmark
     public void baseline(Blackhole blackhole) {
-        for (int i = 0; i < DATA_COUNT; i++) {
-            byte[] buffer = decodedData[i].getBytes(StandardCharsets.UTF_8);
+        for (String decodedStr : decodedData) {
+            byte[] buffer = decodedStr.getBytes(StandardCharsets.UTF_8);
             // Prevent JIT compiler from assuming the buffer was not modified
             for (int idx = 0; idx < buffer.length; idx++) {
                 buffer[idx] ^= 0x20;
