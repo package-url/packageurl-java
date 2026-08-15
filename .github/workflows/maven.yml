@@ -16,7 +16,7 @@ jobs:
     steps:
 
     - name: Checkout repository
-      uses: actions/checkout@v4.2.2
+      uses: actions/checkout@v6.0.0
 
     - name: Set up JDK 8 and ${{ matrix.java-version }}
       uses: actions/setup-java@v4
