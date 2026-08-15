@@ -131,6 +131,7 @@
     <versions-maven-plugin.version>2.18.0</versions-maven-plugin.version>
     <!-- Maven build plugins for quality checks -->
     <error.prone.core.version>2.38.0</error.prone.core.version>
+    <nullaway.version>0.13.8</nullaway.version>
     <jacoco.maven.plugin.version>0.8.13</jacoco.maven.plugin.version>
     <palantir.java.format.version>2.58.0</palantir.java.format.version>
     <spotbugs.maven.plugin.version>4.9.8.1</spotbugs.maven.plugin.version>
@@ -325,7 +326,11 @@
             <!-- Error Prone plugin -->
             <arg>-XDcompilePolicy=simple</arg>
             <arg>--should-stop=ifError=FLOW</arg>
-            <arg>-Xplugin:ErrorProne -XepExcludedPaths:.*/generated-test-sources/.*</arg>
+            <arg>-Xplugin:ErrorProne
+              -XepExcludedPaths:.*/generated-test-sources/.*
+              -Xep:NullAway:ERROR
+              -XepOpt:NullAway:OnlyNullMarked=true
+              -XepOpt:NullAway:TreatGeneratedAsUnannotated=true</arg>
             <!--
               ~ Due to a bug in IntelliJ IDEA, annotation processing MUST be enabled.
               ~ Failing to do so will cause IDEA to ignore the annotation processor path
@@ -344,13 +349,25 @@
               <artifactId>error_prone_core</artifactId>
               <version>${error.prone.core.version}</version>
             </path>
+            <path>
+              <groupId>com.uber.nullaway</groupId>
+              <artifactId>nullaway</artifactId>
+              <version>${nullaway.version}</version>
+            </path>
           </annotationProcessorPaths>
         </configuration>
         <executions>
           <execution>
             <id>default-testCompile</id>
             <configuration>
-              <compilerArgs combine.children="append">
+              <compilerArgs>
+                <arg>-Xlint:all</arg>
+                <arg>-XDcompilePolicy=simple</arg>
+                <arg>--should-stop=ifError=FLOW</arg>
+                <arg>-Xplugin:ErrorProne
+                  -XepExcludedPaths:.*/generated-test-sources/.*
+                  -XepOpt:NullAway:OnlyNullMarked=true
+                  -Xep:NullAway:OFF</arg>
                 <arg>-proc:full</arg>
               </compilerArgs>
               <annotationProcessors>

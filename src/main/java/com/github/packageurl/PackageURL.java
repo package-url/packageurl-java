@@ -353,7 +353,7 @@ public final class PackageURL implements Serializable {
 
     private static @Nullable String validateNamespace(final String type, final @Nullable String value)
             throws MalformedPackageURLException {
-        if (isEmpty(value)) {
+        if (value == null || value.isEmpty()) {
             return null;
         }
         return validateNamespace(type, value.split("/"));
@@ -455,7 +455,7 @@ public final class PackageURL implements Serializable {
     }
 
     private static void validateKey(final @Nullable String value) throws MalformedPackageURLException {
-        if (isEmpty(value)) {
+        if (value == null || value.isEmpty()) {
             throw new MalformedPackageURLException("Qualifier key is invalid: " + value);
         }
 
@@ -471,7 +471,7 @@ public final class PackageURL implements Serializable {
     }
 
     private static @Nullable String validateSubpath(final @Nullable String value) throws MalformedPackageURLException {
-        if (isEmpty(value)) {
+        if (value == null || value.isEmpty()) {
             return null;
         }
         return validatePath(value.split("/"), true);
