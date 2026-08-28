@@ -1,0 +1,301 @@
+{"gaps": [
+  {
+    "input": {
+      "namespace": "GDT",
+      "name": "URI::PackageURL",
+      "subpath": null,
+      "qualifiers": null,
+      "type": "cpan",
+      "version": null
+    },
+    "description": "CPAN distribution name like module name",
+    "test_type": "build"
+  },
+  {
+    "input": {
+      "namespace": "boost",
+      "name": "asio",
+      "subpath": null,
+      "qualifiers": null,
+      "type": "vcpkg",
+      "version": "1.84.0"
+    },
+    "description": "vcpkg build with a prohibited namespace",
+    "test_type": "build"
+  },
+  {
+    "input": {
+      "namespace": "codeberg.org",
+      "name": "forgejo/forgejo",
+      "subpath": "options/locale_readme.md",
+      "qualifiers": null,
+      "type": "git",
+      "version": "a72d2c07cfca03b55371089de6aa230d8c951fa0"
+    },
+    "description": "Build test  for PURL type: git",
+    "test_type": "build"
+  },
+  {
+    "input": {
+      "namespace": "codeberg.org",
+      "name": "forgejo/forgejo",
+      "subpath": null,
+      "qualifiers": null,
+      "type": "git",
+      "version": "a72d2c07cfca03b55371089de6aa230d8c951fa0"
+    },
+    "description": "Build test  for PURL type: git",
+    "test_type": "build"
+  },
+  {
+    "input": {
+      "namespace": "github.com/Alamofire",
+      "name": null,
+      "subpath": null,
+      "qualifiers": null,
+      "type": "swift",
+      "version": "5.4.3"
+    },
+    "description": "invalid swift purl without name",
+    "test_type": "build"
+  },
+  {
+    "input": {
+      "namespace": "namespace",
+      "name": "hex",
+      "subpath": null,
+      "qualifiers": null,
+      "type": "otp",
+      "version": "2.1.1"
+    },
+    "description": "Build test  for <class 'type'> PURL",
+    "test_type": "build"
+  },
+  {
+    "input": {
+      "namespace": null,
+      "name": "Alamofire",
+      "subpath": null,
+      "qualifiers": null,
+      "type": "swift",
+      "version": "5.4.3"
+    },
+    "description": "invalid swift purl without namespace",
+    "test_type": "build"
+  },
+  {
+    "input": {
+      "namespace": null,
+      "name": "EnterpriseLibrary.Common",
+      "subpath": null,
+      "qualifiers": null,
+      "type": null,
+      "version": "6.0.1304"
+    },
+    "description": "a type is always required",
+    "test_type": "build"
+  },
+  {
+    "input": {
+      "namespace": null,
+      "name": "URI::PackageURL",
+      "subpath": null,
+      "qualifiers": null,
+      "type": "cpan",
+      "version": null
+    },
+    "description": "CPAN distribution name like module name",
+    "test_type": "build"
+  },
+  {
+    "input": {
+      "namespace": null,
+      "name": "java",
+      "subpath": null,
+      "qualifiers": null,
+      "type": "vscode-extension",
+      "version": "1.46.2025091308"
+    },
+    "description": "Build test for VS Code Extension PURL without namespace should fail",
+    "test_type": "build"
+  },
+  {
+    "input": {
+      "namespace": null,
+      "name": "nginx",
+      "subpath": null,
+      "qualifiers": null,
+      "type": null,
+      "version": "0.8.9"
+    },
+    "description": "check for colon in type",
+    "test_type": "build"
+  },
+  {
+    "input": {
+      "namespace": null,
+      "name": null,
+      "subpath": null,
+      "qualifiers": null,
+      "type": "cran",
+      "version": "0.9.1"
+    },
+    "description": "invalid cran purl without name",
+    "test_type": "build"
+  },
+  {
+    "input": {
+      "namespace": null,
+      "name": null,
+      "subpath": null,
+      "qualifiers": null,
+      "type": "hackage",
+      "version": null
+    },
+    "description": "name and version are always required",
+    "test_type": "build"
+  },
+  {
+    "input": {
+      "namespace": null,
+      "name": null,
+      "subpath": null,
+      "qualifiers": null,
+      "type": "maven",
+      "version": null
+    },
+    "description": "a name is required",
+    "test_type": "build"
+  },
+  {
+    "input": {
+      "namespace": null,
+      "name": null,
+      "subpath": null,
+      "qualifiers": null,
+      "type": "opam",
+      "version": null
+    },
+    "description": "name is always required",
+    "test_type": "build"
+  },
+  {
+    "input": {
+      "namespace": null,
+      "name": null,
+      "subpath": null,
+      "qualifiers": null,
+      "type": "vcpkg",
+      "version": "1.0.8"
+    },
+    "description": "vcpkg build without a name",
+    "test_type": "build"
+  },
+  {
+    "input": {
+      "namespace": null,
+      "name": null,
+      "subpath": null,
+      "qualifiers": {"uuid": "ade2ca70-3891-5945-98fb-dc099432e06a"},
+      "type": "julia",
+      "version": "1.9.0"
+    },
+    "description": "invalid julia purl build test - null name",
+    "test_type": "build"
+  },
+  {
+    "input": "pkg:Rpm/fedora/curl@7.50.3-1.fc25?Arch=i386&Distro=fedora-25",
+    "description": "rpm often use qualifiers",
+    "test_type": "parse"
+  },
+  {
+    "input": "pkg:brew/Homebrew/Core/sqlite@3.43.2",
+    "description": "Homebrew tap namespaces are not case sensitive",
+    "test_type": "parse"
+  },
+  {
+    "input": "pkg:brew/SQLite@3.43.2",
+    "description": "Homebrew formula names are not case sensitive",
+    "test_type": "parse"
+  },
+  {
+    "input": "pkg:chrome-extension/44444algnefjeiefhmpklpfiohadpglk",
+    "description": "invalid chrome purl (name: invalid characters)",
+    "test_type": "parse"
+  },
+  {
+    "input": "pkg:chrome-extension/dlpngalgnefjeiefhmpklpfiohadpglk@1.2.3-beta",
+    "description": "invalid chrome purl (version: invalid characters)",
+    "test_type": "parse"
+  },
+  {
+    "input": "pkg:chrome-extension/dlpngalgnefjeiefhmpklpfiohadpglk@1.2.3.4.5",
+    "description": "invalid chrome purl (version: too many segments)",
+    "test_type": "parse"
+  },
+  {
+    "input": "pkg:chrome-extension/dogs",
+    "description": "invalid chrome purl (name: wrong length)",
+    "test_type": "parse"
+  },
+  {
+    "input": "pkg:cpan/GDT/URI::PackageURL",
+    "description": "CPAN distribution name as module name",
+    "test_type": "parse"
+  },
+  {
+    "input": "pkg:cpan/LWP::UserAgent@6.7.6",
+    "description": "CPAN with just the module name and version",
+    "test_type": "parse"
+  },
+  {
+    "input": "pkg:cpan/URI::PackageURL",
+    "description": "CPAN distribution name as module name",
+    "test_type": "parse"
+  },
+  {
+    "input": "pkg:gem/jruby-launcher@1.1.2?Platform=java",
+    "description": "Ruby gems can use qualifiers",
+    "test_type": "parse"
+  },
+  {
+    "input": "pkg:git/codeberg.org/forgejo/forgejo@a72d2c07cfca03b55371089de6aa230d8c951fa0",
+    "description": "Parse test for PURL type: git",
+    "test_type": "parse"
+  },
+  {
+    "input": "pkg:git/codeberg.org/forgejo/forgejo@a72d2c07cfca03b55371089de6aa230d8c951fa0#options/locale_readme.md",
+    "description": "Parse test for PURL type: git",
+    "test_type": "parse"
+  },
+  {
+    "input": "pkg:julia/Dates",
+    "description": "invalid julia purl for package without uuid",
+    "test_type": "parse"
+  },
+  {
+    "input": "pkg:mlflow/CreditFraud@3?repository_url=https://adb-5245952564735461.0.azuredatabricks.net/api/2.0/mlflow",
+    "description": "MLflow model tracked in Azure Databricks (case insensitive)",
+    "test_type": "parse"
+  },
+  {
+    "input": "pkg:otp/namespace/hex@2.1.1",
+    "description": "Parse test for <class 'type'> PURL",
+    "test_type": "parse"
+  },
+  {
+    "input": "pkg:swift/Alamofire@5.4.3",
+    "description": "invalid swift purl without namespace",
+    "test_type": "parse"
+  },
+  {
+    "input": "pkg:vcpkg/boost/asio@1.84.0",
+    "description": "vcpkg namespace is prohibited; boost-asio is a single port name, not a namespace and name",
+    "test_type": "parse"
+  },
+  {
+    "input": "pkg:vscode-extension/java@1.46.2025091308",
+    "description": "Parse test for VS Code Extension PURL without namespace should fail",
+    "test_type": "parse"
+  }
+]}
