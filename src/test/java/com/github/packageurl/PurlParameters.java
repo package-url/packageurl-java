@@ -26,9 +26,9 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import org.json.JSONArray;
@@ -98,10 +98,7 @@ class PurlParameters {
         this.version = version;
         if (qualifiers != null) {
             this.qualifiers = qualifiers.toMap().entrySet().stream()
-                    .collect(
-                            HashMap::new,
-                            (m, e) -> m.put(e.getKey(), Objects.toString(e.getValue(), null)),
-                            HashMap::putAll);
+                    .collect(Collectors.toMap(Map.Entry::getKey, entry -> Objects.toString(entry.getValue(), null)));
         } else {
             this.qualifiers = Collections.emptyMap();
         }
@@ -124,7 +121,7 @@ class PurlParameters {
         return version;
     }
 
-    public Map<String, @Nullable String> getQualifiers() {
+    public Map<String, String> getQualifiers() {
         return Collections.unmodifiableMap(qualifiers);
     }
 
